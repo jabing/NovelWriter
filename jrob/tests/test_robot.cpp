@@ -1,20 +1,29 @@
+#include <catch2/catch_test_macros.hpp>
 #include "jrob/robot.hpp"
-#include <iostream>
 
-int main() {
-    std::cout << "Running jrob tests..." << std::endl;
-    
+TEST_CASE("Robot creation with correct name", "[robot]") {
     jrob::Robot robot("TestBot");
     
-    if (robot.getName() != "TestBot") {
-        std::cerr << "FAILED: Robot name mismatch" << std::endl;
-        return 1;
-    }
+    REQUIRE(robot.getName() == "TestBot");
+}
+
+TEST_CASE("Robot name can be changed implicitly via construction", "[robot]") {
+    jrob::Robot robot1("Robot1");
+    jrob::Robot robot2("Robot2");
     
-    std::cout << "Test 1 passed: Robot created with correct name" << std::endl;
+    REQUIRE(robot1.getName() == "Robot1");
+    REQUIRE(robot2.getName() == "Robot2");
+}
+
+TEST_CASE("Robot with empty name", "[robot]") {
+    jrob::Robot robot("");
     
-    robot.sayHello();
+    REQUIRE(robot.getName().empty());
+}
+
+TEST_CASE("Robot with long name", "[robot]") {
+    std::string longName = "ThisIsAVeryLongRobotNameThatTestsEdgeCases";
+    jrob::Robot robot(longName);
     
-    std::cout << "All tests passed!" << std::endl;
-    return 0;
+    REQUIRE(robot.getName() == longName);
 }

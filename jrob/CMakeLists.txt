@@ -7,6 +7,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Include FetchContent for Catch2
+include(FetchContent)
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.4.0
+)
+FetchContent_MakeAvailable(Catch2)
+
 # Collect all source files
 file(GLOB_RECURSE JROB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -19,13 +28,19 @@ target_include_directories(jrob
         $<INSTALL_INTERFACE:include>
 )
 
+# Enable testing
+enable_testing()
+
 # Collect all test files
 file(GLOB_RECURSE JROB_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp")
 
 # Create test executable if tests exist
 if(JROB_TESTS)
     add_executable(jrob_tests ${JROB_TESTS})
-    target_link_libraries(jrob_tests PRIVATE jrob)
+    target_link_libraries(jrob_tests PRIVATE jrob Catch2::Catch2WithMain)
+    
+    # Add test to CTest
+    add_test(NAME jrob_tests COMMAND jrob_tests)
 endif()
 
 # Create example executables
