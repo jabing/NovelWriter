@@ -16,6 +16,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
+# Include FetchContent for Box2D
+FetchContent_Declare(
+  box2d
+  GIT_REPOSITORY https://github.com/erincatto/box2d.git
+  GIT_TAG        v2.4.1
+)
+FetchContent_MakeAvailable(box2d)
+
 # Collect all source files
 file(GLOB_RECURSE JROB_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
@@ -27,6 +35,8 @@ target_include_directories(jrob
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+
+target_link_libraries(jrob PUBLIC box2d)
 
 # Enable testing
 enable_testing()
