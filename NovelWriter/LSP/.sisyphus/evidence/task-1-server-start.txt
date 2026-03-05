@@ -1,0 +1,50 @@
+# Task 1 QA Evidence - Server Start Test
+
+## Scenario: Server starts successfully
+**Tool**: interactive_bash (tmux)
+**Preconditions**: Python 3.14.2, pygls installed
+**Date**: 2026-03-05
+
+### Steps Executed:
+1. Run: `python -m novelwriter_lsp --help`
+2. Verify: Exit code 0
+3. Verify: Output contains "NovelWriter LSP Server"
+
+### Results:
+```
+$ python -m novelwriter_lsp --help
+usage: novelwriter_lsp [-h] [--version]
+
+NovelWriter LSP Server - Language Server Protocol for AI writing systems
+
+options:
+  -h, --help  show this help message and exit
+  --version   Show version information and exit
+
+Examples:
+  python -m novelwriter_lsp              Start the LSP server
+  python -m novelwriter_lsp --version    Show version information
+  python -m novelwriter_lsp --help       Show this help message
+
+Features:
+  - Symbol definitions (Character, Location, Item, Lore, PlotPoint, etc.)
+  - Go to definition
+  - Find references
+  - Document symbols
+  - Rename symbols
+  - Diagnostics and validation
+```
+
+**Exit Code**: 0
+**Status**: ✅ PASS
+
+### Version Check:
+```
+$ python -m novelwriter_lsp --version
+novelwriter_lsp 0.1.0
+```
+
+**Status**: ✅ PASS
+
+## Conclusion
+Server CLI entry point works correctly. Both `--help` and `--version` commands execute successfully with exit code 0.

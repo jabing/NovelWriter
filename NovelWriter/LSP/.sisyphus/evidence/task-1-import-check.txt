@@ -1,0 +1,65 @@
+# Task 1 QA Evidence - Import Check Test
+
+## Scenario: Package imports correctly
+**Tool**: Bash (Python REPL)
+**Preconditions**: Package installed
+**Date**: 2026-03-05
+
+### Steps Executed:
+1. Run: `python -c "from novelwriter_lsp import server; print('OK')"`
+2. Verify: Output is "OK"
+3. Verify: Exit code 0
+
+### Results:
+```
+$ python -c "from novelwriter_lsp import server; print('OK')"
+OK
+```
+
+**Exit Code**: 0
+**Status**: ✅ PASS
+
+### Additional Import Tests:
+```
+$ python -c "from novelwriter_lsp import __version__; print(__version__)"
+0.1.0
+```
+
+```
+$ python -c "from novelwriter_lsp.server import NovelWriterLSP; s = NovelWriterLSP(); print(f'Server: {s.name} v{s.version}')"
+Server: NovelWriter LSP Server v0.1.0
+```
+
+**Status**: ✅ PASS
+
+## Pytest Results:
+```
+$ pytest tests/phase1/test_server.py -v
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.0.2, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev_projects\NovelWriter\LSP
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 8 items
+
+tests/phase1/test_server.py::TestNovelWriterLSP::test_server_creation PASSED [ 12%]
+tests/phase1/test_server.py::TestNovelWriterLSP::test_server_creation_with_custom_params PASSED [ 25%]
+tests/phase1/test_server.py::TestNovelWriterLSP::test_server_initial_state PASSED [ 37%]
+tests/phase1/test_server.py::TestNovelWriterLSP::test_set_and_get_diagnostics PASSED [ 50%]
+tests/phase1/test_server.py::TestNovelWriterLSP::test_get_nonexistent_diagnostics PASSED [ 62%]
+tests/phase1/test_server.py::TestNovelWriterLSP::test_parse_document PASSED [ 75%]
+tests/phase1/test_server.py::TestServerModule::test_default_server_instance PASSED [ 87%]
+tests/phase1/test_server.py::TestVersion::test_version_format PASSED     [100%]
+
+============================== 8 passed in 0.04s ==============================
+```
+
+**Total Tests**: 8
+**Passed**: 8
+**Failed**: 0
+**Status**: ✅ PASS
+
+## Conclusion
+All imports work correctly. Package is properly structured and all tests pass.
