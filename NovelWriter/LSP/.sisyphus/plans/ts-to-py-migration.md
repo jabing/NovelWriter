@@ -232,7 +232,7 @@ Max Concurrent: 8 (Phase 1)
   - Files: `novelwriter_lsp/`, `pyproject.toml`, `requirements.txt`, `tests/phase1/`
   - Pre-commit: `pytest tests/phase1/`
 
-- [ ] 2. 符号类型定义 (9 种)
+- [x] 2. 符号类型定义 (9 种)
 
   **What to do**:
   - 创建 `novelwriter_lsp/types.py`
