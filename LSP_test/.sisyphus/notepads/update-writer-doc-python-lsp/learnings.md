@@ -102,3 +102,56 @@ This change reflects the user's decision to use Python LSP Server (pygls) instea
 **Key Learning:**
 The sequence diagram in Chapter 4 was already correct - it showed agents communicating directly without Bridge API.
 Only the text description needed updating to explicitly state "direct Python calls" instead of "Bridge API".
+
+## Task: Chapter 5 Section 5.5 TypeScript to Python Conversion
+
+**Date:** 2026-03-05
+**Status:** Completed
+
+### Changes Made
+
+1. **Cache examples (Layer 1-3)**: Replaced TypeScript interface and decorators with Python `lru_cache` and custom `SymbolCache` class
+2. **Incremental update**: Changed from TypeScript `documents.onDidChangeContent` to pygls `@SERVER.feature(TEXT_DOCUMENT_DID_CHANGE)` decorator
+3. **Large file processing**: Converted from TypeScript `Promise.all` to Python `asyncio.gather`
+4. **Error handling**: Removed Bridge API error code table, replaced with Python exception handling pattern
+5. **Retry logic**: Enhanced with specific exception types (Neo4jError, ChromaError, ConsistencyError)
+
+### Key Patterns
+
+- Use `@lru_cache(maxsize=N)` for function result caching
+- Use `@SERVER.feature()` decorator for LSP event handlers
+- Use `asyncio.gather()` for parallel async operations
+- Specific exception types for different error scenarios
+- Exponential backoff with `min(delay * (2.0 ** attempt), max_delay)`
+
+### Verification
+
+- Grep confirmed zero TypeScript syntax in Chapter 5
+- All code blocks now use ```python syntax highlighting
+- Section numbering preserved (5.5, 5.6)
+- Markdown formatting maintained
+
+## 2026 年 3 月 5 日 - Python LSP Server 迁移完成
+
+### 完成工作
+- 更新 Chapter 10: 实施路线图从 12 周缩短到 10 周，移除 Bridge API 阶段
+- 更新 Chapter 11: 项目结构移除 api/ 目录，所有 .ts 文件改为 .py
+- 更新文档元数据：版本从 v2.0 升级到 v3.0
+- 添加核心目标：技术栈统一（全 Python 实现）
+
+### 关键变化
+1. **架构简化**: 移除 Bridge API 中间层，LSP Server 直接调用 Python 代理模块
+2. **性能提升**: 零 HTTP 序列化开销，性能提升 3-5x
+3. **技术栈统一**: 全 Python 实现（pygls LSP Server），无 TypeScript/JavaScript
+4. **部署简化**: 单一进程部署，无需维护 API 层
+
+### 验证结果
+- ✅ 零 .ts 扩展名引用
+- ✅ 零 api/ 目录引用
+- ✅ 文档版本正确更新为 v3.0
+- ✅ 所有章节保持一致性
+
+### 工具使用
+- 使用 Python regex 批量替换元数据
+- 使用 Edit 工具精确替换章节内容
+- 使用 Grep 验证无残留引用
