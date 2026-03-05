@@ -1,0 +1,42 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.0.2, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev_projects\NovelWriter\LSP
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 31 items
+
+tests/phase1/test_types.py::TestSymbolType::test_symbol_type_count PASSED [  3%]
+tests/phase1/test_types.py::TestSymbolType::test_symbol_type_values PASSED [  6%]
+tests/phase1/test_types.py::TestSymbolType::test_symbol_type_string_values PASSED [  9%]
+tests/phase1/test_types.py::TestOutlineLevel::test_outline_level_count PASSED [ 12%]
+tests/phase1/test_types.py::TestOutlineLevel::test_outline_level_values PASSED [ 16%]
+tests/phase1/test_types.py::TestOutlineLevel::test_outline_level_string_values PASSED [ 19%]
+tests/phase1/test_types.py::TestBaseSymbol::test_base_symbol_creation PASSED [ 22%]
+tests/phase1/test_types.py::TestBaseSymbol::test_base_symbol_with_optional_fields PASSED [ 25%]
+tests/phase1/test_types.py::TestCharacterSymbol::test_character_symbol_creation PASSED [ 29%]
+tests/phase1/test_types.py::TestCharacterSymbol::test_character_symbol_defaults PASSED [ 32%]
+tests/phase1/test_types.py::TestCharacterSymbol::test_character_symbol_with_lists PASSED [ 35%]
+tests/phase1/test_types.py::TestLocationSymbol::test_location_symbol_creation PASSED [ 38%]
+tests/phase1/test_types.py::TestLocationSymbol::test_location_symbol_defaults PASSED [ 41%]
+tests/phase1/test_types.py::TestItemSymbol::test_item_symbol_creation PASSED [ 45%]
+tests/phase1/test_types.py::TestItemSymbol::test_item_symbol_defaults PASSED [ 48%]
+tests/phase1/test_types.py::TestLoreSymbol::test_lore_symbol_creation PASSED [ 51%]
+tests/phase1/test_types.py::TestLoreSymbol::test_lore_symbol_defaults PASSED [ 54%]
+tests/phase1/test_types.py::TestPlotPointSymbol::test_plotpoint_symbol_creation PASSED [ 58%]
+tests/phase1/test_types.py::TestPlotPointSymbol::test_plotpoint_symbol_defaults PASSED [ 61%]
+tests/phase1/test_types.py::TestOutlineSymbol::test_outline_symbol_master_level PASSED [ 64%]
+tests/phase1/test_types.py::TestOutlineSymbol::test_outline_symbol_volume_level PASSED [ 67%]
+tests/phase1/test_types.py::TestOutlineSymbol::test_outline_symbol_chapter_level PASSED [ 70%]
+tests/phase1/test_types.py::TestOutlineSymbol::test_outline_symbol_with_children PASSED [ 74%]
+tests/phase1/test_types.py::TestEventSymbol::test_event_symbol_creation PASSED [ 77%]
+tests/phase1/test_types.py::TestEventSymbol::test_event_symbol_defaults PASSED [ 80%]
+tests/phase1/test_types.py::TestRelationshipSymbol::test_relationship_symbol_creation PASSED [ 83%]
+tests/phase1/test_types.py::TestRelationshipSymbol::test_relationship_symbol_defaults PASSED [ 87%]
+tests/phase1/test_types.py::TestChapterSymbol::test_chapter_symbol_creation PASSED [ 90%]
+tests/phase1/test_types.py::TestChapterSymbol::test_chapter_symbol_defaults PASSED [ 93%]
+tests/phase1/test_types.py::TestSymbolTypeInheritance::test_character_symbol_inherits_base_fields PASSED [ 96%]
+tests/phase1/test_types.py::TestSymbolTypeInheritance::test_all_symbols_inherit_base_fields PASSED [100%]
+
+============================= 31 passed in 0.04s ==============================
