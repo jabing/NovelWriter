@@ -283,7 +283,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1, 3-8)
 
-- [ ] 3. Markdown 解析器（正则）
+- [x] 3. Markdown 解析器（正则）
 
   **What to do**:
   - 创建 `novelwriter_lsp/parser.py`
