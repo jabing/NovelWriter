@@ -1,6 +1,6 @@
 # Novel Agent System 改进方案文档 v3.0
 
-> **整合 Python LSP Server 架构的增强版本** ★更新  
+> **整合 NovelWriter LSP 的增强版本** ★更新  
 > 版本：v3.0 ★更新  
 > 日期：2026年3月5日
 
@@ -252,17 +252,17 @@ LSP 服务器支持 **9 种符号类型**，涵盖小说创作的所有核心元
 
 #### 2.5.4 直接函数调用架构 ★更新
 
-Python LSP Server 直接导入并调用 Writer System 组件，无需 API 层：
+NovelWriter LSP 直接导入并调用 Writer System 组件，无需 API 层：
 
 ```python
-# LSP Server 直接访问 Writer System
+# NovelWriter LSP 直接访问 Writer System
 from src.memory import CompositeMemory
 from src.storage import Neo4jClient, ChromaClient
 from src.agents import ValidatorAgent, UpdaterAgent
 
-class NovelLanguageServer(LanguageServer):
+class NovelWriterServer(LanguageServer):
     def __init__(self):
-        super().__init__("novel-lsp", "v1.0")
+        super().__init__("novelwriter-lsp", "v1.0")
         # 直接初始化组件（无 HTTP 开销）
         self.memory = CompositeMemory()
         self.neo4j = Neo4jClient()
@@ -470,8 +470,8 @@ sequenceDiagram
 ```
 
 **架构说明**：
-- LSP Server 直接调用 Python 代理模块（validator.validate()、updater.update() 等）
-- 无 Bridge API 层，减少延迟和复杂度
+- NovelWriter LSP 直接调用 Python 代理模块（validator.validate()、updater.update() 等）
+- 无 HTTP/API 层，减少延迟和复杂度
 - 所有通信通过本地函数调用完成
 
 #### LSP 实时交互流程 ★更新
@@ -659,67 +659,110 @@ extract_prompt = """
 #### 性能优化策略
 
 **1. 三层缓存架构**
-```typescript
-// Layer 1: 本地符号索引缓存
-interface SymbolCache {
-  maxSize: 1000;          // 最多缓存1000个符号
-  ttl: 300000;            // 5分钟过期
-  strategy: 'LRU';        // 最近最少使用淘汰
-}
+```python
+from functools import lru_cache
+from datetime import timedelta
 
-// Layer 2: Bridge API 响应缓存
-@cache_result(ttl=300)  // 5分钟TTL
-async function getRelationshipHistory(char1, char2) {
-  // Neo4j查询
-}
+# Layer 1: 本地符号索引缓存（LRU）
+class SymbolCache:
+    def __init__(self, max_size=1000, ttl=timedelta(minutes=5)):
+        self.max_size = max_size
+        self.ttl = ttl
+        self._cache = {}
+    
+    def get(self, key):
+        if key in self._cache:
+            entry = self._cache[key]
+            if datetime.now() - entry['time'] < self.ttl:
+                return entry['value']
+        return None
+    
+    def set(self, key, value):
+        if len(self._cache) >= self.max_size:
+            # LRU eviction
+            oldest = min(self._cache.items(), key=lambda x: x[1]['time'])
+            del self._cache[oldest[0]]
+        self._cache[key] = {'value': value, 'time': datetime.now()}
 
-// Layer 3: Chroma 向量检索缓存
-@cache_result(ttl=600)  // 10分钟TTL
-async function searchEvents(query, limit) {
-  // Chroma向量检索
-}
+# Layer 2: 函数结果缓存（装饰器）
+@lru_cache(maxsize=1000)
+async def get_relationship_history(char1, char2):
+    """Neo4j 关系查询，结果缓存"""
+    return await self.neo4j.query_relationship(char1, char2)
+
+# Layer 3: Chroma 向量检索缓存
+@lru_cache(maxsize=500)
+async def search_events(query, limit=10):
+    """Chroma 向量检索，结果缓存"""
+    return await self.chroma.similarity_search(query, limit)
 ```
 
 **2. 增量更新机制**
-```typescript
-// 文档变更时只重新解析变更部分
-documents.onDidChangeContent(change => {
-  const changedLines = getChangedLines(change);
-  const affectedSymbols = parseSymbols(changedLines);
-  symbolIndex.updateIncremental(affectedSymbols);
-});
+```python
+@SERVER.feature(TEXT_DOCUMENT_DID_CHANGE)
+async def did_change(params: DidChangeTextDocumentParams):
+    """文档变更时增量更新符号索引"""
+    changes = params.content_changes
+    for change in changes:
+        affected_symbols = await self.parser.parse_incremental(change)
+        self.symbol_index.update_incremental(affected_symbols)
 ```
 
 **3. 大文件处理**
-```typescript
-// 分块解析（每块1000行）
-async function parseLargeDocument(uri) {
-  const chunks = splitIntoChunks(content, 1000);
-  return await Promise.all(chunks.map(parseChunk));
-}
+```python
+async def parse_large_document(content: str, chunk_size=1000):
+    """大文件分块解析，每块 1000 行"""
+    lines = content.split('\n')
+    chunks = [lines[i:i+chunk_size] for i in range(0, len(lines), chunk_size)]
+    results = await asyncio.gather(*[self.parse_chunk(chunk) for chunk in chunks])
+    return self.merge_results(results)
 ```
 
 #### 错误处理机制
 
-**Bridge API 错误码**：
+**Python 异常处理**：
 
-| 错误码 | 含义 | 处理策略 |
-|--------|------|----------|
-| 400 | 参数错误 | 检查请求参数 |
-| 404 | 资源不存在 | 提示创建或检查路径 |
-| 429 | 请求过频 | 等待后重试 |
-| 500 | 服务器错误 | 记录日志，降级处理 |
-| 503 | Bridge API 不可用 | 使用离线缓存 |
-
-**指数退避重试**：
 ```python
-async def retry_with_backoff(func, max_retries=3):
+# NovelWriter LSP 内部错误处理（无 HTTP 错误码）
+async def retry_with_backoff(func, max_retries=3, base_delay=1.0):
+    """指数退避重试"""
     for attempt in range(max_retries):
         try:
             return await func()
-        except NetworkError as e:
-            delay = min(1.0 * (2.0 ** attempt), 30.0)
+        except (Neo4jError, ChromaError) as e:
+            if attempt == max_retries - 1:
+                raise
+            delay = min(base_delay * (2.0 ** attempt), 30.0)
             await asyncio.sleep(delay)
+        except ConsistencyError as e:
+            # 一致性错误不重试，直接报告
+            raise
+
+# 使用示例
+try:
+    result = await self.validator.validate(chapter_content)
+except ConsistencyError as e:
+    # 处理一致性错误
+    diagnostics.append(create_diagnostic(e))
+except Neo4jError as e:
+    # 处理数据库错误
+    logger.error(f"Neo4j error: {e}")
+except ChromaError as e:
+    # 处理向量数据库错误
+    logger.error(f"Chroma error: {e}")
+except Exception as e:
+    # 兜底错误处理
+    logger.exception(f"Unexpected error: {e}")
+```
+
+**错误类型**：
+
+| 错误类型 | 触发条件 | 处理策略 |
+|---------|---------|---------|
+| `ConsistencyError` | 一致性检查失败 | 直接报告，不重试 |
+| `Neo4jError` | 图数据库操作失败 | 指数退避重试 |
+| `ChromaError` | 向量数据库操作失败 | 指数退避重试 |
+| `ParserError` | 文档解析失败 | 记录日志，跳过错误部分 |
 ```
 
 ### 5.6 任务调度
@@ -739,18 +782,18 @@ Celery 定义周期性任务，触发章节规划代理：
 | 测试模块 | 覆盖目标 | 关键测试点 |
 |---------|---------|-----------|
 | 符号解析器 | > 90% | 各种符号类型的解析 |
-| API 端点 | > 85% | 所有 Bridge API 端点 |
-| 缓存机制 | > 80% | LRU淘汰、TTL过期 |
+| LSP 功能 | > 85% | 所有 LSP 功能处理器 |
+| 缓存机制 | > 80% | LRU 淘汰、TTL 过期 |
 | 代理协作 | > 85% | 代理间通信 |
 
 ### 6.2 集成测试
 
 | 测试场景 | 测试内容 |
 |---------|---------|
-| LSP ↔ Bridge API | 所有 API 调用链路 |
+| LSP ↔ 代理模块 | 所有直接调用链路 |
 | 增量更新 | 文档变更 → 索引更新 |
-| 错误处理 | API 错误 → LSP 错误提示 |
-| 缓存一致性 | Bridge 更新 → LSP 缓存失效 |
+| 错误处理 | Python 异常 → LSP 错误提示 |
+| 缓存一致性 | Python 对象更新 → LSP 缓存失效 |
 | 完整创作流程 | 从总纲到章节发布的全流程 |
 
 ### 6.3 性能测试
@@ -772,10 +815,10 @@ Celery 定义周期性任务，触发章节规划代理：
 
 | 级别 | 使用场景 | 示例 |
 |------|---------|------|
-| ERROR | 错误影响功能 | Bridge API 连接失败 |
+| ERROR | 错误影响功能 | Neo4j/Chroma 连接失败 |
 | WARN | 潜在问题 | 缓存未命中率高 |
 | INFO | 重要事件 | 项目加载完成、章节生成完成 |
-| DEBUG | 调试信息 | API 请求/响应详情 |
+| DEBUG | 调试信息 | LSP 功能调用详情 |
 
 #### 日志格式
 
@@ -862,7 +905,7 @@ async def global_exception_handler(request, exc):
 | **高度自动化** | 从总纲到发布全流程无人值守 | 分级规划 + 代理协作 + 任务调度 |
 | **强一致性保障** | 杜绝人物、事件、关系矛盾 | 分层大纲 + 内存系统 + 校验代理 + 更新代理 |
 | **风格专业化** | 每一章文风匹配内容 | 五位类型作家各司其职 |
-| **实时编辑体验** ★新增 | AI 能力无缝集成到编辑器 | LSP 协议 + Bridge API |
+| **实时编辑体验** ★新增 | AI 能力无缝集成到编辑器 | LSP 协议 + Python 直接调用 |
 | **人工可控** ★新增 | 支持人工介入，而非完全黑盒 | 3次重试机制 + 手动编辑接口 |
 | **可扩展性** | 新增作家类型只需遵循接口 | 标准化代理接口 |
 | **数据驱动优化** | 持续优化创作策略 | 市场研究 + 读者反馈 |
@@ -889,7 +932,7 @@ Novel Agent System + LSP:
 **核心功能完善**：
 - ✅ 实现章节规划代理、校验代理、更新代理的代码开发
 - ✅ LSP 服务器核心功能实现
-- ✅ Bridge API 完整实现
+- ✅ NovelWriter LSP 核心功能实现
 - ✅ 与现有代理集成
 
 **质量保障**：
@@ -1023,7 +1066,7 @@ novel-agent-system/
 ```
 
 **Key Changes**:
-- Removed `api/` directory (Bridge API - no longer needed)
+- Removed `api/` directory (no HTTP layer needed)
 - Changed `lsp/server.ts` → `lsp/server.py`
 - Changed `lsp/types.ts` → `lsp/schemas.py`
 - Added Python package structure (`__init__.py` files)
@@ -1052,14 +1095,21 @@ novel-agent-system/
 | **completion** | Ctrl+Space | 智能补全 |
 | **rename** | F2 | 安全重命名 |
 
-### B. Bridge API 端点速查表 ★新增
+### B. LSP 功能速查表 ★更新
 
-| 端点 | 方法 | 描述 |
-|------|------|------|
-| `/outline/{novel_id}` | GET | 获取三级大纲 |
-| `/symbols/{type}/{name}` | GET | 获取符号详情 |
-| `/relationships/{char1}/{char2}` | GET | 获取关系历史 |
-| `/validate` | POST | 触发校验代理 |
-| `/update-memory` | POST | 触发更新代理 |
-| `/health` | GET | 健康检查 |
+| 功能 | 触发方式 | 描述 |
+|------|---------|------|
+| **goto_definition** | F12 / Cmd+Click | 跳转到符号定义（直接调用 validator） |
+| **find_references** | Shift+F12 | 查找所有引用（直接查询内存系统） |
+| **documentSymbol** | Ctrl+Shift+O | 显示文档大纲（解析三级层级） |
+| **hover** | 悬停 | 显示符号详情（直接查询 Neo4j） |
+| **diagnostics** | 自动 | 实时错误/警告（直接调用 validator） |
+| **completion** | Ctrl+Space | 智能补全（直接查询符号索引） |
+| **rename** | F2 | 安全重命名（直接更新内存系统） |
+
+**架构说明**：
+- 所有功能通过 **Python 直接调用** 实现（无 HTTP/API 层）
+- NovelWriter LSP 直接导入 Writer System 模块（共享内存）
+- 零序列化开销（无 JSON/HTTP 转换）
+- 类型安全（共享 Pydantic 数据模型）
 
