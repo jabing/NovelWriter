@@ -342,7 +342,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1-2, 4-8)
 
-- [ ] 4. 内存索引（LRU 缓存）
+- [x] 4. 内存索引（LRU 缓存）
 
   **What to do**:
   - 创建 `novelwriter_lsp/index.py`
