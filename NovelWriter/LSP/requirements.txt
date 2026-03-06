@@ -1,6 +1,7 @@
 # NovelWriter LSP Server - Core Dependencies
 pygls>=2.0.0
 lsprotocol>=2023.0.0
+neo4j>=5.0.0
 
 # Development Dependencies
 pytest>=7.0.0

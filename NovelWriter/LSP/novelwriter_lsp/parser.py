@@ -6,6 +6,7 @@ This module provides parsing functionality for extracting symbols from novel doc
 
 import re
 from typing import Any, cast
+from lsprotocol import types
 
 from novelwriter_lsp.types import (
     BaseSymbol,
@@ -46,16 +47,16 @@ def _parse_metadata(metadata_str: str | None) -> dict[str, Any]:
     """Parse metadata from {key: value} format."""
     if not metadata_str:
         return {}
-    
+
     metadata = {}
     # Remove braces and parse key-value pairs
     content = metadata_str.strip()[1:-1]  # Remove { and }
-    
+
     # Simple parsing for key: value pairs
-    pairs = re.findall(r'(\w+):\s*([^,}]+)', content)
+    pairs = re.findall(r"(\w+):\s*([^,}]+)", content)
     for key, value in pairs:
-        metadata[key.strip()] = value.strip().strip('"\'')
-    
+        metadata[key.strip()] = value.strip().strip("\"'")
+
     return metadata
 
 
@@ -69,16 +70,16 @@ def _create_symbol_from_match(
     name = match.group(1).strip()
     metadata_str = match.group(2) if match.lastindex and match.lastindex >= 2 else None
     metadata = _parse_metadata(metadata_str)
-    
+
     symbol_id = _generate_symbol_id(symbol_type, name, line_number)
-    
+
     definition_range = {
         "start_line": line_number,
         "end_line": line_number,
         "start_character": match.start(),
         "end_character": match.end(),
     }
-    
+
     # Create appropriate symbol type
     if symbol_type == SymbolType.CHARACTER:
         return CharacterSymbol(
@@ -142,8 +143,12 @@ def _create_symbol_from_match(
         )
     elif symbol_type == SymbolType.OUTLINE:
         level_str = metadata.get("level", "master")
-        level = OutlineLevel(level_str) if level_str in [e.value for e in OutlineLevel] else OutlineLevel.MASTER
-        
+        level = (
+            OutlineLevel(level_str)
+            if level_str in [e.value for e in OutlineLevel]
+            else OutlineLevel.MASTER
+        )
+
         return OutlineSymbol(
             id=symbol_id,
             name=name,
@@ -153,7 +158,9 @@ def _create_symbol_from_match(
             metadata=metadata,
             level=level,
             volume_number=int(metadata["volume_number"]) if metadata.get("volume_number") else None,
-            chapter_number=int(metadata["chapter_number"]) if metadata.get("chapter_number") else None,
+            chapter_number=int(metadata["chapter_number"])
+            if metadata.get("chapter_number")
+            else None,
         )
     elif symbol_type == SymbolType.EVENT:
         return EventSymbol(
@@ -190,24 +197,24 @@ def _create_symbol_from_match(
             metadata=metadata,
             title=name,
         )
-    
+
     return None
 
 
 def parse_document(content: str, uri: str) -> list[BaseSymbol]:
     """
     Parse a document and extract all symbols.
-    
+
     Args:
         content: The document content to parse
         uri: The URI of the document
-        
+
     Returns:
         A list of BaseSymbol instances representing all found symbols
     """
     symbols: list[BaseSymbol] = []
     lines = content.split("\n")
-    
+
     for line_number, line in enumerate(lines):
         for symbol_type, pattern in PATTERNS.items():
             # Special handling for chapter pattern (matches from start of line)
@@ -222,24 +229,76 @@ def parse_document(content: str, uri: str) -> list[BaseSymbol]:
                     symbol = _create_symbol_from_match(match, symbol_type, uri, line_number)
                     if symbol:
                         symbols.append(symbol)
-    
+
     return symbols
 
 
-def parse_incremental(content: str, uri: str, changed_range: dict[str, int]) -> list[BaseSymbol]:
+def parse_incremental(
+    old_content: str,
+    new_content: str,
+    changes: list[types.TextDocumentContentChangeEvent],
+    uri: str,
+) -> list[BaseSymbol]:
     """
     Parse only the changed portion of a document.
-    
-    This is a stub implementation for future incremental parsing optimization.
-    
+
+    Args:
+        old_content: Previous content of the document
+        new_content: Current content of the document
+        changes: List of change events
+        uri: The URI of the document
+
+    Returns:
+        A list of BaseSymbol instances affected by the changes
+    """
+    affected_lines: set[int] = set()
+    new_lines = new_content.splitlines()
+    full_parse_needed = False
+
+    for change in changes:
+        # Check if this change has a 'range' attribute (incremental change)
+        if hasattr(change, "range"):
+            change_range = getattr(change, "range", None)
+            if change_range is not None:
+                start_line = change_range.start.line
+                end_line = change_range.end.line
+                for line in range(max(0, start_line - 1), min(len(new_lines), end_line + 2)):
+                    affected_lines.add(line)
+        else:
+            # No range means full document change
+            full_parse_needed = True
+            break
+
+    if full_parse_needed or not affected_lines:
+        return parse_document(new_content, uri)
+
+    all_symbols = parse_document(new_content, uri)
+    affected_symbols = []
+
+    for symbol in all_symbols:
+        def_range = symbol.definition_range
+        symbol_line = def_range.get("start_line", 0)
+        if symbol_line in affected_lines:
+            affected_symbols.append(symbol)
+
+    return affected_symbols
+
+
+def parse_incremental_with_range(
+    content: str,
+    uri: str,
+    changed_range: dict[str, int] | None = None,
+) -> list[BaseSymbol]:
+    """
+    Parse only the changed portion of a document (backward compatibility).
+
     Args:
         content: The document content to parse
         uri: The URI of the document
         changed_range: Dictionary with start_line, end_line, start_character, end_character
-        
+
     Returns:
         A list of BaseSymbol instances found in the changed range
     """
-    # TODO: Implement incremental parsing logic
-    # For now, fall back to full parsing
+    # Backward compatibility: if called with old signature, fall back to full parsing
     return parse_document(content, uri)
