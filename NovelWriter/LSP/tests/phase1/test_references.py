@@ -1,10 +1,9 @@
 """Tests for the find_references feature handler."""
 
 import pytest
-from lsprotocol import types
 from pygls.lsp.server import LanguageServer
 
-from novelwriter_lsp.features.references import register_find_references, _extract_word
+from novelwriter_lsp.features.references import register_find_references, _extract_word  # pyright: ignore[reportPrivateUsage]
 from novelwriter_lsp.index import SymbolIndex
 from novelwriter_lsp.types import CharacterSymbol
 
