@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿尔及利亚地图 - 气泡散点图 | Algeria Map - Bubble Scatter</title>
+    
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    
+    <!-- 公共样式 -->
+    <link rel="stylesheet" href="css/common.css">
+    
+    <style>
+        /* 页面特定样式 */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            flex-shrink: 0;
+        }
+
+        .breadcrumb-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 100;
+            padding: 10px 15px;
+            background: rgba(10, 22, 40, 0.9);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-container {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-xl);
+            background: var(--bg-secondary);
+        }
+
+        .chart-container {
+            flex: 1;
+            position: relative;
+            margin: var(--spacing-md) var(--spacing-xl);
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--accent-color);
+            text-align: center;
+            padding: var(--spacing-xl);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 1600px) {
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tooltip 自定义样式 */
+        .custom-tooltip {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: var(--radius-md) !important;
+            padding: var(--spacing-md) !important;
+            box-shadow: var(--glass-shadow) !important;
+        }
+
+        .tooltip-province-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .tooltip-item {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-xs) 0;
+            font-size: 0.875rem;
+        }
+
+        .tooltip-label {
+            color: var(--text-secondary);
+        }
+
+        .tooltip-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .tooltip-hint {
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div>
+                <h1 class="header-title">阿尔及利亚行政区划地图</h1>
+                <p class="header-subtitle">Algeria Administrative Division Map - Basic Drilldown Demo</p>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="header-btn" id="langToggle" onclick="toggleLanguage()">
+                    <span id="langText">English</span>
+                </button>
+                <button type="button" class="header-btn" onclick="resetView()">
+                    <span class="lang-zh">重置视图</span>
+                    <span class="lang-en" style="display: none;">Reset View</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 统计卡片 -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">
+                        <span class="lang-zh">总人口</span>
+                        <span class="lang-en" style="display: none;">Total Population</span>
+                    </span>
+                    <div class="stat-card-icon">👥</div>
+                </div>
+                <div class="stat-card-value" id="statPopulation">--</div>
+                <div class="stat-card-change positive">
+                    <span>↑ 2.1%</span>
+                    <span class="stat-card-change-label">
+                        <span class="lang-zh">年增长率</span>
+                        <span class="lang-en" style="display: none;">YoY Growth</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">
+                        <span class="lang-zh">总面积</span>
+                        <span class="lang-en" style="display: none;">Total Area</span>
+                    </span>
+                    <div class="stat-card-icon">📐</div>
+                </div>
+                <div class="stat-card-value" id="statArea">--</div>
+                <div class="stat-card-change">
+                    <span class="stat-card-change-label">
+                        <span class="lang-zh">平方公里</span>
+                        <span class="lang-en" style="display: none;">km²</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">
+                        <span class="lang-zh">平均密度</span>
+                        <span class="lang-en" style="display: none;">Avg Density</span>
+                    </span>
+                    <div class="stat-card-icon">📊</div>
+                </div>
+                <div class="stat-card-value" id="statDensity">--</div>
+                <div class="stat-card-change">
+                    <span class="stat-card-change-label">
+                        <span class="lang-zh">人/平方公里</span>
+                        <span class="lang-en" style="display: none;">per km²</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">
+                        <span class="lang-zh">省份总数</span>
+                        <span class="lang-en" style="display: none;">Total Provinces</span>
+                    </span>
+                    <div class="stat-card-icon">🏛️</div>
+                </div>
+                <div class="stat-card-value" id="statProvinces">58</div>
+                <div class="stat-card-change">
+                    <span class="stat-card-change-label">
+                        <span class="lang-zh">行政区划</span>
+                        <span class="lang-en" style="display: none;">Provinces</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地图容器 -->
+        <div class="chart-container">
+            <div class="breadcrumb-container">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="citySelector" style="color: rgba(255,255,255,0.9); font-weight: 500; font-size: 13px;">
+                            <span class="lang-zh">区域：</span>
+                            <span class="lang-en" style="display: none;">Region:</span>
+                        </label>
+                        <select id="citySelector" onchange="handleCityChange(this.value)" style="
+                            padding: 6px 10px;
+                            border-radius: 4px;
+                            border: 1px solid rgba(255,255,255,0.3);
+                            background: #1a3a5c;
+                            color: #fff;
+                            font-size: 13px;
+                            cursor: pointer;
+                            min-width: 150px;
+                        ">
+                            <option value="all" style="background: #1a3a5c; color: #fff;">All - Algeria</option>
+                        </select>
+                    </div>
+                    <nav class="breadcrumb" id="breadcrumb" style="display: flex; align-items: center; gap: 5px; font-size: 13px;">
+                        <a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;" onclick="goToLevel('country'); return false;">
+                            <span class="lang-zh">阿尔及利亚</span>
+                            <span class="lang-en" style="display: none;">Algeria</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            <div id="map"></div>
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <div>
+                    <span class="lang-zh">加载地图数据中...</span>
+                    <span class="lang-en" style="display: none;">Loading map data...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 工具类定义（内联版本）
+        // ============================================
+
+        /**
+         * DataGenerator - 数据生成器
+         */
+        class DataGenerator {
+            constructor() {
+                this.dataRanges = {
+                    value: { min: 100000, max: 600000 },
+                    population: { min: 300000, max: 2300000 },
+                    area: { min: 5000, max: 55000 },
+                    density: { min: 10, max: 110 },
+                    gdp: { min: 10000000, max: 100000000 },
+                    growth: { min: -5, max: 15 }
+                };
+            }
+
+            randomInRange(min, max, decimals = 0) {
+                const value = Math.random() * (max - min) + min;
+                return decimals > 0 ? Number(value.toFixed(decimals)) : Math.round(value);
+            }
+
+            generateProvinceData(provinces, language = 'zh') {
+                // Algeria coordinates range: longitude -8 to 12, latitude 18 to 37
+                const lngMin = -8, lngMax = 12;
+                const latMin = 18, latMax = 37;
+                
+                return provinces.map((province, index) => {
+                    const area = this.randomInRange(this.dataRanges.area.min, this.dataRanges.area.max);
+                    const density = this.randomInRange(this.dataRanges.density.min, this.dataRanges.density.max);
+                    const population = Math.round(area * density);
+                    const adjustedPopulation = Math.max(
+                        this.dataRanges.population.min,
+                        Math.min(this.dataRanges.population.max, population)
+                    );
+
+                    // Generate center coordinates for bubble scatter
+                    const centerLng = this.randomInRange(lngMin, lngMax, 2);
+                    const centerLat = this.randomInRange(latMin, latMax, 2);
+
+                    return {
+                        id: `DZ-${String(index + 1).padStart(2, '0')}`,
+                        name: province,
+                        value: this.randomInRange(this.dataRanges.value.min, this.dataRanges.value.max),
+                        population: adjustedPopulation,
+                        area: area,
+                        density: Math.round(adjustedPopulation / area),
+                        gdp: this.randomInRange(this.dataRanges.gdp.min, this.dataRanges.gdp.max),
+                        growth: this.randomInRange(this.dataRanges.growth.min, this.dataRanges.growth.max, 2),
+                        centerLng: centerLng,
+                        centerLat: centerLat,
+                        label: language === 'zh' ? province : province
+                    };
+                });
+            }
+        }
+
+        /**
+         * MapLoader - 地图加载器
+         */
+        class MapLoader {
+            constructor(basePath) {
+                this.basePath = basePath || '../geographic/Algeria-layer3/';
+                this.cache = new Map();
+            }
+
+            normalizeName(name) {
+                if (!name) return '';
+                let normalized = name.trim();
+                normalized = normalized.replace(/\s+/g, '_');
+                return normalized;
+            }
+
+            async loadMap(mapName, path) {
+                if (this.cache.has(mapName)) {
+                    console.log(`⚡ 从缓存加载地图: ${mapName}`);
+                    return this.cache.get(mapName);
+                }
+
+                try {
+                    console.log(`📂 加载地图文件: ${path}`);
+                    const response = await fetch(path);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const geoJson = await response.json();
+                    
+                    if (typeof echarts !== 'undefined' && echarts.registerMap) {
+                        echarts.registerMap(mapName, geoJson);
+                        console.log(`✓ 地图已注册: ${mapName}`);
+                    }
+                    
+                    this.cache.set(mapName, geoJson);
+                    return geoJson;
+                } catch (error) {
+                    console.error(`❌ 加载地图失败: ${path}`, error);
+                    throw error;
+                }
+            }
+
+            async loadProvinceMap(provinceName) {
+                const normalizedName = this.normalizeName(provinceName);
+                const mapName = `algeria_${normalizedName}`.toLowerCase();
+                
+                if (this.cache.has(mapName)) {
+                    console.log(`⚡ 从缓存加载省级地图: ${provinceName}`);
+                    return this.cache.get(mapName);
+                }
+
+                const provincePath = `${this.basePath}Algeria/`;
+                
+                // 尝试多种文件名格式
+                const variants = [
+                    `${normalizedName}.json`,
+                    `${normalizedName}-area.json`,
+                    `${normalizedName.toLowerCase()}.json`,
+                    `${normalizedName.replace(/_/g, ' ')}.json`,
+                ];
+
+                for (const filename of variants) {
+                    try {
+                        const response = await fetch(provincePath + filename);
+                        if (response.ok) {
+                            console.log(`✓ 成功加载省级地图: ${filename}`);
+                            const geoJson = await response.json();
+                            
+                            if (typeof echarts !== 'undefined' && echarts.registerMap) {
+                                echarts.registerMap(mapName, geoJson);
+                                console.log(`✓ 省级地图已注册: ${mapName}`);
+                            }
+                            
+                            this.cache.set(mapName, geoJson);
+                            return geoJson;
+                        }
+                    } catch (error) {
+                        continue;
+                    }
+                }
+                
+                throw new Error(`无法找到省级地图文件: ${provinceName}`);
+            }
+
+            async loadCountryMap() {
+                const mapName = 'algeria';
+                const path = `${this.basePath}Algeria-area.json`;
+                return await this.loadMap(mapName, path);
+            }
+        }
+
+        // ============================================
+        // 全局状态管理
+        // ============================================
+        
+        let currentLevel = 'country';  // 'country' | 'province'
+        let currentProvince = null;
+        let mapStack = [];  // 用于返回上级
+        let chart = null;
+        let currentLanguage = 'zh';
+        
+        const dataGenerator = new DataGenerator();
+        const mapLoader = new MapLoader();
+        let provinceData = [];
+        let currentProvinceData = [];
+
+        // ============================================
+        // 核心函数
+        // ============================================
+
+        /**
+         * 初始化 ECharts
+         */
+        function initChart() {
+            const chartDom = document.getElementById('map');
+            chart = echarts.init(chartDom);
+            
+            // 窗口大小改变时重新调整
+            window.addEventListener('resize', () => {
+                chart.resize();
+            });
+
+            // 绑定点击事件
+            chart.on('click', async (params) => {
+                if (params.componentType === 'series' && currentLevel === 'country') {
+                    await drillDown(params.name);
+                }
+            });
+        }
+
+        /**
+         * 渲染国家级地图
+         */
+        async function renderCountryMap() {
+            showLoading(true);
+            currentLevel = 'country';
+            currentProvince = null;
+            mapStack = [];
+            
+            // 更新下拉框
+            const selector = document.getElementById('citySelector');
+            if (selector) {
+                selector.value = 'all';
+            }
+            
+            try {
+                // 加载地图
+                await mapLoader.loadCountryMap();
+                
+                // 初始化城市选择器
+                initCitySelector();
+                
+                // 更新统计卡片
+                updateStats(provinceData);
+                
+                // 更新面包屑
+                updateBreadcrumb();
+                
+                // 配置选项
+                const option = {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: currentLanguage === 'zh' ? '阿尔及利亚各省分布' : 'Algeria Provinces Distribution',
+                        subtext: currentLanguage === 'zh' ? '点击省份查看详情' : 'Click province for details',
+                        left: 'center',
+                        top: 20,
+                        textStyle: {
+                            color: '#fff',
+                            fontSize: 20,
+                            fontWeight: 600
+                        },
+                        subtextStyle: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            fontSize: 14
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        className: 'custom-tooltip',
+                        formatter: (params) => {
+                            if (!params.data) return '';
+                            
+                            const lang = currentLanguage;
+                            
+                            // 气泡散点的 tooltip
+                            if (params.seriesType === 'effectScatter') {
+                                const value = params.value || params.data.value || [];
+                                const population = value[2] || 0;
+                                return `
+                                    <div class="tooltip-province-name">${params.name}</div>
+                                    <div class="tooltip-item">
+                                        <span class="tooltip-label">${lang === 'zh' ? '👥 人口' : '👥 Population'}</span>
+                                        <span class="tooltip-value">${population.toLocaleString()}</span>
+                                    </div>
+                                `;
+                            }
+                            
+                            // 地图的 tooltip
+                            const d = params.data;
+                            return `
+                                <div class="tooltip-province-name">${params.name}</div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '👥 人口' : '👥 Population'}</span>
+                                    <span class="tooltip-value">${d.population.toLocaleString()}</span>
+                                </div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '📐 面积' : '📐 Area'}</span>
+                                    <span class="tooltip-value">${d.area.toLocaleString()} km²</span>
+                                </div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '📊 密度' : '📊 Density'}</span>
+                                    <span class="tooltip-value">${d.density}/km²</span>
+                                </div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '📈 GDP' : '📈 GDP'}</span>
+                                    <span class="tooltip-value">$${d.gdp.toLocaleString()}</span>
+                                </div>
+                                <div class="tooltip-hint">
+                                    ${lang === 'zh' ? '💡 点击查看市级地图' : '💡 Click to view districts'}
+                                </div>
+                            `;
+                        }
+                    },
+                    visualMap: {
+                        min: 100000,
+                        max: 600000,
+                        left: 30,
+                        bottom: 30,
+                        text: [currentLanguage === 'zh' ? '高' : 'High', currentLanguage === 'zh' ? '低' : 'Low'],
+                        textStyle: {
+                            color: '#fff'
+                        },
+                        inRange: {
+                            color: ['#4a7ac7', '#2a5298', '#1a3a68']
+                        },
+                        calculable: true
+                    },
+                    geo: {
+                        map: 'algeria',
+                        roam: true,
+                        scaleLimit: {
+                            min: 1,
+                            max: 10
+                        },
+                        label: {
+                            show: false
+                        },
+                        itemStyle: {
+                            areaColor: '#132f4c',
+                            borderColor: '#2a5298',
+                            borderWidth: 1
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: 14,
+                                fontWeight: 600
+                            },
+                            itemStyle: {
+                                areaColor: '#4a7ac7',
+                                shadowBlur: 20,
+                                shadowColor: 'rgba(74, 122, 199, 0.5)'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: currentLanguage === 'zh' ? '省份' : 'Province',
+                        type: 'map',
+                        map: 'algeria',
+                        roam: false,
+                        label: {
+                            show: false
+                        },
+                        emphasis: {
+                            label: {
+                                show: false
+                            }
+                        },
+                        itemStyle: {
+                            areaColor: 'transparent',
+                            borderColor: 'transparent',
+                            borderWidth: 0
+                        },
+                        data: provinceData
+                    }, {
+                        name: currentLanguage === 'zh' ? '气泡' : 'Bubble',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        symbolSize: (params) => {
+                            const value = params.value || params.data || [];
+                            return Math.sqrt(value[2] || 100000) / 8;
+                        },
+                        label: {
+                            show: true,
+                            formatter: (params) => {
+                                return params.name;
+                            },
+                            color: '#fff',
+                            fontSize: 10,
+                            fontWeight: 600
+                        },
+                        itemStyle: {
+                            color: {
+                                type: 'radial',
+                                x: 0.5,
+                                y: 0.5,
+                                r: 0.5,
+                                colorStops: [
+                                    { offset: 0, color: '#00ff88' },
+                                    { offset: 0.5, color: '#00f0ff' },
+                                    { offset: 1, color: 'rgba(0, 240, 255, 0.3)' }
+                                ]
+                            },
+                            shadowBlur: 15,
+                            shadowColor: '#00f0ff'
+                        },
+                        rippleEffect: {
+                            brushType: 'stroke',
+                            scale: 3
+                        },
+                        data: provinceData.map(p => ({
+                            name: p.name,
+                            value: [p.centerLng, p.centerLat, p.population]
+                        }))
+                    }]
+                };
+                
+                chart.setOption(option, true);
+                showLoading(false);
+                
+            } catch (error) {
+                console.error('渲染国家地图失败:', error);
+                showError(error.message);
+            }
+        }
+
+        /**
+         * 下钻到省级地图
+         */
+        async function drillDown(provinceName) {
+            showLoading(true);
+            
+            // 更新下拉框选中当前省份
+            const selector = document.getElementById('citySelector');
+            if (selector) {
+                selector.value = provinceName;
+            }
+            
+            try {
+                // 加载省级地图
+                await mapLoader.loadProvinceMap(provinceName);
+                
+                // 保存当前状态
+                mapStack.push({
+                    level: currentLevel,
+                    province: currentProvince
+                });
+                
+                // 更新状态
+                currentLevel = 'province';
+                currentProvince = provinceName;
+                
+                // 生成省级数据（市级）
+                const normalizedName = provinceName.replace(/\s+/g, '_');
+                currentProvinceData = generateDistrictData(normalizedName, 8);
+                
+                // 更新统计卡片
+                updateStats(currentProvinceData, provinceName);
+                
+                // 更新面包屑
+                updateBreadcrumb(provinceName);
+                
+                // 配置选项
+                const mapName = `algeria_${normalizedName}`.toLowerCase();
+                const option = {
+                    backgroundColor: 'transparent',
+                    title: {
+                        text: currentLanguage === 'zh' ? `${provinceName} 市/区分布` : `${provinceName} Districts`,
+                        subtext: currentLanguage === 'zh' ? '点击空白区域返回省级地图' : 'Click blank area to go back',
+                        left: 'center',
+                        top: 20,
+                        textStyle: {
+                            color: '#fff',
+                            fontSize: 20,
+                            fontWeight: 600
+                        },
+                        subtextStyle: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            fontSize: 14
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        className: 'custom-tooltip',
+                        formatter: (params) => {
+                            if (!params.data) return '';
+                            
+                            const d = params.data;
+                            const lang = currentLanguage;
+                            
+                            return `
+                                <div class="tooltip-province-name">${params.name}</div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '👥 人口' : '👥 Population'}</span>
+                                    <span class="tooltip-value">${d.population.toLocaleString()}</span>
+                                </div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '📐 面积' : '📐 Area'}</span>
+                                    <span class="tooltip-value">${d.area.toLocaleString()} km²</span>
+                                </div>
+                                <div class="tooltip-item">
+                                    <span class="tooltip-label">${lang === 'zh' ? '📊 密度' : '📊 Density'}</span>
+                                    <span class="tooltip-value">${d.density}/km²</span>
+                                </div>
+                            `;
+                        }
+                    },
+                    visualMap: {
+                        min: 0,
+                        max: 150000,
+                        left: 30,
+                        bottom: 30,
+                        text: [currentLanguage === 'zh' ? '高' : 'High', currentLanguage === 'zh' ? '低' : 'Low'],
+                        textStyle: {
+                            color: '#fff'
+                        },
+                        inRange: {
+                            color: ['#4a7ac7', '#2a5298', '#1a3a68']
+                        },
+                        calculable: true
+                    },
+                    series: [{
+                        name: currentLanguage === 'zh' ? '市/区' : 'District',
+                        type: 'map',
+                        map: mapName,
+                        roam: true,
+                        scaleLimit: {
+                            min: 1,
+                            max: 15
+                        },
+                        label: {
+                            show: true,
+                            fontSize: 10,
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: 12,
+                                fontWeight: 600
+                            },
+                            itemStyle: {
+                                areaColor: '#4a7ac7',
+                                shadowBlur: 20,
+                                shadowColor: 'rgba(74, 122, 199, 0.5)'
+                            }
+                        },
+                        itemStyle: {
+                            areaColor: '#132f4c',
+                            borderColor: '#2a5298',
+                            borderWidth: 1
+                        },
+                        data: currentProvinceData
+                    }]
+                };
+                
+                chart.setOption(option, true);
+                
+                showLoading(false);
+                
+            } catch (error) {
+                console.error('下钻到省级地图失败:', error);
+                showLoading(false);
+                alert(currentLanguage === 'zh' 
+                    ? `暂无 ${provinceName} 的详细地图数据` 
+                    : `No detailed map data for ${provinceName}`);
+                renderCountryMap();
+            }
+        }
+
+        /**
+         * 返回上级
+         */
+        function goBack() {
+            // 直接返回国家级地图
+            currentLevel = 'country';
+            currentProvince = null;
+            mapStack = [];
+            
+            // 更新下拉框选中"all"
+            const selector = document.getElementById('citySelector');
+            if (selector) {
+                selector.value = 'all';
+            }
+            
+            renderCountryMap();
+        }
+        
+        /**
+         * 处理城市选择变化
+         */
+        function handleCityChange(selectedValue) {
+            if (selectedValue === 'all') {
+                goToLevel('country');
+            } else {
+                // 直接跳转到选中的省份
+                drillDown(selectedValue);
+            }
+        }
+        
+        /**
+         * 初始化城市选择器
+         */
+        function initCitySelector() {
+            const selector = document.getElementById('citySelector');
+            if (!selector || !provinceData) return;
+            
+            // 清空现有选项（保留"All"）
+            selector.innerHTML = `
+                <option value="all" style="background: #1a3a5c; color: #fff;">
+                    All - ${currentLanguage === 'zh' ? '阿尔及利亚' : 'Algeria'}
+                </option>
+            `;
+            
+            // 添加所有省份选项
+            provinceData.forEach(province => {
+                const option = document.createElement('option');
+                option.value = province.name;
+                option.textContent = province.name;
+                option.style.background = '#1a3a5c';
+                option.style.color = '#fff';
+                selector.appendChild(option);
+            });
+        }
+
+        /**
+         * 跳转到指定层级
+         */
+        function goToLevel(level) {
+            if (level === 'country') {
+                currentLevel = 'country';
+                currentProvince = null;
+                mapStack = [];
+                renderCountryMap();
+            }
+        }
+
+        /**
+         * 更新面包屑导航
+         */
+        function updateBreadcrumb(provinceName = null) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            
+            if (provinceName) {
+                // 区域地图模式：只显示返回按钮
+                breadcrumb.innerHTML = `
+                    <a href="#" class="breadcrumb-item active" onclick="goToLevel('country'); return false;" style="display: flex; align-items: center; gap: 5px;">
+                        <span style="font-size: 16px;">←</span>
+                        <span class="lang-zh">${currentLanguage === 'zh' ? '返回全国' : 'Back to Country'}</span>
+                    </a>
+                `;
+            } else {
+                // 全国地图模式：显示国家名
+                breadcrumb.innerHTML = `
+                    <a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;" onclick="goToLevel('country'); return false;">
+                        <span class="lang-zh">${currentLanguage === 'zh' ? '阿尔及利亚' : 'Algeria'}</span>
+                    </a>
+                `;
+            }
+        }
+
+        /**
+         * 更新统计卡片
+         */
+        function updateStats(data, provinceName = null) {
+            const totalPopulation = data.reduce((sum, d) => sum + d.population, 0);
+            const totalArea = data.reduce((sum, d) => sum + d.area, 0);
+            const avgDensity = Math.round(totalPopulation / totalArea);
+            
+            document.getElementById('statPopulation').textContent = totalPopulation.toLocaleString();
+            document.getElementById('statArea').textContent = totalArea.toLocaleString();
+            document.getElementById('statDensity').textContent = avgDensity;
+            document.getElementById('statProvinces').textContent = provinceName ? data.length : 58;
+        }
+
+        /**
+         * 生成市级数据
+         */
+        function generateDistrictData(provinceName, count) {
+            const districts = [];
+            for (let i = 1; i <= count; i++) {
+                const area = Math.round(Math.random() * 3000 + 500);
+                const density = Math.round(Math.random() * 80 + 20);
+                const population = area * density;
+                
+                districts.push({
+                    name: `${provinceName}_District_${i}`,
+                    value: Math.round(Math.random() * 150000),
+                    population: population,
+                    area: area,
+                    density: density
+                });
+            }
+            return districts;
+        }
+
+        /**
+         * 显示/隐藏加载动画
+         */
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'flex' : 'none';
+        }
+
+        /**
+         * 显示错误信息
+         */
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div class="error-message">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <div>${currentLanguage === 'zh' ? '加载失败' : 'Load Failed'}</div>
+                    <div style="font-size: 0.875rem; margin-top: 0.5rem; color: var(--text-tertiary);">${message}</div>
+                </div>
+            `;
+            loading.style.display = 'flex';
+        }
+
+        /**
+         * 切换语言
+         */
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
+            
+            // 更新语言切换按钮
+            document.getElementById('langText').textContent = currentLanguage === 'zh' ? 'English' : '中文';
+            
+            // 更新所有语言元素
+            document.querySelectorAll('.lang-zh').forEach(el => {
+                el.style.display = currentLanguage === 'zh' ? 'inline' : 'none';
+            });
+            document.querySelectorAll('.lang-en').forEach(el => {
+                el.style.display = currentLanguage === 'en' ? 'inline' : 'none';
+            });
+            
+            // 重新渲染当前地图
+            if (currentLevel === 'country') {
+                renderCountryMap();
+            } else if (currentProvince) {
+                drillDown(currentProvince);
+            }
+        }
+
+        /**
+         * 重置视图
+         */
+        function resetView() {
+            goToLevel('country');
+        }
+
+        // ============================================
+        // 初始化
+        // ============================================
+
+        async function init() {
+            try {
+                // 初始化 ECharts
+                initChart();
+                
+                // 生成省级数据
+                // 从地图文件中获取省份列表
+                const countryGeoJson = await fetch('../geographic/Algeria-layer3/Algeria-area.json').then(r => r.json());
+                const provinces = countryGeoJson.features.map(f => f.properties.name);
+                
+                // 生成数据
+                provinceData = dataGenerator.generateProvinceData(provinces, currentLanguage);
+                
+                // 渲染国家地图
+                await renderCountryMap();
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showError(error.message);
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
