@@ -392,7 +392,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1-3, 5-8)
 
-- [ ] 5. goto_definition 处理器
+- [x] 5. goto_definition 处理器
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/definition.py`
@@ -443,7 +443,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1-4, 6-8)
 
-- [ ] 6. find_references 处理器
+- [x] 6. find_references 处理器
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/references.py`
@@ -494,7 +494,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1-5, 7-8)
 
-- [ ] 7. documentSymbol 处理器
+- [x] 7. documentSymbol 处理器
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/symbols.py`
