@@ -1,0 +1,42 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.0.2, pluggy-1.6.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\dev_projects\NovelWriter\LSP
+configfile: pyproject.toml
+plugins: anyio-4.12.1, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 31 items
+
+tests/phase1/test_index.py::TestSymbolIndex::test_init PASSED            [  3%]
+tests/phase1/test_index.py::TestSymbolIndex::test_update_single_symbol PASSED [  6%]
+tests/phase1/test_index.py::TestSymbolIndex::test_update_multiple_symbols PASSED [  9%]
+tests/phase1/test_index.py::TestSymbolIndex::test_get_symbol_not_found PASSED [ 12%]
+tests/phase1/test_index.py::TestSymbolIndex::test_get_symbol_by_id PASSED [ 16%]
+tests/phase1/test_index.py::TestSymbolIndex::test_get_symbol_by_id_not_found PASSED [ 19%]
+tests/phase1/test_index.py::TestSymbolIndex::test_search_by_name PASSED  [ 22%]
+tests/phase1/test_index.py::TestSymbolIndex::test_search_with_type_filter PASSED [ 25%]
+tests/phase1/test_index.py::TestSymbolIndex::test_get_symbols_by_uri PASSED [ 29%]
+tests/phase1/test_index.py::TestSymbolIndex::test_remove_by_uri PASSED   [ 32%]
+tests/phase1/test_index.py::TestSymbolIndex::test_clear PASSED           [ 35%]
+tests/phase1/test_index.py::TestSymbolIndex::test_update_existing_symbol PASSED [ 38%]
+tests/phase1/test_index.py::TestLRUEviction::test_lru_eviction PASSED    [ 41%]
+tests/phase1/test_index.py::TestLRUEviction::test_lru_access_prevents_eviction PASSED [ 45%]
+tests/phase1/test_index.py::TestLRUEviction::test_cache_info PASSED      [ 48%]
+tests/phase1/test_definition.py::TestExtractWord::test_extract_word_simple PASSED [ 51%]
+tests/phase1/test_definition.py::TestExtractWord::test_extract_word_at_boundary PASSED [ 54%]
+tests/phase1/test_definition.py::TestExtractWord::test_extract_word_empty_line PASSED [ 58%]
+tests/phase1/test_definition.py::TestExtractWord::test_extract_word_out_of_bounds PASSED [ 61%]
+tests/phase1/test_definition.py::TestGotoDefinition::test_register_handler PASSED [ 64%]
+tests/phase1/test_definition.py::TestGotoDefinition::test_goto_definition_symbol_not_in_index PASSED [ 67%]
+tests/phase1/test_references.py::TestReferencesHelpers::test_extract_word_basic PASSED [ 70%]
+tests/phase1/test_references.py::TestFindReferences::test_register_handler PASSED [ 74%]
+tests/phase1/test_references.py::TestFindReferences::test_symbol_with_references PASSED [ 77%]
+tests/phase1/test_symbols.py::TestSymbolKindMap::test_character_maps_to_class PASSED [ 80%]
+tests/phase1/test_symbols.py::TestSymbolKindMap::test_location_maps_to_struct PASSED [ 83%]
+tests/phase1/test_symbols.py::TestSymbolKindMap::test_chapter_maps_to_module PASSED [ 87%]
+tests/phase1/test_symbols.py::TestSymbolKindMap::test_event_maps_to_event PASSED [ 90%]
+tests/phase1/test_symbols.py::TestDocumentSymbol::test_register_handler PASSED [ 93%]
+tests/phase1/test_symbols.py::TestDocumentSymbol::test_get_symbols_by_uri PASSED [ 96%]
+tests/phase1/test_symbols.py::TestDocumentSymbol::test_empty_document PASSED [100%]
+
+============================= 31 passed in 0.06s ==============================

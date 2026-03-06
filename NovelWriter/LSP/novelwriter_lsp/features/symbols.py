@@ -31,12 +31,12 @@ SYMBOL_KIND_MAP = {
 def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None:
     """
     Register the document_symbol handler with the LSP server.
-    
+
     Args:
         server: The LSP server instance
         index: The symbol index for looking up symbols
     """
-    
+
     @server.feature(types.TEXT_DOCUMENT_DOCUMENT_SYMBOL)
     def document_symbol(params: types.DocumentSymbolParams) -> list[types.DocumentSymbol] | list[types.SymbolInformation] | None:
         """
@@ -52,20 +52,20 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
             List of document symbols with hierarchical structure
         """
         uri = params.text_document.uri
-        
+
         logger.debug(f"document_symbol request: {uri}")
-        
+
         symbols = index.get_symbols_by_uri(uri)
         if not symbols:
             logger.debug(f"No symbols found for {uri}")
             return None
-        
+
         result = []
         chapter_stack = []
-        
+
         for symbol in sorted(symbols, key=lambda s: s.definition_range["start_line"]):
             symbol_kind = SYMBOL_KIND_MAP.get(symbol.type, types.SymbolKind.Variable)
-            
+
             doc_symbol = types.DocumentSymbol(
                 name=symbol.name,
                 kind=symbol_kind,
@@ -90,7 +90,7 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
                     ),
                 ),
             )
-            
+
             if symbol.type == SymbolType.CHAPTER:
                 while chapter_stack:
                     chapter_stack.pop()
@@ -104,6 +104,6 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
                 result.append(doc_symbol)
             else:
                 result.append(doc_symbol)
-        
+
         logger.debug(f"Found {len(result)} symbols for {uri}")
         return result if result else None

@@ -5,6 +5,7 @@ This module provides the find_references LSP feature handler.
 """
 
 import logging
+from typing import cast
 
 from lsprotocol import types
 from pygls.lsp.server import LanguageServer
