@@ -74,11 +74,11 @@ def register_find_references(server: LanguageServer, index: SymbolIndex) -> None
         
         for ref in symbol.references:
             try:
-                ref_uri = str(ref.get("uri", uri))  # type: ignore[arg-type]
-                start_line = int(ref.get("start_line", 0))  # type: ignore[arg-type]
-                start_char = int(ref.get("start_character", 0))  # type: ignore[arg-type]
-                end_line = int(ref.get("end_line", 0))  # type: ignore[arg-type]
-                end_char = int(ref.get("end_character", 0))  # type: ignore[arg-type]
+                ref_uri = cast(str, ref.get("uri", uri))
+                start_line = cast(int, ref.get("start_line", 0))
+                start_char = cast(int, ref.get("start_character", 0))
+                end_line = cast(int, ref.get("end_line", 0))
+                end_char = cast(int, ref.get("end_character", 0))
                 
                 location = types.Location(
                     uri=ref_uri,

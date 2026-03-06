@@ -41,13 +41,13 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
     def document_symbol(params: types.DocumentSymbolParams) -> list[types.DocumentSymbol] | list[types.SymbolInformation] | None:
         """
         Handle document symbol requests.
-        
+
         Returns a hierarchical outline of all symbols in the document,
         including chapters, characters, locations, and other elements.
-        
+
         Args:
             params: Document symbol parameters including document URI
-            
+
         Returns:
             List of document symbols with hierarchical structure
         """
@@ -60,8 +60,8 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
             logger.debug(f"No symbols found for {uri}")
             return None
 
-        result = []
-        chapter_stack = []
+        result: list[types.DocumentSymbol] = []
+        chapter_stack: list[types.DocumentSymbol] = []
 
         for symbol in sorted(symbols, key=lambda s: s.definition_range["start_line"]):
             symbol_kind = SYMBOL_KIND_MAP.get(symbol.type, types.SymbolKind.Variable)
@@ -98,9 +98,9 @@ def register_document_symbol(server: LanguageServer, index: SymbolIndex) -> None
                 result.append(doc_symbol)
             elif chapter_stack and symbol.type in [SymbolType.EVENT, SymbolType.PLOTPOINT]:
                 parent = chapter_stack[-1]
-                if parent.children is None:
-                    parent.children = []
-                parent.children.append(doc_symbol)
+                children = list(parent.children) if parent.children else []
+                children.append(doc_symbol)
+                parent.children = children
                 result.append(doc_symbol)
             else:
                 result.append(doc_symbol)

@@ -545,7 +545,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 1-6, 8)
 
-- [ ] 8. pytest 配置 + 基础测试
+- [ ] 8. pytest 配置 + 専础测试
 
   **What to do**:
   - 创建 `pytest.ini` 或 `pyproject.toml` 配置
