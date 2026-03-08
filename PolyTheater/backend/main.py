@@ -1,3 +1,6 @@
+import time
+from datetime import datetime, timezone
+
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -14,6 +17,9 @@ from app.api.characters import characters_bp
 from app.api.simulation import simulation_bp
 from app.api.narratives import narratives_bp
 from app.database import db
+
+# 记录应用启动时间
+START_TIME = time.time()
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -35,7 +41,25 @@ app.register_blueprint(narratives_bp)
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "healthy"})
+    db_status = "disconnected"
+    try:
+        with db.engine.connect():
+            db_status = "connected"
+    except Exception:
+        db_status = "disconnected"
+
+    uptime_seconds = int(time.time() - START_TIME)
+    hours, remainder = divmod(uptime_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    uptime_str = f"{hours}h {minutes}m {seconds}s"
+
+    return jsonify({
+        "status": "healthy",
+        "database": db_status,
+        "version": "1.0.0",
+        "uptime": uptime_str,
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    })
 
 
 @app.route('/api/v1/status')
