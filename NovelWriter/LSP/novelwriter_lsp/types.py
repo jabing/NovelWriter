@@ -11,7 +11,7 @@ from enum import Enum
 
 class SymbolType(Enum):
     """Enum representing all supported symbol types."""
-    
+
     CHARACTER = "character"
     LOCATION = "location"
     ITEM = "item"
@@ -25,17 +25,17 @@ class SymbolType(Enum):
 
 class OutlineLevel(Enum):
     """Enum representing the three-tier outline hierarchy."""
-    
-    MASTER = "master"      # 总纲 (Master Outline)
-    VOLUME = "volume"      # 卷大纲 (Volume Outline)
-    CHAPTER = "chapter"    # 章大纲 (Chapter Outline)
+
+    MASTER = "master"  # 总纲 (Master Outline)
+    VOLUME = "volume"  # 卷大纲 (Volume Outline)
+    CHAPTER = "chapter"  # 章大纲 (Chapter Outline)
 
 
 @dataclass
 class BaseSymbol:
     """
     Base class for all symbol types.
-    
+
     Attributes:
         id: Unique identifier for the symbol
         type: The type of symbol
@@ -46,6 +46,7 @@ class BaseSymbol:
         references: List of reference locations
         metadata: Additional metadata as key-value pairs
     """
+
     id: str
     type: SymbolType
     name: str
@@ -60,8 +61,9 @@ class BaseSymbol:
 class CharacterSymbol(BaseSymbol):
     """
     Symbol representing a character in the novel.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this character
         age: Character's age (if known)
         status: Current status (alive, deceased, missing, etc.)
         occupation: Character's job or role
@@ -73,7 +75,9 @@ class CharacterSymbol(BaseSymbol):
         current_location: Where the character currently is
         inventory: Items the character possesses
     """
+
     type: SymbolType = field(default=SymbolType.CHARACTER, init=False)
+    aliases: list[str] = field(default_factory=list)
     age: int | None = None
     status: str = "alive"
     occupation: str | None = None
@@ -90,8 +94,9 @@ class CharacterSymbol(BaseSymbol):
 class LocationSymbol(BaseSymbol):
     """
     Symbol representing a location in the novel.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this location
         location_type: Type of location (city, building, room, etc.)
         description: Detailed description of the location
         region: Geographic region or area
@@ -100,7 +105,9 @@ class LocationSymbol(BaseSymbol):
         visited_by: List of characters who have visited
         events: List of events that occurred here
     """
+
     type: SymbolType = field(default=SymbolType.LOCATION, init=False)
+    aliases: list[str] = field(default_factory=list)
     location_type: str | None = None
     description: str = ""
     region: str | None = None
@@ -114,8 +121,9 @@ class LocationSymbol(BaseSymbol):
 class ItemSymbol(BaseSymbol):
     """
     Symbol representing a significant item/object.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this item
         item_type: Category of item (weapon, artifact, tool, etc.)
         description: Physical description
         owner: Current owner of the item
@@ -123,7 +131,9 @@ class ItemSymbol(BaseSymbol):
         abilities: Special properties or abilities
         significance: Why this item is important
     """
+
     type: SymbolType = field(default=SymbolType.ITEM, init=False)
+    aliases: list[str] = field(default_factory=list)
     item_type: str | None = None
     description: str = ""
     owner: str | None = None
@@ -136,15 +146,18 @@ class ItemSymbol(BaseSymbol):
 class LoreSymbol(BaseSymbol):
     """
     Symbol representing world-building lore, rules, or facts.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this lore entry
         lore_type: Category (magic system, history, culture, etc.)
         description: Detailed explanation of the lore
         category: Broader category this belongs to
         rules: Specific rules or constraints
         related_lore: References to related lore entries
     """
+
     type: SymbolType = field(default=SymbolType.LORE, init=False)
+    aliases: list[str] = field(default_factory=list)
     lore_type: str | None = None
     description: str = ""
     category: str | None = None
@@ -156,8 +169,9 @@ class LoreSymbol(BaseSymbol):
 class PlotPointSymbol(BaseSymbol):
     """
     Symbol representing a plot point or story beat.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this plot point
         plot_type: Type of plot point (inciting incident, climax, etc.)
         description: What happens at this plot point
         chapter: Which chapter this occurs in
@@ -166,7 +180,9 @@ class PlotPointSymbol(BaseSymbol):
         foreshadows: List of plot points this foreshadows
         callbacks: List of earlier plot points this references
     """
+
     type: SymbolType = field(default=SymbolType.PLOTPOINT, init=False)
+    aliases: list[str] = field(default_factory=list)
     plot_type: str | None = None
     description: str = ""
     chapter: int | None = None
@@ -180,8 +196,9 @@ class PlotPointSymbol(BaseSymbol):
 class OutlineSymbol(BaseSymbol):
     """
     Symbol representing an outline element (master, volume, or chapter).
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this outline
         level: Hierarchy level (master, volume, chapter)
         volume_number: Volume number (for volume/chapter outlines)
         chapter_number: Chapter number (for chapter outlines)
@@ -189,7 +206,9 @@ class OutlineSymbol(BaseSymbol):
         parent: Parent outline ID (for hierarchy)
         children: Child outline IDs
     """
+
     type: SymbolType = field(default=SymbolType.OUTLINE, init=False)
+    aliases: list[str] = field(default_factory=list)
     level: OutlineLevel = OutlineLevel.MASTER
     volume_number: int | None = None
     chapter_number: int | None = None
@@ -202,8 +221,9 @@ class OutlineSymbol(BaseSymbol):
 class EventSymbol(BaseSymbol):
     """
     Symbol representing a story event (for timeline tracking).
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this event
         event_id: Unique event identifier
         chapter: Chapter where this event occurs
         volume: Volume where this event occurs
@@ -215,7 +235,9 @@ class EventSymbol(BaseSymbol):
         impact: Consequences of this event
         importance: Event importance (critical, major, minor)
     """
+
     type: SymbolType = field(default=SymbolType.EVENT, init=False)
+    aliases: list[str] = field(default_factory=list)
     event_id: str = ""
     chapter: int = 0
     volume: int | None = None
@@ -232,8 +254,9 @@ class EventSymbol(BaseSymbol):
 class RelationshipSymbol(BaseSymbol):
     """
     Symbol representing a relationship between characters.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this relationship
         from_character: Source character of the relationship
         to_character: Target character of the relationship
         relation_type: Type of relationship (friend, enemy, lover, etc.)
@@ -241,7 +264,9 @@ class RelationshipSymbol(BaseSymbol):
         since_chapter: Chapter where this relationship started
         history: Evolution of the relationship over time
     """
+
     type: SymbolType = field(default=SymbolType.RELATIONSHIP, init=False)
+    aliases: list[str] = field(default_factory=list)
     from_character: str = ""
     to_character: str = ""
     relation_type: str = ""
@@ -254,8 +279,9 @@ class RelationshipSymbol(BaseSymbol):
 class ChapterSymbol(BaseSymbol):
     """
     Symbol representing a chapter in the novel.
-    
+
     Attributes:
+        aliases: Alternative names or aliases for this chapter
         chapter_number: Sequential chapter number
         volume_number: Volume this chapter belongs to
         title: Chapter title
@@ -266,7 +292,9 @@ class ChapterSymbol(BaseSymbol):
         characters_appearing: Characters that appear in this chapter
         status: Writing status (draft, revised, final)
     """
+
     type: SymbolType = field(default=SymbolType.CHAPTER, init=False)
+    aliases: list[str] = field(default_factory=list)
     chapter_number: int = 0
     volume_number: int | None = None
     title: str = ""

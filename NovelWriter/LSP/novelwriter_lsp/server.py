@@ -69,6 +69,7 @@ class NovelWriterLSP(LanguageServer):
         # Initialize server state
         self._diagnostics: dict[str, tuple[int, list[types.Diagnostic]]] = {}
         self._custom_state: dict[str, Any] = {}
+        self._documents: dict[str, str] = {}
 
         logger.info("NovelWriter LSP Server initialized")
 
@@ -168,6 +169,7 @@ def on_text_document_did_open(params: types.DidOpenTextDocumentParams) -> None:
     version = params.text_document.version
 
     logger.info(f"Document opened: {uri} (version {version})")
+    server._documents[uri] = content
     server.parse_document(uri, content)
 
 
@@ -180,7 +182,77 @@ def on_text_document_did_close(params: types.DidCloseTextDocumentParams) -> None
     """
     uri = params.text_document.uri
     logger.info(f"Document closed: {uri}")
-    index.remove(uri)
+    _ = server._documents.pop(uri, None)
+    _ = index.remove(uri)
+
+
+@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+async def on_text_document_did_change(params: types.DidChangeTextDocumentParams) -> None:
+    """Handle text document change event with cache invalidation.
+
+    This implements event-driven cache invalidation:
+    1. Remove all symbols for the document from the index (including aliases)
+    2. Re-parse the document to extract updated symbols
+    3. Update the index with new symbols (including aliases)
+    4. Run diagnostics validation
+
+    This ensures that symbol references and aliases stay in sync with
+    the document content without requiring TTL or manual invalidation.
+
+    Note: This handler is called for significant document changes (not
+    every keystroke) due to pygls's text synchronization settings.
+
+    Args:
+        params: Document change parameters
+    """
+    uri = params.text_document.uri
+    version = params.text_document.version
+
+    logger.debug(f"Document changed: {uri} (version {version})")
+
+    # Step 1: Apply content changes to stored document
+    if uri not in server._documents:
+        logger.warning(f"Document {uri} not found in cache, skipping")
+        return
+
+    current_content = server._documents[uri]
+    for change in params.content_changes:
+        if isinstance(change, types.TextDocumentContentChangeWholeDocument):
+            current_content = change.text
+        else:
+            start_line = change.range.start.line
+            start_char = change.range.start.character
+            end_line = change.range.end.line
+            end_char = change.range.end.character
+
+            lines = current_content.split("\n")
+            if start_line >= len(lines):
+                lines.append(change.text)
+            else:
+                start_of_line = lines[start_line][:start_char]
+                end_of_line = lines[end_line][end_char:] if end_line < len(lines) else ""
+                lines[start_line : end_line + 1] = [start_of_line + change.text + end_of_line]
+
+            current_content = "\n".join(lines)
+
+    server._documents[uri] = current_content
+
+    # Step 2: Invalidate cache - remove old symbols and aliases
+    removed_symbols = index.remove(uri)
+    if removed_symbols:
+        logger.debug(
+            f"Cache invalidated for {uri}: removed {len(removed_symbols)} symbols "
+            f"(including aliases)"
+        )
+
+    # Step 3: Re-parse and update index with new symbols
+    server.parse_document(uri, current_content)
+    logger.debug(f"Cache rebuilt for {uri}")
+
+    # Step 4: Run diagnostics validation
+    validate_func = server._custom_state.get("validate_document")
+    if validate_func:
+        await validate_func(uri, current_content)
 
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)

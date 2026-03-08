@@ -38,9 +38,10 @@
         .stats-container {
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: var(--spacing-md);
-            padding: var(--spacing-md) var(--spacing-xl);
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-flow: row;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
             background: var(--bg-secondary);
         }
 
@@ -95,18 +96,7 @@
             padding: var(--spacing-xl);
         }
 
-        /* 响应式调整 */
-        @media (max-width: 1600px) {
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
 
-        @media (max-width: 1024px) {
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-        }
 
         /* Tooltip 自定义样式 */
         .custom-tooltip {
@@ -339,7 +329,7 @@
          */
         class MapLoader {
             constructor(basePath) {
-                this.basePath = basePath || '../geographic/Algeria-layer3/';
+                this.basePath = basePath || './geographic/Algeria-layer3/';
                 this.cache = new Map();
             }
 
@@ -461,7 +451,8 @@
 
             // 绑定点击事件
             chart.on('click', async (params) => {
-                if (params.componentType === 'series' && currentLevel === 'country') {
+                // 只响应地图系列的点击，忽略飞线系列
+                if (params.componentType === 'series' && params.seriesType === 'map' && currentLevel === 'country') {
                     await drillDown(params.name);
                 }
             });
@@ -940,78 +931,53 @@
          * 生成飞线数据 - 展示省份间数据流向
          */
         function generateFlyLineData() {
-            // 主要城市坐标（经纬度）
+            // 主要城市坐标（经纬度）- 阿尔及利亚境内
             const cityCoords = {
-                'Algiers': [3.05, 36.75],      // 阿尔及尔（首都）
-                'Oran': [-0.63, 35.70],        // 奥兰
-                'Constantine': [6.61, 36.37],  // 君士坦丁
-                'Annaba': [7.76, 36.90],       // 安纳巴
-                'Batna': [6.17, 35.55],        // 巴特纳
-                'Sétif': [5.41, 36.19],        // 塞提夫
-                'Tlemcen': [-1.32, 34.88],     // 特莱姆森
-                'Béjaïa': [5.07, 36.75]        // 贝贾亚
+                'Salah': [2.52, 27.20],        // Ain Salah 艾因萨拉赫（南部）
+                'Algiers': [3.05, 36.75],      // 阿尔及尔（北部首都）
+                'Oran': [-0.63, 35.70],        // 奥兰（西北）
+                'Sétif': [5.41, 36.19],        // 塞提夫（东北）
+                'Batna': [6.17, 35.55],        // 巴特纳（东部）
+                'Ghardaïa': [3.68, 32.48]      // 加尔达耶（中部）
             };
 
-            // 飞线数据：从首都向其他城市辐射
+            // 飞线数据：从 Salah 向周边五个城市辐射
             const flyLines = [
-                // 流出线（从首都） - 蓝色
+                // 从 Salah 到周边城市 - 渐变蓝色
                 {
-                    fromName: 'Algiers',
+                    fromName: 'Salah',
+                    toName: 'Algiers',
+                    coords: [cityCoords['Salah'], cityCoords['Algiers']],
+                    value: 90,
+                    lineStyle: { color: '#00d4ff' }
+                },
+                {
+                    fromName: 'Salah',
                     toName: 'Oran',
-                    coords: [cityCoords['Algiers'], cityCoords['Oran']],
-                    value: 95,
-                    lineStyle: { color: '#00d4ff' }
-                },
-                {
-                    fromName: 'Algiers',
-                    toName: 'Constantine',
-                    coords: [cityCoords['Algiers'], cityCoords['Constantine']],
+                    coords: [cityCoords['Salah'], cityCoords['Oran']],
                     value: 85,
-                    lineStyle: { color: '#00d4ff' }
+                    lineStyle: { color: '#00a8ff' }
                 },
                 {
-                    fromName: 'Algiers',
-                    toName: 'Annaba',
-                    coords: [cityCoords['Algiers'], cityCoords['Annaba']],
-                    value: 75,
-                    lineStyle: { color: '#00d4ff' }
-                },
-                {
-                    fromName: 'Algiers',
-                    toName: 'Batna',
-                    coords: [cityCoords['Algiers'], cityCoords['Batna']],
-                    value: 70,
-                    lineStyle: { color: '#00d4ff' }
-                },
-                {
-                    fromName: 'Algiers',
+                    fromName: 'Salah',
                     toName: 'Sétif',
-                    coords: [cityCoords['Algiers'], cityCoords['Sétif']],
+                    coords: [cityCoords['Salah'], cityCoords['Sétif']],
                     value: 80,
-                    lineStyle: { color: '#00d4ff' }
-                },
-                // 流入线（到首都） - 橙色
-                {
-                    fromName: 'Tlemcen',
-                    toName: 'Algiers',
-                    coords: [cityCoords['Tlemcen'], cityCoords['Algiers']],
-                    value: 60,
-                    lineStyle: { color: '#ff9f43' }
+                    lineStyle: { color: '#0097e6' }
                 },
                 {
-                    fromName: 'Béjaïa',
-                    toName: 'Algiers',
-                    coords: [cityCoords['Béjaïa'], cityCoords['Algiers']],
-                    value: 65,
-                    lineStyle: { color: '#ff9f43' }
+                    fromName: 'Salah',
+                    toName: 'Batna',
+                    coords: [cityCoords['Salah'], cityCoords['Batna']],
+                    value: 75,
+                    lineStyle: { color: '#0088cc' }
                 },
-                // 城市间流动
                 {
-                    fromName: 'Oran',
-                    toName: 'Tlemcen',
-                    coords: [cityCoords['Oran'], cityCoords['Tlemcen']],
-                    value: 55,
-                    lineStyle: { color: '#26de81' }
+                    fromName: 'Salah',
+                    toName: 'Ghardaïa',
+                    coords: [cityCoords['Salah'], cityCoords['Ghardaïa']],
+                    value: 70,
+                    lineStyle: { color: '#0077b6' }
                 }
             ];
 
@@ -1084,7 +1050,7 @@
                 
                 // 生成省级数据
                 // 从地图文件中获取省份列表
-                const countryGeoJson = await fetch('../geographic/Algeria-layer3/Algeria-area.json').then(r => r.json());
+                const countryGeoJson = await fetch('./geographic/Algeria-layer3/Algeria-area.json').then(r => r.json());
                 const provinces = countryGeoJson.features.map(f => f.properties.name);
                 
                 // 生成数据

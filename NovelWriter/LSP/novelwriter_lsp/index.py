@@ -139,7 +139,7 @@ class SymbolIndex:
 
         self._id_map[symbol_id] = name
 
-        aliases = getattr(symbol, 'aliases', None)
+        aliases = getattr(symbol, "aliases", None)
         if aliases:
             for alias in aliases:
                 self._alias_index.add_alias(alias, name)
@@ -222,6 +222,23 @@ class SymbolIndex:
         return self._cache[name]
 
     def get_symbol_by_alias(self, alias: str) -> BaseSymbol | None:
+        """
+        Get a symbol by one of its aliases.
+
+        Looks up the alias in the AliasIndex to find the symbol name,
+        then retrieves the full symbol from the main index.
+
+        Args:
+            alias: The alias or shorthand name to look up
+
+        Returns:
+            The symbol if found, None if the alias doesn't exist
+            or the symbol has been removed
+
+        Example:
+            >>> index.get_symbol_by_alias("John")
+            CharacterSymbol(name="John Doe", aliases=["John", "Mr. Doe"])
+        """
         symbol_name = self._alias_index.get_symbol_name(alias)
         if symbol_name:
             return self.get_symbol(symbol_name)

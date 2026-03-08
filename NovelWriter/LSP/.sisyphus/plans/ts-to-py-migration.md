@@ -10,6 +10,24 @@
 > - Phase 3: Agent 系统（ValidatorAgent、UpdaterAgent 等）
 > - Phase 4: 完整功能（Hover、Completion、Rename、性能优化）
 > 
+> **Estimated Effort**: XL (4 阶段，~2800+ 行 Python 代码）
+> 
+> **Parallel Execution**: YES - 4 waves (Phases)
+> 
+> **Critical Path**: Phase 1 → Phase 2 → Phase 3 → Phase 4
+> 
+# TypeScript LSP to Python pygls 迁移计划
+
+## TL;DR
+
+> **Quick Summary**: 将现有 TypeScript LSP 服务器 (~400 行) 迁移到 Python pygls 框架，并基于设计文档实现完整架构。采用 4 阶段分步执行策略，Phase 1 从最小 MVP 开始验证，后续逐步集成数据库、Agent 和高级功能。
+> 
+> **Deliverables**:
+> - Phase 1: 可运行的 pygls LSP 服务器（基础功能）
+> - Phase 2: 数据库集成（Neo4j + Milvus + PostgreSQL）
+> - Phase 3: Agent 系统（ValidatorAgent、UpdaterAgent 等）
+> - Phase 4: 完整功能（Hover、Completion、Rename、性能优化）
+> 
 > **Estimated Effort**: XL (4 阶段，~2800+ 行 Python 代码)
 > **Parallel Execution**: YES - 4 waves (Phases)
 > **Critical Path**: Phase 1 → Phase 2 → Phase 3 → Phase 4
@@ -600,7 +618,7 @@ Max Concurrent: 8 (Phase 1)
 
 ### Phase 2: 数据库集成
 
-- [ ] 9. Milvus 客户端实现
+- [x] 9. Milvus 客户端实现
 
   **What to do**:
   - 创建 `novelwriter_lsp/storage/milvus_client.py`
@@ -650,7 +668,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 10-12)
 
-- [ ] 10. 复用 Writer Neo4j/PostgreSQL 客户端
+- [x] 10. 复用 Writer Neo4j/PostgreSQL 客户端
 
   **What to do**:
   - 复制 `Writer/src/db/neo4j_client.py` 到 `novelwriter_lsp/storage/`
@@ -700,7 +718,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 9, 11-12)
 
-- [ ] 11. 符号持久化到数据库
+- [x] 11. 符号持久化到数据库
 
   **What to do**:
   - 修改 `novelwriter_lsp/index.py` 支持数据库后端
@@ -751,7 +769,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 9-10, 12)
 
-- [ ] 12. 数据库测试
+- [x] 12. 数据库测试
 
   **What to do**:
   - 创建 `tests/phase2/` 完整测试套件
@@ -806,7 +824,7 @@ Max Concurrent: 8 (Phase 1)
 
 ### Phase 3: Agent 系统
 
-- [ ] 13. 复用 Writer 基础 Agent
+- [x] 13. 复用 Writer 基础 Agent
 
   **What to do**:
   - 分析 Writer 升级方案（Novel Agent System 改进方案文档.md）
@@ -855,7 +873,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 14-17)
 
-- [ ] 14. ValidatorAgent 实现
+- [x] 14. ValidatorAgent 实现
 
   **What to do**:
   - 创建 `novelwriter_lsp/agents/validator.py`
@@ -906,7 +924,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 13, 15-17)
 
-- [ ] 15. UpdaterAgent 实现
+- [x] 15. UpdaterAgent 实现
 
   **What to do**:
   - 创建 `novelwriter_lsp/agents/updater.py`
@@ -957,7 +975,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 13-14, 16-17)
 
-- [ ] 16. diagnostics 实时诊断
+- [x] 16. diagnostics 实时诊断
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/diagnostics.py`
@@ -1008,7 +1026,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 13-15, 17)
 
-- [ ] 17. CodeLens 按钮
+- [x] 17. CodeLens 按钮
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/codelens.py`
@@ -1064,7 +1082,7 @@ Max Concurrent: 8 (Phase 1)
 
 ### Phase 4: 高级功能
 
-- [ ] 18. Hover 信息
+- [x] 18. Hover 信息
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/hover.py`
@@ -1112,7 +1130,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 19-22)
 
-- [ ] 19. Completion 智能补全
+- [x] 19. Completion 智能补全
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/completion.py`
@@ -1163,7 +1181,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 18, 20-22)
 
-- [ ] 20. Rename 批量重命名
+- [x] 20. Rename 批量重命名
 
   **What to do**:
   - 创建 `novelwriter_lsp/features/rename.py`
@@ -1214,7 +1232,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 18-19, 21-22)
 
-- [ ] 21. 性能优化（增量解析）
+- [x] 21. 性能优化（增量解析）
 
   **What to do**:
   - 修改 `novelwriter_lsp/parser.py` 支持增量解析
@@ -1267,7 +1285,7 @@ Max Concurrent: 8 (Phase 1)
 
   **Commit**: YES (groups with 18-20, 22)
 
-- [ ] 22. 最终验证 + 删除 TypeScript
+- [x] 22. 最终验证 + 删除 TypeScript
 
   **What to do**:
   - 运行所有测试 `pytest tests/`

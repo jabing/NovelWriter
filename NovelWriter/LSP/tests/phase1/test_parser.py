@@ -32,27 +32,27 @@ class TestParseMetadata:
     def test_parse_metadata_single_key_value(self) -> None:
         """Test parsing single key-value pair."""
         result = _parse_metadata("{ age: 42 }")
-        assert result == {"age": "42"}
+        assert result == {"age": "42", "aliases": []}
 
     def test_parse_metadata_multiple_key_values(self) -> None:
         """Test parsing multiple key-value pairs."""
         result = _parse_metadata("{ age: 42, status: alive }")
-        assert result == {"age": "42", "status": "alive"}
+        assert result == {"age": "42", "status": "alive", "aliases": []}
 
     def test_parse_metadata_with_quoted_values(self) -> None:
         """Test parsing metadata with quoted string values."""
         result = _parse_metadata('{ description: "A rugged detective" }')
-        assert result == {"description": "A rugged detective"}
+        assert result == {"description": "A rugged detective", "aliases": []}
 
     def test_parse_metadata_with_single_quotes(self) -> None:
         """Test parsing metadata with single-quoted values."""
         result = _parse_metadata("{ description: 'A rugged detective' }")
-        assert result == {"description": "A rugged detective"}
+        assert result == {"description": "A rugged detective", "aliases": []}
 
     def test_parse_metadata_complex(self) -> None:
         """Test parsing complex metadata with multiple fields."""
         result = _parse_metadata('{ age: 42, status: "alive", occupation: detective }')
-        assert result == {"age": "42", "status": "alive", "occupation": "detective"}
+        assert result == {"age": "42", "status": "alive", "occupation": "detective", "aliases": []}
 
 
 class TestGenerateSymbolId:

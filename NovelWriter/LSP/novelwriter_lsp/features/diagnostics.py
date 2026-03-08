@@ -29,25 +29,15 @@ def register_diagnostics(server: "NovelWriterLSP", index: SymbolIndex) -> None:
     """
     validator = ValidatorAgent()
 
-    @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-    async def on_document_change(params: types.DidChangeTextDocumentParams) -> None:
+    async def validate_document(uri: str, content: str) -> None:
         """
-        Handle document change events and push diagnostics.
+        Validate document and publish diagnostics.
 
         Args:
-            params: Document change parameters
+            uri: Document URI
+            content: Document content
         """
-        uri = params.text_document.uri
-
         try:
-            document = server.workspace.get_text_document(uri)
-            content = document.source
-
-            # Cache invalidation: remove old symbols and re-parse
-            if index:
-                index.remove(uri)
-                server.parse_document(uri, content)
-
             result = await validator.validate(uri, content)
 
             diagnostics = []
@@ -82,3 +72,6 @@ def register_diagnostics(server: "NovelWriterLSP", index: SymbolIndex) -> None:
         except Exception as e:
             logger.error(f"Error processing diagnostics for {uri}: {e}")
             server.publish_diagnostics(uri, [])
+
+    # Store the validation function for later use
+    server._custom_state["validate_document"] = validate_document

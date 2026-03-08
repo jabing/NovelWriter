@@ -39,9 +39,10 @@
         .stats-container {
             flex-shrink: 0;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: var(--spacing-md);
-            padding: var(--spacing-md) var(--spacing-xl);
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-auto-flow: row;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-lg);
             background: var(--bg-secondary);
         }
 
@@ -96,18 +97,7 @@
             padding: var(--spacing-xl);
         }
 
-        /* 响应式调整 */
-        @media (max-width: 1600px) {
-            .stats-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
 
-        @media (max-width: 1024px) {
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-        }
 
         /* Tooltip 自定义样式 */
         .custom-tooltip {
@@ -482,7 +472,7 @@
          */
         class MapLoader {
             constructor(basePath) {
-                this.basePath = basePath || '../geographic/Algeria-layer3/';
+                this.basePath = basePath || './geographic/Algeria-layer3/';
                 this.cache = new Map();
             }
 
@@ -1113,7 +1103,7 @@ label: {
                 
                 // 生成省级数据
                 // 从地图文件中获取省份列表
-                const countryGeoJson = await fetch('../geographic/Algeria-layer3/Algeria-area.json').then(r => r.json());
+                const countryGeoJson = await fetch('./geographic/Algeria-layer3/Algeria-area.json').then(r => r.json());
                 const provinces = countryGeoJson.features.map(f => f.properties.name);
                 
                 // 生成数据

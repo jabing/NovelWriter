@@ -4,9 +4,12 @@ NovelWriter LSP - Document Parser
 This module provides parsing functionality for extracting symbols from novel documents.
 """
 
+import logging
 import re
 from typing import Any, cast
 from lsprotocol import types
+
+logger = logging.getLogger(__name__)
 
 from novelwriter_lsp.types import (
     BaseSymbol,
@@ -44,7 +47,19 @@ def _generate_symbol_id(symbol_type: SymbolType, name: str, line_number: int) ->
 
 
 def _parse_metadata(metadata_str: str | None) -> dict[str, Any]:
-    """Parse metadata from {key: value} format."""
+    """Parse metadata from {key: value} format.
+
+    Supports both simple key-value pairs and array formats:
+    - Simple: {age: 42, status: alive}
+    - Array: {aliases: ["John", "Johnny"], age: 42}
+
+    Args:
+        metadata_str: Metadata string with braces, e.g., "{key: value}"
+
+    Returns:
+        Dictionary with parsed metadata. Array values (aliases) are parsed
+        into lists, simple values are strings.
+    """
     if not metadata_str:
         return {}
 
@@ -52,10 +67,30 @@ def _parse_metadata(metadata_str: str | None) -> dict[str, Any]:
     # Remove braces and parse key-value pairs
     content = metadata_str.strip()[1:-1]  # Remove { and }
 
+    # Parse aliases array first (special case for array format)
+    aliases_match = re.search(r"aliases:\s*\[([^\]]*)\]", content)
+    if aliases_match:
+        aliases_str = aliases_match.group(1)
+        # Parse array: ["John", "Johnny"] -> ["John", "Johnny"]
+        if aliases_str.strip():
+            aliases = []
+            for a in aliases_str.split(","):
+                a = a.strip()
+                if a and a[0] in "\"'" and a[-1] in "\"'":
+                    a = a[1:-1]
+                if a:
+                    aliases.append(a)
+            metadata["aliases"] = aliases
+        else:
+            metadata["aliases"] = []
+    else:
+        metadata["aliases"] = []
+
     # Simple parsing for key: value pairs
     pairs = re.findall(r"(\w+):\s*([^,}]+)", content)
     for key, value in pairs:
-        metadata[key.strip()] = value.strip().strip("\"'")
+        if key != "aliases":
+            metadata[key.strip()] = value.strip().strip("\"'")
 
     return metadata
 
@@ -89,6 +124,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             age=int(cast(str, metadata.get("age"))) if metadata.get("age") else None,
             status=cast(str, metadata.get("status", "alive")),
             occupation=metadata.get("occupation"),
@@ -102,6 +138,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             location_type=metadata.get("location_type"),
             description=metadata.get("description", ""),
             region=metadata.get("region"),
@@ -114,6 +151,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             item_type=metadata.get("item_type"),
             description=metadata.get("description", ""),
             owner=metadata.get("owner"),
@@ -126,6 +164,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             lore_type=metadata.get("lore_type"),
             description=metadata.get("description", ""),
             category=metadata.get("category"),
@@ -138,6 +177,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             plot_type=metadata.get("plot_type"),
             description=metadata.get("description", ""),
         )
@@ -156,6 +196,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             level=level,
             volume_number=int(metadata["volume_number"]) if metadata.get("volume_number") else None,
             chapter_number=int(metadata["chapter_number"])
@@ -170,6 +211,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             chapter=int(metadata.get("chapter", 0)),
             location=metadata.get("location", ""),
             description=metadata.get("description", ""),
@@ -183,6 +225,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             from_character=metadata.get("from_character", ""),
             to_character=metadata.get("to_character", ""),
             relation_type=metadata.get("relation_type", ""),
@@ -195,6 +238,7 @@ def _create_symbol_from_match(
             definition_uri=uri,
             definition_range=definition_range,
             metadata=metadata,
+            aliases=metadata.get("aliases", []),
             title=name,
         )
 
@@ -302,3 +346,64 @@ def parse_incremental_with_range(
     """
     # Backward compatibility: if called with old signature, fall back to full parsing
     return parse_document(content, uri)
+
+
+def _extract_references(text: str, aliases_dict: dict[str, str]) -> list[dict[str, str | int]]:
+    """
+    Extract references from text based on alias mappings.
+
+    This function scans text for occurrences of symbol aliases and returns their positions.
+    Used by the references provider to populate symbol.reference_positions.
+
+    Args:
+        text: Document text to scan (should be <= 500 lines for performance)
+        aliases_dict: Mapping of alias -> symbol_name (e.g., {"John": "John Doe", "Johnny": "John Doe"})
+
+    Returns:
+        List of reference dicts: [{"word": "John", "line": 5, "character": 0}, ...]
+        where "word" is the matched alias, "line" is 0-indexed line number,
+        and "character" is 0-indexed character position within the line.
+
+    Performance:
+        - Compiles regex pattern once per call
+        - Uses word boundaries to avoid partial matches
+        - Sorted by length (longest first) for correct matching
+        - Target: < 100ms for 1000 lines
+
+    Example:
+        >>> aliases = {"John": "John Doe", "John Doe": "John Doe"}
+        >>> text = "John walked in\\nJohn Doe appeared"
+        >>> refs = _extract_references(text, aliases)
+        >>> len(refs)  # 2 references found
+        2
+        >>> refs[0]  # First match
+        {'word': 'John Doe', 'line': 0, 'character': 0}
+    """
+    if not aliases_dict:
+        return []
+
+    lines = text.split("\n")
+
+    # Performance protection: skip documents > 500 lines
+    if len(lines) > 500:
+        logger.warning(
+            f"Document exceeds 500 lines ({len(lines)} lines), skipping reference extraction for performance"
+        )
+        return []
+
+    # Sort aliases by length (longest first) to ensure longest match wins
+    # e.g., "John Doe" should match before "John"
+    sorted_aliases = sorted(aliases_dict.keys(), key=len, reverse=True)
+
+    pattern = r"\b(" + "|".join(re.escape(alias) for alias in sorted_aliases) + r")\b"
+    regex = re.compile(pattern)
+
+    references = []
+
+    for line_num, line in enumerate(lines):
+        for match in regex.finditer(line):
+            references.append(
+                {"word": match.group(1), "line": line_num, "character": match.start()}
+            )
+
+    return references

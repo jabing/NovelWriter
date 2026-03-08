@@ -11,27 +11,44 @@ from novelwriter_lsp.types import CharacterSymbol
 class TestExtractWord:
     """Test word extraction from lines."""
     
-    def test_extract_word_simple(self) -> None:
+    @pytest.fixture
+    def index(self) -> SymbolIndex:
+        """Create a test index."""
+        return SymbolIndex()
+    
+    def test_extract_word_simple(self, index: SymbolIndex) -> None:
         """Test extracting a simple word."""
         line = "John"
-        result = _extract_word(line, 2)
+        result = _extract_word(line, 2, index)
         assert result == "John"
     
-    def test_extract_word_at_boundary(self) -> None:
+    def test_extract_word_at_boundary(self, index: SymbolIndex) -> None:
         """Test extracting word when position is at word boundary."""
         line = "John"
-        result = _extract_word(line, 0)
+        result = _extract_word(line, 0, index)
         assert result == "John"
     
-    def test_extract_word_empty_line(self) -> None:
+    def test_extract_word_empty_line(self, index: SymbolIndex) -> None:
         """Test extracting word from empty line."""
-        result = _extract_word("", 0)
+        result = _extract_word("", 0, index)
         assert result == ""
     
-    def test_extract_word_out_of_bounds(self) -> None:
+    def test_extract_word_with_spaces(self, index: SymbolIndex) -> None:
+        """Test extracting a multi-word symbol name with spaces."""
+        line = "John Doe"
+        result = _extract_word(line, 2, index)  # Position in "John"
+        assert result == "John Doe"
+    
+    def test_extract_word_complex_name(self, index: SymbolIndex) -> None:
+        """Test extracting a complex multi-word location name."""
+        line = "The Rusty Anchor Pub"
+        result = _extract_word(line, 10, index)  # Position in "Rusty"
+        assert result == "The Rusty Anchor Pub"
+    
+    def test_extract_word_out_of_bounds(self, index: SymbolIndex) -> None:
         """Test extracting word with out of bounds position."""
         line = "John"
-        result = _extract_word(line, 10)
+        result = _extract_word(line, 10, index)
         assert result == ""
 
 

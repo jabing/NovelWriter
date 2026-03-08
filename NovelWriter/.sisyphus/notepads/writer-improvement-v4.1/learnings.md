@@ -275,3 +275,416 @@
 - **Sequential selection**: Processing tiers in order (0 → 1 → 2) ensures higher priority characters always included first
 - **Budget-first approach**: Check remaining_budget before adding character to avoid over-budget scenarios
 - **Tier 3 special handling**: Explicitly documented that tier 3 uses templates, not counted in budget
+
+# Writer Test Collection Error Analysis
+
+**Date:** 2026-03-08  
+**Analysis Type:** Test Collection Error Diagnosis  
+**Total Errors:** 65 (not 64 as initially reported)
+
+## Executive Summary
+
+65 test files failed to collect due to missing dependencies. The primary root cause is that project dependencies were never installed. Secondary issue is Python 3.14.3 compatibility with several key packages.
+
+## Error Classification
+
+### 1. Missing memsearch (55 errors - 84.6%)
+
+**Affected Test Categories:**
+- Integration tests (10 files): hierarchical, continuity, scaling, validation, KG integration, long-range dependencies, memory benchmark, real LLM smoke, summary manager performance
+- Novel tests (25 files): auto_fixer, autofix_enhanced, chapter_summarizer, character_profile, checkpointing, compression, consistency_verifier, entity_extractor, fact_system, hallucination_detector, hierarchical_state, inventory_updater, knowledge_graph, knowledge_graph_cleanup, outline_generator, outline_manager, preloading_demo, pronoun_resolver, relation_inference, repair_history, summaries, summary_integration, summary_manager, timeline_manager, timeline_validator, transition_checker, validation_metrics
+- Agent tests (7 files): base_writer, character, editor, engagement, market_research, orchestrator, writers
+- Utility tests (3 files): data_generator, token_budget (2 files)
+
+**Root Cause:**
+- memsearch package not installed
+- Python 3.14.3 not supported (memsearch supports 3.10-3.13 only)
+
+**Error Pattern:**
+```
+E   ModuleNotFoundError: No module named 'memsearch'
+```
+
+**Dependency Chain:**
+```
+Test file → src.novel.* → src.memory.* → src.memory.memsearch_adapter → from memsearch import MemSearch
+```
+
+### 2. Missing pydantic (4 errors - 6.2%)
+
+**Affected Tests:**
+- test_100k_generation.py
+- test_nlp.py
+- test_token_budget.py (2 instances in different directories)
+
+**Root Cause:**
+- pydantic package not installed (version 2.0.0+ required)
+- Python 3.14.3 compatibility uncertain
+
+**Note:** pydantic 2.12.5 IS installed globally, but not in the Writer project environment
+
+### 3. Missing sqlalchemy (2 errors - 3.1%)
+
+**Affected Tests:**
+- test_postgres_models.py
+- test_timeline_validator.py
+
+**Root Cause:**
+- sqlalchemy[asyncio] not installed
+- Python 3.14.3 not supported (sqlalchemy supports up to 3.13 only)
+
+**Required Version:** sqlalchemy[asyncio]>=2.0.0
+
+### 4. Missing pygls (1 error - 1.5%)
+
+**Affected Tests:**
+- LSP/tests
+
+**Root Cause:**
+- pygls package not installed (LSP-specific dependency)
+
+**Note:** pygls 2.0.1 IS installed globally, but not accessible from LSP tests directory
+
+### 5. Missing src module (1 error - 1.5%)
+
+**Affected Tests:**
+- test_inventory_updater.py (in scripts/ directory)
+
+**Root Cause:**
+- Python path configuration issue
+- test file in scripts/ directory trying to import from src/ without proper PYTHONPATH
+
+**Error Pattern:**
+```
+E   ModuleNotFoundError: No module named 'src'
+```
+
+### 6. Missing fastapi (1 error - 1.5%)
+
+**Affected Tests:**
+- test_manual_review_api.py
+
+**Root Cause:**
+- fastapi package not installed
+- Required for API-related tests
+
+### 7. Missing pinecone (1 error - 1.5%)
+
+**Affected Tests:**
+- test_reference_validator.py
+
+**Root Cause:**
+- pinecone package not installed
+- Python 3.14.3 not supported (pinecone supports up to 3.13 only)
+
+**Required Version:** pinecone>=3.0.0
+
+## Root Cause Analysis
+
+### Primary Issue: Dependencies Not Installed
+
+**Evidence:**
+- pyproject.toml defines all required dependencies
+- README.md clearly states installation command: `pip install -e ".[dev]"`
+- pip list shows 144 packages installed, but key dependencies missing
+- Required dependencies from pyproject.toml:
+  - memsearch[local]>=0.1.6 ❌ NOT INSTALLED
+  - pinecone>=3.0.0 ❌ NOT INSTALLED
+  - sentence-transformers>=2.2.0 ❌ NOT INSTALLED
+  - sqlalchemy[asyncio]>=2.0.0 ❌ NOT INSTALLED
+  - pydantic>=2.0.0 ✅ INSTALLED (but not in project env)
+  - fastapi>=0.25.0 ❌ NOT INSTALLED (not in pyproject.toml but used)
+
+**Conclusion:** Project dependencies were never installed using `pip install -e ".[dev]"`
+
+### Secondary Issue: Python 3.14.3 Compatibility
+
+**Problem:** Python 3.14.3 is too new for several key dependencies
+
+**Affected Packages:**
+| Package | Latest Version | Python Support | Status |
+|---------|---------------|----------------|--------|
+| memsearch | 0.1.15 | 3.10-3.13 | ❌ NO 3.14 support |
+| pinecone | 8.1.0 | up to 3.13 | ❌ NO 3.14 support |
+| sentence-transformers | 5.2.3 | up to 3.13 | ❌ NO 3.14 support |
+| sqlalchemy | 2.0.48 | up to 3.13 | ❌ NO 3.14 support |
+| pydantic | 2.12.5 | unknown | ⚠️  Compatibility uncertain |
+| pygls | 2.0.1 | unknown | ⚠️  Compatibility uncertain |
+
+**Note:** chromadb 1.5.2 IS installed and does not appear in test collection errors (chromadb tests use pytest.importorskip to gracefully skip when unavailable)
+
+### Tertiary Issue: Path Configuration
+
+**Problem:** Test file in scripts/ directory cannot import src module
+
+**Affected File:** Writer/scripts/test_inventory_updater.py
+
+**Likely Cause:** Missing sys.path setup or PYTHONPATH configuration
+
+## Fix Recommendations
+
+### Category 1: Install Missing Dependencies (IMMEDIATE - Critical)
+
+**Priority:** P0 - Critical  
+**Estimated Effort:** 15 minutes  
+**Expected Impact:** Fixes 64/65 errors (98.5%)
+
+**Steps:**
+
+1. **Install project dependencies:**
+   ```bash
+   cd Writer
+   pip install -e ".[dev]"
+   ```
+
+2. **Verify installation:**
+   ```bash
+   pip list | grep -E "(memsearch|pinecone|sentence-transformers|sqlalchemy|pydantic|fastapi)"
+   ```
+
+3. **Re-run pytest:**
+   ```bash
+   pytest --collect-only -q
+   ```
+
+**Expected Outcome:** All 64 dependency-related errors should resolve
+
+### Category 2: Python Version Downgrade (HIGH PRIORITY - Recommended)
+
+**Priority:** P1 - High  
+**Estimated Effort:** 30 minutes  
+**Expected Impact:** Ensures long-term compatibility
+
+**Rationale:** Python 3.14 is too new for the ecosystem. Recommend downgrading to 3.12 or 3.13.
+
+**Steps:**
+
+1. **Install Python 3.12 or 3.13:**
+   ```bash
+   # Using pyenv (recommended)
+   pyenv install 3.12.8
+   pyenv local 3.12.8
+   
+   # Or using conda
+   conda create -n novelwriter python=3.12
+   conda activate novelwriter
+   ```
+
+2. **Recreate virtual environment:**
+   ```bash
+   cd Writer
+   python -m venv venv
+   source venv/bin/activate  # Linux/macOS
+   # or
+   venv\Scripts\activate  # Windows
+   ```
+
+3. **Reinstall dependencies:**
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+**Expected Outcome:** Full compatibility with all dependencies
+
+### Category 3: Path Configuration Fix (MEDIUM PRIORITY)
+
+**Priority:** P2 - Medium  
+**Estimated Effort:** 10 minutes  
+**Expected Impact:** Fixes 1/65 errors (1.5%)
+
+**Options:**
+
+**Option A: Move test file** (Recommended)
+```bash
+# Move test from scripts/ to tests/ directory
+mv Writer/scripts/test_inventory_updater.py Writer/tests/scripts/test_inventory_updater.py
+# Create scripts subdirectory if needed
+mkdir -p Writer/tests/scripts
+```
+
+**Option B: Add pytest configuration**
+```toml
+# Add to pyproject.toml
+[tool.pytest.ini_options]
+pythonpath = ["."]
+```
+
+**Option C: Fix test imports**
+```python
+# Change from:
+from src.novel.inventory_updater import InventoryUpdater
+
+# To:
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.novel.inventory_updater import InventoryUpdater
+```
+
+**Recommendation:** Option A (move test file) is cleanest solution
+
+### Category 4: Add Missing fastapi Dependency (LOW PRIORITY)
+
+**Priority:** P3 - Low  
+**Estimated Effort:** 5 minutes  
+**Expected Impact:** Fixes 1/65 errors (1.5%)
+
+**Steps:**
+
+1. **Add to pyproject.toml:**
+   ```toml
+   dependencies = [
+       # ... existing dependencies ...
+       "fastapi>=0.104.0",  # Add this line
+   ]
+   ```
+
+2. **Reinstall:**
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+## Implementation Plan
+
+### Phase 1: Quick Fix (Today - 30 minutes)
+
+1. Install dependencies: `pip install -e ".[dev]"` (15 min)
+2. Re-run pytest to verify (5 min)
+3. Document results (10 min)
+
+**Expected Result:** 64/65 errors resolved
+
+### Phase 2: Python Version Fix (This Week - 2 hours)
+
+1. Downgrade to Python 3.12 or 3.13 (30 min)
+2. Recreate virtual environment (30 min)
+3. Reinstall all dependencies (30 min)
+4. Full test suite validation (30 min)
+
+**Expected Result:** Full compatibility, all tests pass
+
+### Phase 3: Code Cleanup (Next Sprint - 1 hour)
+
+1. Move test_inventory_updater.py to proper location (10 min)
+2. Add fastapi to pyproject.toml (5 min)
+3. Update pyproject.toml Python version constraint (5 min)
+4. Update documentation (20 min)
+5. Test on fresh environment (20 min)
+
+**Expected Result:** Clean codebase, proper structure
+
+## Risk Assessment
+
+### Low Risk
+- Installing dependencies: Standard operation, minimal risk
+- Moving test file: Safe, just relocation
+
+### Medium Risk
+- Python version downgrade: May affect other projects using same environment
+- Requires testing all functionality after downgrade
+
+### Mitigation Strategies
+1. **Backup current environment:** `pip freeze > requirements_backup.txt`
+2. **Use separate venv:** Isolate Writer from other projects
+3. **Incremental testing:** Test after each major change
+4. **Rollback plan:** Keep backup of working state
+
+## Success Criteria
+
+- ✅ All 65 test collection errors resolved
+- ✅ pytest --collect-only shows 0 errors
+- ✅ All 281+ tests can be collected
+- ✅ Test suite runs without import errors
+- ✅ Dependencies properly documented in pyproject.toml
+- ✅ Python version compatible with all dependencies
+
+## Monitoring Recommendations
+
+1. **Add CI/CD check:** Validate dependency installation in pipeline
+2. **Add pre-commit hook:** Check for missing imports before commit
+3. **Document Python version requirement:** Clear in README and pyproject.toml
+4. **Regular dependency updates:** Schedule monthly reviews
+5. **Track Python 3.14 support:** Monitor when packages add 3.14 support
+
+## Lessons Learned
+
+1. **Dependencies must be installed:** pyproject.toml is not enough - must run `pip install -e ".[dev]"`
+2. **Python version matters:** New Python versions break dependency compatibility
+3. **Test structure matters:** Tests in scripts/ directory have path issues
+4. **Explicit dependencies:** fastapi used but not in pyproject.toml
+5. **Chromadb is handled correctly:** Tests use pytest.importorskip for graceful degradation
+
+## Next Actions
+
+1. **IMMEDIATE:** Run `pip install -e ".[dev]"` in Writer directory
+2. **TODAY:** Verify test collection works
+3. **THIS WEEK:** Downgrade to Python 3.12 or 3.13
+4. **NEXT SPRINT:** Clean up test file structure and dependencies
+
+---
+
+### [2026-03-08] Dependency Installation - P1-9
+
+#### Task Completed
+- Installed missing dependencies to resolve test collection errors
+- Command used: `pip install memsearch pydantic-settings sqlalchemy fastapi pinecone-client`
+
+#### Dependencies Installed Successfully
+1. **memsearch** (0.1.15) - Vector search and memory management
+   - Dependencies also installed: milvus-lite, pymilvus, watchdog, tomli-w, pandas, cachetools
+2. **pydantic-settings** (2.13.1) - Configuration management
+3. **sqlalchemy** (2.0.48) - Database ORM
+   - Dependencies also installed: greenlet
+4. **fastapi** (0.135.1) - Web API framework
+   - Dependencies also installed: starlette
+5. **pinecone-client** (6.0.0) - Pinecone vector database client
+   - Dependencies also installed: pinecone-plugin-interface
+
+#### Installation Results
+- **Before installation:** 63 errors with pytest from Writer directory, 280 tests collected
+- **After installation with venv pytest:** 7 errors, 1488 tests collected
+- **Error reduction:** 56 errors resolved (88.9% improvement)
+- **Test collection improvement:** 1208 additional tests collected (431% increase)
+
+#### Critical Discovery
+- **Pytest environment issue:** Global pytest (`/home/jabing/.local/bin/pytest`) was not using virtual environment dependencies
+- **Solution:** Must use `/home/jabing/py14env/bin/python -m pytest` to access installed packages
+- **Root cause:** Global pytest installed separately, unaware of venv packages
+
+#### Remaining Errors (7 total)
+Analysis of remaining errors after dependency installation:
+1. **Pinecone API key issues** (2 errors)
+   - test_reference_validator.py: Exception: The official Pinecone
+   - test_hallucination_detector.py: Exception: The official Pinec
+   - Cause: Missing PINECONE_API_KEY environment variable
+
+2. **ChromaDB pydantic.v1 compatibility** (1 error)
+   - test_chroma_performance.py: pydantic.v1.errors.ConfigError
+   - Cause: ChromaDB uses deprecated pydantic.v1 with Python 3.14
+
+3. **Other errors** (4 errors)
+   - Need further investigation
+
+#### Key Learnings
+1. **Virtual environment isolation is critical:** Dependencies must be installed in the same environment where tests run
+2. **Python 3.14 compatibility issues:** Even after installation, some packages (ChromaDB) have runtime compatibility issues with Python 3.14
+3. **pytest invocation matters:** Must use `python -m pytest` from venv, not global pytest binary
+4. **Environment variables required:** Pinecone requires API key for initialization tests
+
+#### Next Actions
+1. Set up environment variables for API keys (PINECONE_API_KEY)
+2. Consider Python 3.12/3.13 downgrade for full compatibility
+3. Investigate remaining 4 test collection errors
+4. Document proper pytest invocation in project documentation
+
+#### Verification Commands
+```bash
+# Verify dependencies installed
+pip list | grep -E "memsearch|pydantic-settings|sqlalchemy|fastapi|pinecone"
+
+# Run pytest with correct environment (from Writer directory)
+/home/jabing/py14env/bin/python -m pytest --collect-only
+
+# Check specific test file
+/home/jabing/py14env/bin/python -m pytest tests/novel/test_knowledge_graph.py --collect-only
+```
+
