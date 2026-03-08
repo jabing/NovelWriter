@@ -101,20 +101,119 @@ curl http://localhost:80
 
 ### 后端配置
 
+#### 关键环境变量详解
+
+##### APP_ENV - 运行环境
+
+控制应用的运行模式，影响日志级别、调试模式等行为。
+
+```bash
+# 开发环境
+APP_ENV=development
+
+# 生产环境
+APP_ENV=production
+
+# 测试环境
+APP_ENV=testing
+```
+
+**影响行为**：
+- `development`: 启用详细错误页面、自动重载、调试日志
+- `production`: 优化性能、简化错误信息、标准日志
+- `testing`: 最小化日志、模拟外部服务
+
+##### LOG_LEVEL - 日志级别
+
+控制日志输出的详细程度。
+
+```bash
+# 可选值（从详细到简洁）
+LOG_LEVEL=DEBUG     # 最详细，包含所有调试信息
+LOG_LEVEL=INFO      # 标准日志，推荐生产环境
+LOG_LEVEL=WARNING   # 仅警告和错误
+LOG_LEVEL=ERROR     # 仅错误
+LOG_LEVEL=CRITICAL  # 仅严重错误
+```
+
+##### DATABASE_URL - 数据库连接
+
+配置数据库连接字符串。
+
+```bash
+# SQLite（默认，适合开发和小型部署）
+DATABASE_URL=sqlite:///./polytheater.db
+
+# PostgreSQL（推荐生产环境）
+DATABASE_URL=postgresql://user:password@localhost:5432/polytheater
+
+# MySQL
+DATABASE_URL=mysql://user:password@localhost:3306/polytheater
+```
+
+##### CORS_ORIGINS - 跨域配置
+
+控制允许访问 API 的前端源。
+
+```bash
+# 单个源
+CORS_ORIGINS=https://yourdomain.com
+
+# 多个源（逗号分隔）
+CORS_ORIGINS=https://example.com,https://app.example.com
+
+# 开发环境
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+```
+
+**安全建议**：
+- 生产环境不要使用 `*` 通配符
+- 仅列出信任的域名
+- 使用 HTTPS 源
+
 #### 环境变量说明
+
+##### 核心配置
 
 | 变量 | 说明 | 默认值 | 必需 |
 |------|------|--------|------|
-| `LLM_API_KEY` | LLM API密钥 | - | ✅ |
-| `LLM_BASE_URL` | LLM API地址 | - | ✅ |
+| `LLM_API_KEY` | LLM API 密钥 | - | ✅ |
+| `LLM_BASE_URL` | LLM API 地址 | - | ✅ |
 | `LLM_MODEL_NAME` | 使用的模型 | `gpt-4o-mini` | ❌ |
-| `ZEP_API_KEY` | Zep Cloud密钥 | - | ❌ |
+| `ZEP_API_KEY` | Zep Cloud 密钥 | - | ❌ |
+
+##### 应用配置
+
+| 变量 | 说明 | 默认值 | 必需 |
+|------|------|--------|------|
+| `APP_ENV` | 运行环境 | `production` | ❌ |
 | `FLASK_HOST` | 监听地址 | `0.0.0.0` | ❌ |
 | `FLASK_PORT` | 监听端口 | `5001` | ❌ |
 | `FLASK_DEBUG` | 调试模式 | `false` | ❌ |
+| `LOG_LEVEL` | 日志级别 | `INFO` | ❌ |
+
+##### 数据库配置
+
+| 变量 | 说明 | 默认值 | 必需 |
+|------|------|--------|------|
+| `DATABASE_URL` | 数据库连接 URL | `sqlite:///./polytheater.db` | ❌ |
+| `DATABASE_POOL_SIZE` | 连接池大小 | `5` | ❌ |
+| `DATABASE_MAX_OVERFLOW` | 最大溢出连接数 | `10` | ❌ |
+
+##### 模拟配置
+
+| 变量 | 说明 | 默认值 | 必需 |
+|------|------|--------|------|
 | `DEFAULT_MAX_ROUNDS` | 最大轮数 | `144` | ❌ |
 | `DEFAULT_MINUTES_PER_ROUND` | 每轮分钟数 | `60` | ❌ |
+
+##### 网络与安全
+
+| 变量 | 说明 | 默认值 | 必需 |
+|------|------|--------|------|
 | `CORS_ORIGINS` | CORS 允许的源 | `http://localhost:3000,http://localhost:5173` | ❌ |
+| `SECRET_KEY` | Flask 密钥 | 自动生成 | ❌ |
+| `JWT_EXPIRATION` | JWT 过期时间 | `24h` | ❌ |
 
 #### 持久化存储
 
