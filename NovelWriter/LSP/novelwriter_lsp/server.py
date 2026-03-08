@@ -171,20 +171,6 @@ def on_text_document_did_open(params: types.DidOpenTextDocumentParams) -> None:
     server.parse_document(uri, content)
 
 
-@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-def on_text_document_did_change(params: types.DidChangeTextDocumentParams) -> None:
-    """Handle text document change event.
-
-    Args:
-        params: Document change parameters
-    """
-    uri = params.text_document.uri
-    document = server.workspace.get_text_document(uri)
-    if document and document.source:
-        index.remove(uri)
-        server.parse_document(uri, document.source)
-
-
 @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
 def on_text_document_did_close(params: types.DidCloseTextDocumentParams) -> None:
     """Handle text document close event.

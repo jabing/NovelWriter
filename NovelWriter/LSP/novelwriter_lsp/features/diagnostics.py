@@ -43,6 +43,11 @@ def register_diagnostics(server: "NovelWriterLSP", index: SymbolIndex) -> None:
             document = server.workspace.get_text_document(uri)
             content = document.source
 
+            # Cache invalidation: remove old symbols and re-parse
+            if index:
+                index.remove(uri)
+                server.parse_document(uri, content)
+
             result = await validator.validate(uri, content)
 
             diagnostics = []
