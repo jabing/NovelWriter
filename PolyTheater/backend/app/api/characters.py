@@ -1,27 +1,21 @@
 """角色管理 REST API"""
+import logging
 import uuid
 from datetime import datetime
 from typing import Any, Dict, Tuple
 from flask import Blueprint, jsonify, request
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
+
+logger = logging.getLogger(__name__)
 
 from app.database import db
 from app.models import Character, PerspectiveBias
 from app.models.db_models import CharacterDB
 from app.models.enums import ThinkingStyle, NarrativeVoice, EntityType
 from app.schemas import CharacterCreate, CharacterUpdate, CharacterResponse
+from app.utils.error_handler import error_response, ErrorCode, handle_api_errors
 
 characters_bp = Blueprint('characters', __name__)
-
-
-def _error_response(message: str, status_code: int = 400) -> Tuple[Any, int]:
-    """统一错误响应格式"""
-    return jsonify({
-        "error": {
-            "message": message,
-            "type": "validation_error"
-        }
-    }), status_code
 
 
 def _character_db_to_dict(character: CharacterDB) -> Dict[str, Any]:
@@ -83,20 +77,24 @@ def create_character():
     data = request.get_json()
     
     if not data:
-        return _error_response("Request body is required", 400)
+        return error_response(ErrorCode.INVALID_REQUEST, message="Request body is required")
     
     try:
         validated_data = CharacterCreate(**data)
-    except ValidationError as e:
-        errors = e.errors()
+    except PydanticValidationError as e:
+        errors = e.errors()  # type: ignore[attr-defined]
         error_messages = [f"{err['loc'][0]}: {err['msg']}" for err in errors]
-        return _error_response("; ".join(error_messages), 422)
+        return error_response(
+            ErrorCode.VALIDATION_ERROR,
+            message="; ".join(error_messages),
+            details={"fields": [{"field": err["loc"], "message": err["msg"]} for err in errors]}
+        )
     
     entity_id = str(uuid.uuid4())
     
     existing = CharacterDB.query.filter_by(entity_id=entity_id).first()
     if existing:
-        return _error_response("Character with this entity_id already exists", 409)
+        return error_response(ErrorCode.DUPLICATE_RESOURCE, message="Character with this entity_id already exists")
     
     try:
         perspective_bias = None
@@ -151,7 +149,8 @@ def create_character():
     
     except Exception as e:
         db.session.rollback()
-        return _error_response(f"Failed to create character: {str(e)}", 500)
+        logger.exception("Failed to create character")
+        return error_response(ErrorCode.DATABASE_ERROR, message=f"Failed to create character: {str(e)}")
 
 
 @characters_bp.route('/api/v1/characters/<character_id>', methods=['GET'])
@@ -160,7 +159,7 @@ def get_character(character_id: str):
     character = CharacterDB.query.filter_by(entity_id=character_id).first()
     
     if not character:
-        return _error_response("Character not found", 404)
+        return error_response(ErrorCode.RESOURCE_NOT_FOUND, message="Character not found", details={"identifier": character_id})
     
     return jsonify(_character_db_to_dict(character)), 200
 
@@ -171,19 +170,23 @@ def update_character(character_id: str):
     character = CharacterDB.query.filter_by(entity_id=character_id).first()
     
     if not character:
-        return _error_response("Character not found", 404)
+        return error_response(ErrorCode.RESOURCE_NOT_FOUND, message="Character not found", details={"identifier": character_id})
     
     data = request.get_json()
     
     if not data:
-        return _error_response("Request body is required", 400)
+        return error_response(ErrorCode.INVALID_REQUEST, message="Request body is required")
     
     try:
         validated_data = CharacterUpdate(**data)
-    except ValidationError as e:
-        errors = e.errors()
+    except PydanticValidationError as e:
+        errors = e.errors()  # type: ignore[attr-defined]
         error_messages = [f"{err['loc'][0]}: {err['msg']}" for err in errors]
-        return _error_response("; ".join(error_messages), 422)
+        return error_response(
+            ErrorCode.VALIDATION_ERROR,
+            message="; ".join(error_messages),
+            details={"fields": [{"field": err["loc"], "message": err["msg"]} for err in errors]}
+        )
     
     try:
         update_fields = validated_data.model_dump(exclude_unset=True)
@@ -208,7 +211,8 @@ def update_character(character_id: str):
     
     except Exception as e:
         db.session.rollback()
-        return _error_response(f"Failed to update character: {str(e)}", 500)
+        logger.exception("Failed to update character")
+        return error_response(ErrorCode.DATABASE_ERROR, message=f"Failed to update character: {str(e)}")
 
 
 @characters_bp.route('/api/v1/characters/<character_id>', methods=['DELETE'])
@@ -217,7 +221,7 @@ def delete_character(character_id: str):
     character = CharacterDB.query.filter_by(entity_id=character_id).first()
     
     if not character:
-        return _error_response("Character not found", 404)
+        return error_response(ErrorCode.RESOURCE_NOT_FOUND, message="Character not found", details={"identifier": character_id})
     
     try:
         db.session.delete(character)
@@ -227,7 +231,8 @@ def delete_character(character_id: str):
     
     except Exception as e:
         db.session.rollback()
-        return _error_response(f"Failed to delete character: {str(e)}", 500)
+        logger.exception("Failed to delete character")
+        return error_response(ErrorCode.DATABASE_ERROR, message=f"Failed to delete character: {str(e)}")
 
 
 @characters_bp.route('/api/v1/characters', methods=['GET'])
