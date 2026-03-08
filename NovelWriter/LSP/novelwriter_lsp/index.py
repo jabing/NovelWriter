@@ -17,6 +17,59 @@ from novelwriter_lsp.storage.postgres_client import PostgresClient
 logger = logging.getLogger(__name__)
 
 
+class AliasIndex:
+    """
+    Manages alias-to-symbol name mappings.
+
+    Provides O(1) lookup for finding symbols by their aliases.
+    Each alias maps to exactly one symbol name, enabling quick
+    resolution of shorthand references to full symbol names.
+    """
+
+    def __init__(self) -> None:
+        """Initialize an empty alias index."""
+        self._alias_map: dict[str, str] = {}
+
+    def add_alias(self, alias: str, symbol_name: str) -> None:
+        """
+        Add an alias mapping.
+
+        Args:
+            alias: The alias or shorthand name
+            symbol_name: The full symbol name the alias resolves to
+        """
+        self._alias_map[alias] = symbol_name
+
+    def get_symbol_name(self, alias: str) -> str | None:
+        """
+        Get symbol name by alias.
+
+        Args:
+            alias: The alias to look up
+
+        Returns:
+            The symbol name if found, None otherwise
+        """
+        return self._alias_map.get(alias)
+
+    def remove_symbol(self, symbol_name: str) -> None:
+        """
+        Remove all aliases for a symbol.
+
+        Args:
+            symbol_name: The symbol name whose aliases should be removed
+        """
+        self._alias_map = {
+            alias: sym_name
+            for alias, sym_name in self._alias_map.items()
+            if sym_name != symbol_name
+        }
+
+    def clear(self) -> None:
+        """Clear all alias mappings."""
+        self._alias_map.clear()
+
+
 class SymbolIndex:
     """
     In-memory symbol index with LRU cache support and optional database persistence.
@@ -52,6 +105,7 @@ class SymbolIndex:
         self._cache: OrderedDict[str, BaseSymbol] = OrderedDict()
         self._uri_map: dict[str, list[str]] = {}
         self._id_map: dict[str, str] = {}
+        self._alias_index = AliasIndex()
         self._neo4j_client = neo4j_client
         self._postgres_client = postgres_client
 
@@ -85,17 +139,18 @@ class SymbolIndex:
 
         self._id_map[symbol_id] = name
 
-        # Auto-persist to database if configured
+        aliases = getattr(symbol, 'aliases', None)
+        if aliases:
+            for alias in aliases:
+                self._alias_index.add_alias(alias, name)
+
         if self._neo4j_client or self._postgres_client:
             import asyncio
 
             try:
-                # Check if we're in an event loop
                 loop = asyncio.get_running_loop()
-                # If we are, create a task
                 _ = loop.create_task(self.persist_to_db(symbol_id))
             except RuntimeError:
-                # If no event loop, skip auto-persist (not ideal, but for compatibility)
                 logger.warning("No running event loop, skipping auto-persist to database")
 
     def _evict_oldest(self) -> None:
@@ -120,6 +175,8 @@ class SymbolIndex:
         if oldest_symbol.id in self._id_map:
             del self._id_map[oldest_symbol.id]
 
+        self._alias_index.remove_symbol(oldest_name)
+
     def remove(self, uri: str) -> list[BaseSymbol]:
         """
         Remove all symbols associated with a URI.
@@ -141,6 +198,7 @@ class SymbolIndex:
                 removed_symbols.append(symbol)
                 if symbol.id in self._id_map:
                     del self._id_map[symbol.id]
+                self._alias_index.remove_symbol(name)
 
         return removed_symbols
 
@@ -163,19 +221,25 @@ class SymbolIndex:
         self._cache.move_to_end(name)
         return self._cache[name]
 
+    def get_symbol_by_alias(self, alias: str) -> BaseSymbol | None:
+        symbol_name = self._alias_index.get_symbol_name(alias)
+        if symbol_name:
+            return self.get_symbol(symbol_name)
+        return None
+
     def get_symbol_by_id(self, symbol_id: str) -> BaseSymbol | None:
         """
-        Get a symbol by its ID.
+        Get a symbol by its unique ID.
 
         Args:
-            symbol_id: The ID of the symbol to retrieve
+            symbol_id: The unique ID of the symbol
 
         Returns:
             The symbol if found, None otherwise
         """
-        name = self._id_map.get(symbol_id)
-        if name:
-            return self.get_symbol(name)
+        symbol_name = self._id_map.get(symbol_id)
+        if symbol_name:
+            return self.get_symbol(symbol_name)
         return None
 
     def search(
@@ -282,6 +346,7 @@ class SymbolIndex:
         self._cache.clear()
         self._uri_map.clear()
         self._id_map.clear()
+        self._alias_index.clear()
 
     def __len__(self) -> int:
         """Return the number of symbols in the index."""

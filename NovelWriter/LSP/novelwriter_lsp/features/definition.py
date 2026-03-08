@@ -1,7 +1,5 @@
 """
 NovelWriter LSP - Go to Definition Handler
-
-This module provides the goto_definition LSP feature handler.
 """
 
 import logging
@@ -11,46 +9,52 @@ from pygls.lsp.server import LanguageServer
 
 from novelwriter_lsp.index import SymbolIndex
 
+from typing import Optional
+
 logger = logging.getLogger(__name__)
 
 
 def register_goto_definition(server: LanguageServer, index: SymbolIndex) -> None:
-    """
-    Register the goto_definition handler with the LSP server.
+    """Register goto definition handler with the LSP server.
     
     Args:
         server: The LSP server instance
         index: The symbol index for looking up definitions
     """
-    
     @server.feature(types.TEXT_DOCUMENT_DEFINITION)
-    def goto_definition(params: types.DefinitionParams) -> types.Location | None:
-        """
-        Handle goto definition requests.
-        
-        When a user clicks on a symbol reference, this handler finds
-        the definition location and returns it to the LSP client.
-        
-        Args:
-            params: Definition parameters including position and document URI
-            
-        Returns:
-            Location of the symbol definition, or None if not found
-        """
+    def goto_definition(params: types.DefinitionParams) -> Optional[types.Location]:
         uri = params.text_document.uri
         position = params.position
         
-        logger.debug(f"goto_definition request: {uri} at {position}")
+        logger.debug(f"goto_definition request: {uri} at line {position.line}, char {position.character}")
         
-        symbol_name = _get_word_at_position(server, uri, position)
+        document = server.workspace.get_text_document(uri)
+        if not document or not document.source:
+            return None
+        
+        lines = document.source.split("\n")
+        if position.line >= len(lines):
+            return None
+        
+        line = lines[position.line]
+        if position.character >= len(line):
+            return None
+        
+        symbol_name = _extract_word(line, position.character, index)
+        logger.debug(f"Extracted word: '{symbol_name}'")
+        
         if not symbol_name:
-            logger.debug(f"No symbol found at position {position}")
+            logger.debug("No word extracted")
             return None
         
         symbol = index.get_symbol(symbol_name)
         if not symbol:
-            logger.debug(f"Symbol '{symbol_name}' not found in index")
-            return None
+            symbol = index.get_symbol_by_alias(symbol_name)
+            if not symbol:
+                logger.debug(f"Symbol '{symbol_name}' not found in index (exact or alias)")
+                return None
+            else:
+                logger.debug(f"Found symbol '{symbol_name}' via alias")
         
         location = types.Location(
             uri=symbol.definition_uri,
@@ -66,63 +70,34 @@ def register_goto_definition(server: LanguageServer, index: SymbolIndex) -> None
             ),
         )
         
-        logger.debug(f"Found definition for '{symbol_name}' at {location.uri}")
+        logger.debug(f"Found definition for '{symbol_name}' at line {location.range.start.line}")
         return location
 
-
-def _get_word_at_position(server: LanguageServer, uri: str, position: types.Position) -> str | None:
-    """
-    Extract the word at the given position from the document.
     
-    Args:
-        server: The LSP server instance
-        uri: Document URI
-        position: Position to extract word from
-        
-    Returns:
-        The word at the position, or None if extraction fails
-    """
-    try:
-        document = server.workspace.get_text_document(uri)
-        if not document.source:
-            return None
-        
-        lines = document.source.split("\n")
-        if position.line >= len(lines):
-            return None
-        
-        line = lines[position.line]
-        if position.character >= len(line):
-            return None
-        
-        word = _extract_word(line, position.character)
-        return word if word else None
-    except Exception as e:
-        logger.error(f"Error extracting word at position: {e}")
-        return None
 
-
-def _extract_word(line: str, position: int) -> str:
-    """
-    Extract a complete word from a line at the given character position.
-    
-    Args:
-        line: The line of text
-        position: Character position within the line
-        
-    Returns:
-        The complete word containing the position
-    """
+def _extract_word(line: str, position: int, index: SymbolIndex) -> str:
     if not line or position < 0 or position >= len(line):
         return ""
     
     start = position
-    while start > 0 and (line[start - 1].isalnum() or line[start - 1] == "_"):
+    while start > 0 and (line[start - 1].isalnum() or line[start - 1] == "_" or line[start - 1] == " "):
         start -= 1
     
     end = position
-    while end < len(line) and (line[end].isalnum() or line[end] == "_"):
+    while end < len(line) and (line[end].isalnum() or line[end] == "_" or line[end] == " "):
         end += 1
     
     word = line[start:end].strip()
+    logger.debug(f"_extract_word: position={position}, line='{line}' -> word='{word}'")
+    
+    for i in range(len(word), 0, -1):
+        substring = word[:i]
+        if not substring:
+            continue
+        
+        symbol = index.get_symbol(substring)
+        if symbol:
+            logger.debug(f"_extract_word: found symbol '{substring}' in index")
+            return substring
+    
     return word

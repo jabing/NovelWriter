@@ -11,6 +11,7 @@ from pygls.lsp.server import LanguageServer
 from lsprotocol import types
 
 from novelwriter_lsp.index import SymbolIndex
+from novelwriter_lsp import parser
 from novelwriter_lsp.features import (
     register_goto_definition,
     register_diagnostics,
@@ -18,6 +19,7 @@ from novelwriter_lsp.features import (
     register_hover,
     register_completion,
     register_rename,
+    register_document_symbol,
 )
 
 # Configure logging
@@ -73,14 +75,22 @@ class NovelWriterLSP(LanguageServer):
     def parse_document(self, uri: str, content: str) -> None:
         """Parse a document and extract symbols.
 
-        This is a placeholder for the parser implementation (Phase 1 Task 3).
+        This method parses the document content, extracts all symbols,
+        and updates the symbol index.
 
         Args:
             uri: Document URI
             content: Document content
         """
-        # TODO: Implement document parsing in Task 3
         logger.debug(f"Parsing document: {uri}")
+
+        symbols = parser.parse_document(content, uri)
+
+        for symbol in symbols:
+            index.update(symbol)
+            logger.debug(f"Updated index with symbol: {symbol.type} - {symbol.name}")
+
+        logger.debug(f"Parsed {len(symbols)} symbols from {uri}")
 
     def get_diagnostics(self, uri: str) -> tuple[int, list[types.Diagnostic]] | None:
         """Get diagnostics for a document.
@@ -161,6 +171,20 @@ def on_text_document_did_open(params: types.DidOpenTextDocumentParams) -> None:
     server.parse_document(uri, content)
 
 
+@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+def on_text_document_did_change(params: types.DidChangeTextDocumentParams) -> None:
+    """Handle text document change event.
+
+    Args:
+        params: Document change parameters
+    """
+    uri = params.text_document.uri
+    document = server.workspace.get_text_document(uri)
+    if document and document.source:
+        index.remove(uri)
+        server.parse_document(uri, document.source)
+
+
 @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
 def on_text_document_did_close(params: types.DidCloseTextDocumentParams) -> None:
     """Handle text document close event.
@@ -170,6 +194,7 @@ def on_text_document_did_close(params: types.DidCloseTextDocumentParams) -> None
     """
     uri = params.text_document.uri
     logger.info(f"Document closed: {uri}")
+    index.remove(uri)
 
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
@@ -191,3 +216,4 @@ register_codelens(server, index)
 register_hover(server, index)
 register_completion(server, index)
 register_rename(server, index)
+register_document_symbol(server, index)
