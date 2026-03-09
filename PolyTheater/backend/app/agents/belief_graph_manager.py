@@ -233,7 +233,7 @@ class BeliefGraphManager:
         belief_id: str,
         new_content: str | None = None,
         new_confidence: float | None = None,
-    ) -> None:
+    ) -> Belief:
         """更新信念
         
         更新指定信念的内容或置信度。
@@ -244,13 +244,16 @@ class BeliefGraphManager:
             new_content: 新的信念内容（可选）
             new_confidence: 新的置信度（可选）
             
+        Returns:
+            更新后的信念对象
+            
         Raises:
-            BeliefGraphError: 更新失败时抛出
+            BeliefGraphError: 信念不存在或更新失败时抛出
         """
         try:
             entities = self.graph_manager.query_entities(
                 graph_id,
-                entity_type=EntityType.CONCEPT,
+                entity_type=EntityType.BELIEF,
                 filters={"belief_id": belief_id},
             )
             
@@ -270,10 +273,10 @@ class BeliefGraphManager:
             belief.updated_at = datetime.now().isoformat()
             
             updated_entity = self._belief_to_entity(graph_id, belief)
-            self._remove_belief_entity(graph_id, belief_id)
             self.graph_manager.add_entity(graph_id, updated_entity)
             
             logger.info("更新信念成功：%s", belief_id)
+            return belief
         except BeliefGraphError:
             raise
         except Exception as e:
@@ -282,15 +285,47 @@ class BeliefGraphManager:
     def _remove_belief_entity(self, graph_id: str, belief_id: str) -> None:
         """移除信念实体（内部方法）
         
-        注意：当前 ZepClient 不支持删除实体，此方法暂时为空操作。
-        TODO: 当 ZepClient 支持删除时实现此功能。
+        通过标记信念的 is_deleted 属性来实现逻辑删除。
+        这样可以保持数据完整性，同时支持恢复操作。
         
         Args:
             graph_id: 认知图谱 ID
             belief_id: 信念 ID
+            
+        Raises:
+            BeliefGraphError: 信念不存在时抛出
         """
-        # TODO: 实现删除功能
-        logger.warning("删除信念功能暂未实现：%s", belief_id)
+        try:
+            entities = self.graph_manager.query_entities(
+                graph_id,
+                entity_type=EntityType.BELIEF,
+                filters={"belief_id": belief_id},
+            )
+            
+            if not entities:
+                raise BeliefGraphError(f"信念不存在：{belief_id}")
+            
+            entity = entities[0]
+            belief = self._entity_to_belief(entity)
+            
+            # 标记为已删除（逻辑删除）
+            belief.confidence = 0.0
+            belief.updated_at = datetime.now().isoformat()
+            
+            # 更新实体，添加删除标记
+            updated_entity = self._belief_to_entity(graph_id, belief)
+            updated_entity.properties["is_deleted"] = True
+            updated_entity.properties["deleted_at"] = belief.updated_at
+            
+            # 由于 ZepClient 不支持直接更新，我们通过添加新实体来实现
+            # 在实际使用中，查询时会自动过滤 is_deleted=True 的实体
+            self.graph_manager.add_entity(graph_id, updated_entity)
+            
+            logger.info("标记信念为已删除：%s", belief_id)
+        except BeliefGraphError:
+            raise
+        except Exception as e:
+            raise BeliefGraphError(f"移除信念失败：{e}") from e
     
     def remove_belief(self, graph_id: str, belief_id: str) -> None:
         """移除信念
@@ -359,12 +394,13 @@ class BeliefGraphManager:
         except Exception as e:
             raise BeliefGraphError(f"一致性检查失败：{e}") from e
     
-    def get_beliefs_about(self, graph_id: str, entity_id: str) -> list[Belief]:
+    def get_beliefs_about(self, graph_id: str, entity_id: str, include_deleted: bool = False) -> list[Belief]:
         """获取对某实体的所有信念
         
         Args:
             graph_id: 认知图谱 ID
             entity_id: 实体 ID
+            include_deleted: 是否包含已删除的信念（默认 False）
             
         Returns:
             对该实体的信念列表
@@ -375,22 +411,27 @@ class BeliefGraphManager:
         try:
             entities = self.graph_manager.query_entities(
                 graph_id,
-                entity_type=EntityType.CONCEPT,
+                entity_type=EntityType.BELIEF,
                 filters={"belief_subject": entity_id},
             )
             
-            beliefs = [self._entity_to_belief(e) for e in entities]
+            beliefs = []
+            for e in entities:
+                if not include_deleted and e.properties.get("is_deleted"):
+                    continue
+                beliefs.append(self._entity_to_belief(e))
             
             logger.info("获取实体信念：%s -> %s (数量：%d)", graph_id, entity_id, len(beliefs))
             return beliefs
         except Exception as e:
             raise BeliefGraphError(f"查询信念失败：{e}") from e
     
-    def get_all_beliefs(self, graph_id: str) -> list[Belief]:
+    def get_all_beliefs(self, graph_id: str, include_deleted: bool = False) -> list[Belief]:
         """获取认知图谱中的所有信念
         
         Args:
             graph_id: 认知图谱 ID
+            include_deleted: 是否包含已删除的信念（默认 False）
             
         Returns:
             所有信念列表
@@ -401,13 +442,16 @@ class BeliefGraphManager:
         try:
             entities = self.graph_manager.query_entities(
                 graph_id,
-                entity_type=EntityType.CONCEPT,
+                entity_type=EntityType.BELIEF,
             )
             
             # 过滤出信念实体（通过 graph_id 匹配）
             beliefs = []
             for e in entities:
                 if e.properties.get("graph_id") == graph_id:
+                    # 跳过已删除的信念（除非明确要求包含）
+                    if not include_deleted and e.properties.get("is_deleted"):
+                        continue
                     beliefs.append(self._entity_to_belief(e))
             
             return beliefs
@@ -456,21 +500,31 @@ class BeliefGraphManager:
         """
         conflicts = []
         
-        # 定义冲突关键词对
+        # 定义冲突关键词对（支持正则表达式，中英文）
         conflict_pairs = [
             # 情感冲突
-            (r"爱|喜欢|倾心|迷恋", r"恨|讨厌|厌恶|憎恶"),
+            (r"(爱|喜欢|倾心|迷恋|爱慕|钟爱|love|likes|like)", r"(恨|讨厌|厌恶|憎恶|痛恨|憎恨|hate|hates|hated)"),
+            (r"(爱|喜欢|love|likes|like)", r"(恨|讨厌|hate|hates|hated)"),
             # 品质冲突
-            (r"诚实|正直|善良", r"骗子|虚伪|邪恶|狡诈"),
-            (r"勇敢|无畏", r"懦弱|胆小|怯懦"),
-            (r"聪明|智慧|机智", r"愚蠢|笨|傻"),
-            (r"富有|有钱", r"贫穷|穷|没钱"),
+            (r"(诚实|正直|诚信|真诚|honest|integrity)", r"(骗子|虚伪|虚假|狡诈|欺诈|liar|fake|deceitful)"),
+            (r"(善良|仁慈|慈悲|kind|kindness)", r"(邪恶|恶毒|狠毒|残忍|evil|cruel|vicious)"),
+            (r"(勇敢|无畏|英勇|brave|bravery|courage)", r"(懦弱|胆小|怯懦|怯弱|coward|cowardly)"),
+            (r"(聪明|智慧|机智|聪慧|smart|clever|wise)", r"(愚蠢|笨|傻|愚钝|stupid|fool|dumb)"),
+            (r"(富有|有钱|富裕|rich|wealthy)", r"(贫穷|穷|贫困|潦倒|poor|broke)"),
             # 关系冲突
-            (r"朋友|挚友|好友", r"敌人|仇人|对手"),
-            (r"忠诚|忠心", r"背叛|不忠|叛徒"),
+            (r"(朋友|挚友|好友|友人|friend|friends)", r"(敌人|仇人|对手|敌|enemy|enemies|foe)"),
+            (r"(忠诚|忠心|忠贞|loyal|loyalty)", r"(背叛|不忠|叛徒|背弃|betray|betrayal|traitor)"),
+            (r"(信任|信赖|trust|trusts)", r"(怀疑|猜疑|猜忌|doubt|suspect|suspicion)"),
             # 能力冲突
-            (r"强大|厉害|强", r"弱|弱小|无能"),
-            (r"可靠|可信|值得信赖", r"不可靠|不可信|靠不住"),
+            (r"(强大|厉害|强|强力|strong|powerful)", r"(弱|弱小|无能|虚弱|weak|weakness|incompetent)"),
+            (r"(可靠|可信|值得信赖|可靠|reliable|trustworthy)", r"(不可靠|不可信|靠不住|unreliable|untrustworthy)"),
+            (r"(优秀|出色|卓越|excellent|outstanding)", r"(平庸|差劲|低劣|mediocre|terrible)"),
+            # 道德冲突
+            (r"(正义|公正|公平|justice|fair)", r"(邪恶|偏私|不公|evil|unfair|unjust)"),
+            (r"(宽容|大度|tolerant|generous)", r"(狭隘|小气|吝啬|narrow-minded|stingy)"),
+            # 性格冲突
+            (r"(开朗|乐观|积极|cheerful|optimistic|positive)", r"(悲观|消极|阴郁|pessimistic|negative|gloomy)"),
+            (r"(慷慨|大方|generous|generosity)", r"(吝啬|小气|抠门|stingy|cheap|miserly)"),
         ]
         
         # 检查每对信念

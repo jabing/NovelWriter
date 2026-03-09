@@ -204,7 +204,7 @@ class TestBeliefGraphManager:
         """测试一致性检查（有冲突）"""
         entity1 = StoryEntity(
             entity_id="belief_001",
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name="Alice 是诚实的",
             properties={
                 "belief_id": "belief_001",
@@ -219,7 +219,7 @@ class TestBeliefGraphManager:
         
         entity2 = StoryEntity(
             entity_id="belief_002",
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name="Alice 是骗子",
             properties={
                 "belief_id": "belief_002",
@@ -303,6 +303,329 @@ class TestBeliefGraphManager:
         assert belief.subject == "Bob"
         assert belief.content == "loves"
         assert belief.confidence == 0.95
+
+
+    def test_update_belief(self, belief_manager, mock_graph_manager):
+        """测试更新信念"""
+        graph_id = "belief_test_001"
+        belief_id = "belief_001"
+        
+        # 模拟查询返回现有信念
+        entity = StoryEntity(
+            entity_id="belief_001",
+            entity_type=EntityType.BELIEF,
+            name="Alice likes Bob",
+            properties={
+                "belief_id": belief_id,
+                "belief_holder": "Alice",
+                "belief_subject": "Bob",
+                "belief_content": "likes",
+                "confidence": 0.8,
+                "source": "observation",
+                "graph_id": graph_id,
+            },
+        )
+        mock_graph_manager.query_entities.return_value = [entity]
+        
+        # 更新信念内容和置信度
+        updated_belief = belief_manager.update_belief(
+            graph_id,
+            belief_id,
+            new_content="loves",
+            new_confidence=0.95,
+        )
+        
+        assert updated_belief.content == "loves"
+        assert updated_belief.confidence == 0.95
+        mock_graph_manager.add_entity.assert_called()
+    
+    def test_update_belief_not_found(self, belief_manager, mock_graph_manager):
+        """测试更新不存在的信念"""
+        mock_graph_manager.query_entities.return_value = []
+        
+        with pytest.raises(BeliefGraphError, match="信念不存在"):
+            belief_manager.update_belief("belief_test_001", "nonexistent", new_content="test")
+    
+    def test_update_belief_invalid_confidence(self, belief_manager, mock_graph_manager):
+        """测试更新信念时无效的置信度"""
+        entity = StoryEntity(
+            entity_id="belief_001",
+            entity_type=EntityType.BELIEF,
+            name="Alice likes Bob",
+            properties={
+                "belief_id": "belief_001",
+                "belief_holder": "Alice",
+                "belief_subject": "Bob",
+                "belief_content": "likes",
+                "confidence": 0.8,
+                "source": "observation",
+                "graph_id": "belief_test_001",
+            },
+        )
+        mock_graph_manager.query_entities.return_value = [entity]
+        
+        with pytest.raises(BeliefGraphError, match="置信度必须在"):
+            belief_manager.update_belief(
+                "belief_test_001",
+                "belief_001",
+                new_confidence=1.5,
+            )
+    
+    def test_remove_belief(self, belief_manager, mock_graph_manager):
+        """测试删除信念"""
+        graph_id = "belief_test_001"
+        belief_id = "belief_001"
+        
+        # 模拟查询返回现有信念
+        entity = StoryEntity(
+            entity_id="belief_001",
+            entity_type=EntityType.BELIEF,
+            name="Alice likes Bob",
+            properties={
+                "belief_id": belief_id,
+                "belief_holder": "Alice",
+                "belief_subject": "Bob",
+                "belief_content": "likes",
+                "confidence": 0.8,
+                "source": "observation",
+                "graph_id": graph_id,
+            },
+        )
+        mock_graph_manager.query_entities.return_value = [entity]
+        
+        # 删除信念
+        belief_manager.remove_belief(graph_id, belief_id)
+        
+        # 验证调用了 add_entity（逻辑删除）
+        mock_graph_manager.add_entity.assert_called()
+        
+        # 验证删除标记
+        call_args = mock_graph_manager.add_entity.call_args
+        updated_entity = call_args[0][1]
+        assert updated_entity.properties.get("is_deleted") is True
+        assert updated_entity.properties.get("deleted_at") is not None
+        assert updated_entity.properties.get("confidence") == 0.0
+    
+    def test_remove_belief_not_found(self, belief_manager, mock_graph_manager):
+        """测试删除不存在的信念"""
+        mock_graph_manager.query_entities.return_value = []
+        
+        with pytest.raises(BeliefGraphError, match="信念不存在"):
+            belief_manager.remove_belief("belief_test_001", "nonexistent")
+    
+    def test_check_consistency_conflict_detection(self, belief_manager, mock_graph_manager):
+        """测试冲突检测：loves vs hates"""
+        graph_id = "belief_test_001"
+        
+        # 创建冲突的信念
+        entity1 = StoryEntity(
+            entity_id="belief_001",
+            entity_type=EntityType.BELIEF,
+            name="Alice loves Bob",
+            properties={
+                "belief_id": "belief_001",
+                "belief_holder": "Alice",
+                "belief_subject": "Bob",
+                "belief_content": "loves",
+                "confidence": 0.9,
+                "source": "observation",
+                "graph_id": graph_id,
+            },
+        )
+        
+        entity2 = StoryEntity(
+            entity_id="belief_002",
+            entity_type=EntityType.BELIEF,
+            name="Alice hates Bob",
+            properties={
+                "belief_id": "belief_002",
+                "belief_holder": "Alice",
+                "belief_subject": "Bob",
+                "belief_content": "hates",
+                "confidence": 0.8,
+                "source": "rumor",
+                "graph_id": graph_id,
+            },
+        )
+        
+        mock_graph_manager.query_entities.return_value = [entity1, entity2]
+        
+        report = belief_manager.check_consistency(graph_id)
+        
+        assert not report.is_consistent
+        assert len(report.conflicts) > 0
+        
+        # 验证冲突对
+        conflict_pair = report.conflicts[0]
+        assert conflict_pair[0].content in ["loves", "hates"]
+        assert conflict_pair[1].content in ["loves", "hates"]
+    
+    def test_check_consistency_multiple_conflicts(self, belief_manager, mock_graph_manager):
+        """测试多个冲突检测"""
+        graph_id = "belief_test_001"
+        
+        entities = [
+            StoryEntity(
+                entity_id="belief_001",
+                entity_type=EntityType.BELIEF,
+                name="Alice is honest",
+                properties={
+                    "belief_id": "belief_001",
+                    "belief_holder": "Bob",
+                    "belief_subject": "Alice",
+                    "belief_content": "是诚实的",
+                    "confidence": 0.9,
+                    "source": "observation",
+                    "graph_id": graph_id,
+                },
+            ),
+            StoryEntity(
+                entity_id="belief_002",
+                entity_type=EntityType.BELIEF,
+                name="Alice is a liar",
+                properties={
+                    "belief_id": "belief_002",
+                    "belief_holder": "Bob",
+                    "belief_subject": "Alice",
+                    "belief_content": "是骗子",
+                    "confidence": 0.8,
+                    "source": "rumor",
+                    "graph_id": graph_id,
+                },
+            ),
+            StoryEntity(
+                entity_id="belief_003",
+                entity_type=EntityType.BELIEF,
+                name="Alice is brave",
+                properties={
+                    "belief_id": "belief_003",
+                    "belief_holder": "Bob",
+                    "belief_subject": "Alice",
+                    "belief_content": "很勇敢",
+                    "confidence": 0.7,
+                    "source": "observation",
+                    "graph_id": graph_id,
+                },
+            ),
+            StoryEntity(
+                entity_id="belief_004",
+                entity_type=EntityType.BELIEF,
+                name="Alice is cowardly",
+                properties={
+                    "belief_id": "belief_004",
+                    "belief_holder": "Bob",
+                    "belief_subject": "Alice",
+                    "belief_content": "很懦弱",
+                    "confidence": 0.6,
+                    "source": "rumor",
+                    "graph_id": graph_id,
+                },
+            ),
+        ]
+        
+        mock_graph_manager.query_entities.return_value = entities
+        
+        report = belief_manager.check_consistency(graph_id)
+        
+        assert not report.is_consistent
+        assert len(report.conflicts) >= 2  # 至少有两个冲突对
+    
+    def test_get_all_beliefs_excludes_deleted(self, belief_manager, mock_graph_manager):
+        """测试获取所有信念时排除已删除的"""
+        graph_id = "belief_test_001"
+        
+        entities = [
+            StoryEntity(
+                entity_id="belief_001",
+                entity_type=EntityType.BELIEF,
+                name="Alice likes Bob",
+                properties={
+                    "belief_id": "belief_001",
+                    "belief_holder": "Alice",
+                    "belief_subject": "Bob",
+                    "belief_content": "likes",
+                    "confidence": 0.9,
+                    "source": "observation",
+                    "graph_id": graph_id,
+                    "is_deleted": False,
+                },
+            ),
+            StoryEntity(
+                entity_id="belief_002",
+                entity_type=EntityType.BELIEF,
+                name="Alice hates Charlie",
+                properties={
+                    "belief_id": "belief_002",
+                    "belief_holder": "Alice",
+                    "belief_subject": "Charlie",
+                    "belief_content": "hates",
+                    "confidence": 0.0,
+                    "source": "rumor",
+                    "graph_id": graph_id,
+                    "is_deleted": True,
+                },
+            ),
+        ]
+        
+        mock_graph_manager.query_entities.return_value = entities
+        
+        # 默认不包含已删除的
+        beliefs = belief_manager.get_all_beliefs(graph_id)
+        assert len(beliefs) == 1
+        assert beliefs[0].belief_id == "belief_001"
+        
+        # 明确要求包含已删除的
+        beliefs_with_deleted = belief_manager.get_all_beliefs(graph_id, include_deleted=True)
+        assert len(beliefs_with_deleted) == 2
+    
+    def test_get_beliefs_about_excludes_deleted(self, belief_manager, mock_graph_manager):
+        """测试获取关于某实体的信念时排除已删除的"""
+        graph_id = "belief_test_001"
+        subject = "Bob"
+        
+        entities = [
+            StoryEntity(
+                entity_id="belief_001",
+                entity_type=EntityType.BELIEF,
+                name="Alice likes Bob",
+                properties={
+                    "belief_id": "belief_001",
+                    "belief_holder": "Alice",
+                    "belief_subject": subject,
+                    "belief_content": "likes",
+                    "confidence": 0.9,
+                    "source": "observation",
+                    "graph_id": graph_id,
+                    "is_deleted": False,
+                },
+            ),
+            StoryEntity(
+                entity_id="belief_002",
+                entity_type=EntityType.BELIEF,
+                name="Alice hates Bob",
+                properties={
+                    "belief_id": "belief_002",
+                    "belief_holder": "Alice",
+                    "belief_subject": subject,
+                    "belief_content": "hates",
+                    "confidence": 0.0,
+                    "source": "rumor",
+                    "graph_id": graph_id,
+                    "is_deleted": True,
+                },
+            ),
+        ]
+        
+        mock_graph_manager.query_entities.return_value = entities
+        
+        # 默认不包含已删除的
+        beliefs = belief_manager.get_beliefs_about(graph_id, subject)
+        assert len(beliefs) == 1
+        assert beliefs[0].content == "likes"
+        
+        # 明确要求包含已删除的
+        beliefs_with_deleted = belief_manager.get_beliefs_about(graph_id, subject, include_deleted=True)
+        assert len(beliefs_with_deleted) == 2
 
 
 if __name__ == "__main__":
