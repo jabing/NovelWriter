@@ -16,6 +16,7 @@ from config import (
 from app.api.characters import characters_bp
 from app.api.simulation import simulation_bp
 from app.api.narratives import narratives_bp
+from app.api.projects import projects_bp
 from app.database import db
 
 # 记录应用启动时间
@@ -37,6 +38,7 @@ db.init_app(app)
 app.register_blueprint(characters_bp)
 app.register_blueprint(simulation_bp)
 app.register_blueprint(narratives_bp)
+app.register_blueprint(projects_bp)
 
 
 @app.route('/health')

@@ -11,6 +11,11 @@ from .event import (
     EventUpdate,
     EventResponse,
 )
+from .project import (
+    ProjectCreate,
+    ProjectUpdate,
+    ProjectResponse,
+)
 
 __all__ = [
     "CharacterCreate",
@@ -20,4 +25,7 @@ __all__ = [
     "EventCreate",
     "EventUpdate",
     "EventResponse",
+    "ProjectCreate",
+    "ProjectUpdate",
+    "ProjectResponse",
 ]
