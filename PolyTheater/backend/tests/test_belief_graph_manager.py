@@ -57,7 +57,7 @@ class TestBeliefGraphManager:
         call_args = mock_graph_manager.add_entity.call_args
         entity = call_args[0][1]
         assert isinstance(entity, StoryEntity)
-        assert entity.entity_type == EntityType.CONCEPT
+        assert entity.entity_type == EntityType.BELIEF
         assert entity.properties["belief_holder"] == "character_1"
         assert entity.properties["belief_subject"] == "character_2"
         assert entity.properties["confidence"] == 0.8
@@ -91,7 +91,7 @@ class TestBeliefGraphManager:
         # 创建模拟实体
         entity1 = StoryEntity(
             entity_id="belief_001",
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name="Alice likes Bob",
             properties={
                 "belief_id": "belief_001",
@@ -117,7 +117,7 @@ class TestBeliefGraphManager:
         """测试获取关于某实体的信念"""
         entity1 = StoryEntity(
             entity_id="belief_001",
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name="Alice likes Bob",
             properties={
                 "belief_id": "belief_001",
@@ -141,7 +141,7 @@ class TestBeliefGraphManager:
         """测试按来源获取信念"""
         entity1 = StoryEntity(
             entity_id="belief_001",
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name="Alice likes Bob",
             properties={
                 "belief_id": "belief_001",
@@ -274,7 +274,7 @@ class TestBeliefGraphManager:
         
         entity = belief_manager._belief_to_entity("belief_graph_001", belief)
         
-        assert entity.entity_type == EntityType.CONCEPT
+        assert entity.entity_type == EntityType.BELIEF
         assert entity.name == "Alice loves Bob"
         assert entity.properties["belief_holder"] == "Alice"
         assert entity.properties["belief_subject"] == "Bob"

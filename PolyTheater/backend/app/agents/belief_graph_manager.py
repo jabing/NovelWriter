@@ -113,7 +113,7 @@ class BeliefGraphManager:
         self._graph_to_character: dict[str, str] = {}
     
     def _belief_to_entity(self, graph_id: str, belief: Belief) -> StoryEntity:
-        """将信念转换为 StoryEntity（Concept 类型）
+        """将信念转换为 StoryEntity（Belief 类型）
         
         Args:
             graph_id: 认知图谱 ID
@@ -127,7 +127,7 @@ class BeliefGraphManager:
         
         return StoryEntity(
             entity_id=belief.belief_id,
-            entity_type=EntityType.CONCEPT,
+            entity_type=EntityType.BELIEF,
             name=name,
             description=f"{belief.holder}'s belief about {belief.subject}",
             properties={
