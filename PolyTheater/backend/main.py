@@ -64,6 +64,25 @@ def health():
     })
 
 
+@app.route('/')
+def root():
+    return jsonify({
+        "welcome": "PolyTheater API",
+        "version": "1.0.0",
+        "description": "多视角故事世界引擎 - One World, Infinite Perspectives",
+        "endpoints": [
+            {"path": "/", "method": "GET", "description": "本欢迎页面"},
+            {"path": "/health", "method": "GET", "description": "健康检查"},
+            {"path": "/api/v1/status", "method": "GET", "description": "API 状态"},
+            {"path": "/api/characters", "method": "GET, POST", "description": "角色管理"},
+            {"path": "/api/simulation", "method": "GET, POST", "description": "模拟控制"},
+            {"path": "/api/narratives", "method": "GET, POST", "description": "叙事生成"},
+            {"path": "/api/projects", "method": "GET, POST", "description": "项目管理"}
+        ],
+        "docs": "https://github.com/code-yeongyu/PolyTheater"
+    })
+
+
 @app.route('/api/v1/status')
 def status():
     return jsonify({
