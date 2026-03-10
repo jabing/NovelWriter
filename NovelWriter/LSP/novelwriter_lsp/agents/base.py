@@ -8,7 +8,11 @@ Removes Writer project-specific dependencies while maintaining core functionalit
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import override
+
+try:
+    from typing import override
+except ImportError:
+    from typing_extensions import override
 
 
 class AgentState(str, Enum):

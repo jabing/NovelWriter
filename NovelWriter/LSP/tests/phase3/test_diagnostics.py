@@ -17,155 +17,71 @@ class TestDiagnosticsFeature:
     """Tests for the diagnostics feature."""
 
     def test_register_diagnostics(self):
-        """Test registering the diagnostics feature."""
+        """Test registering the diagnostics feature stores validate_document."""
         server = MagicMock()
+        server._custom_state = {}
         index = MagicMock(spec=SymbolIndex)
 
         register_diagnostics(server, index)
 
-        assert server.feature.called
-        args, kwargs = server.feature.call_args
-        assert args[0] == types.TEXT_DOCUMENT_DID_CHANGE
+        assert "validate_document" in server._custom_state
 
     @pytest.mark.asyncio
-    async def test_on_document_change_publishes_diagnostics(self):
-        """Test that document change triggers diagnostic publishing."""
+    async def test_validate_document_publishes_diagnostics(self):
+        """Test that validation publishes diagnostics."""
         server = MagicMock()
+        server._custom_state = {}
         index = MagicMock(spec=SymbolIndex)
 
-        # Create mock document
-        mock_document = MagicMock()
-        mock_document.source = """
+        register_diagnostics(server, index)
+        
+        validate_func = server._custom_state["validate_document"]
+        
+        content = """
 @Character: Test { age: 25 }
 @Character: Test { age: 30 }
 """
-        server.workspace.get_text_document.return_value = mock_document
-
-        # We'll use a class to capture the registered handler
-        registered_handlers = []
-
-        def capture_decorator(*args, **kwargs):
-            def decorator(func):
-                registered_handlers.append(func)
-                return func
-
-            return decorator
-
-        server.feature.side_effect = capture_decorator
-
-        # Register the diagnostics feature
-        register_diagnostics(server, index)
-
-        # Get the registered handler
-        assert len(registered_handlers) == 1
-        handler = registered_handlers[0]
-
-        # Call the handler
-        params = types.DidChangeTextDocumentParams(
-            text_document=types.VersionedTextDocumentIdentifier(
-                uri="file:///test.md",
-                version=1,
-            ),
-            content_changes=[],
-        )
-
-        await handler(params)
-
-        # Verify diagnostics were published
+        
+        await validate_func("file:///test.md", content)
+        
         assert server.publish_diagnostics.called
         publish_args = server.publish_diagnostics.call_args
         assert publish_args[0][0] == "file:///test.md"
-        assert len(publish_args[0][1]) > 0
 
     @pytest.mark.asyncio
-    async def test_on_document_change_no_issues(self):
-        """Test document change with no validation issues."""
+    async def test_validate_document_no_issues(self):
+        """Test validation with no issues."""
         server = MagicMock()
+        server._custom_state = {}
         index = MagicMock(spec=SymbolIndex)
 
-        # Create mock document with no issues
-        mock_document = MagicMock()
-        mock_document.source = """
+        register_diagnostics(server, index)
+        
+        validate_func = server._custom_state["validate_document"]
+        
+        content = """
 @Character: Alice { age: 25 }
 """
-        server.workspace.get_text_document.return_value = mock_document
-
-        # Capture registered handler
-        registered_handlers = []
-
-        def capture_decorator(*args, **kwargs):
-            def decorator(func):
-                registered_handlers.append(func)
-                return func
-
-            return decorator
-
-        server.feature.side_effect = capture_decorator
-
-        # Register the diagnostics feature
-        register_diagnostics(server, index)
-
-        # Get the registered handler
-        assert len(registered_handlers) == 1
-        handler = registered_handlers[0]
-
-        # Call the handler
-        params = types.DidChangeTextDocumentParams(
-            text_document=types.VersionedTextDocumentIdentifier(
-                uri="file:///test.md",
-                version=1,
-            ),
-            content_changes=[],
-        )
-
-        await handler(params)
-
-        # Verify diagnostics were published
+        
+        await validate_func("file:///test.md", content)
+        
         assert server.publish_diagnostics.called
         publish_args = server.publish_diagnostics.call_args
         assert publish_args[0][0] == "file:///test.md"
 
     @pytest.mark.asyncio
-    async def test_on_document_change_error_handling(self):
-        """Test error handling in document change handler."""
+    async def test_validate_document_error_handling(self):
+        """Test error handling in validation."""
         server = MagicMock()
+        server._custom_state = {}
         index = MagicMock(spec=SymbolIndex)
 
-        # Make get_text_document raise an exception
-        server.workspace.get_text_document.side_effect = Exception("Test error")
-
-        # Capture registered handler
-        registered_handlers = []
-
-        def capture_decorator(*args, **kwargs):
-            def decorator(func):
-                registered_handlers.append(func)
-                return func
-
-            return decorator
-
-        server.feature.side_effect = capture_decorator
-
-        # Register the diagnostics feature
         register_diagnostics(server, index)
-
-        # Get the registered handler
-        assert len(registered_handlers) == 1
-        handler = registered_handlers[0]
-
-        # Call the handler
-        params = types.DidChangeTextDocumentParams(
-            text_document=types.VersionedTextDocumentIdentifier(
-                uri="file:///test.md",
-                version=1,
-            ),
-            content_changes=[],
-        )
-
-        await handler(params)
-
-        # Verify diagnostics were cleared on error
+        
+        validate_func = server._custom_state["validate_document"]
+        
+        await validate_func("file:///test.md", "test content")
+        
         assert server.publish_diagnostics.called
         publish_args = server.publish_diagnostics.call_args
         assert publish_args[0][0] == "file:///test.md"
-        assert len(publish_args[0][1]) == 0

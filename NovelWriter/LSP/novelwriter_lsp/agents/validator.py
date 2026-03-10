@@ -8,7 +8,11 @@ Checks for consistency issues in the novel content:
 """
 
 import re
-from typing import override
+
+try:
+    from typing import override
+except ImportError:
+    from typing_extensions import override
 from .base import BaseAgent, AgentResult
 
 
