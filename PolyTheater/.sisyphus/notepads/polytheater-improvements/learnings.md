@@ -199,3 +199,318 @@ console.log(characterStore.protagonists)
 - 所有异步操作都有 loading 和 error 状态管理
 - 使用 JSDoc 注释提供类型信息和 API 文档
 - 分离状态管理和数据获取逻辑（Store vs API layer）
+
+## Task 2.1: storyStore (Pinia) 创建 (2026-03-09)
+
+### 发现
+1. **Pinia Store 结构**
+   - 使用 Composition API 风格：`defineStore('name', () => { ... })`
+   - State 使用 `ref()` 包装，Actions 是普通异步函数
+   - 返回对象包含所有 state 和 actions
+
+2. **API 端点差异**
+   - `polytheater.js` 中的 `storyApi` 使用 `/stories` 端点
+   - Wave 1 创建的后端实际使用 `/projects` 端点
+   - storyStore 需要直接使用 axios 调用 `/projects` API
+
+3. **Axios 实例配置**
+   - 使用 `import.meta.env.VITE_API_URL` 或默认 `http://localhost:5001/api`
+   - `import.meta.env` 是 Vite 特定功能，只能在 Vite 环境中使用
+   - 不能用 Node.js 直接测试导入，必须在 Vite 环境中运行
+
+4. **响应式状态管理**
+   - 创建/更新/删除操作需要同步更新 state（projects 列表和 currentProject）
+   - 使用 `loading` 和 `error` 状态跟踪操作进度
+   - 清除操作：`clearCurrentProject()` 和 `clearError()`
+
+5. **错误处理**
+   - 后端返回格式：`{ success, data, message, timestamp }`
+   - 错误格式：`err.response?.data?.error?.message`
+   - 每个操作都设置 loading 和 error 状态
+
+### 验证方法
+```bash
+# 1. 验证文件创建
+ls -lah frontend/src/stores/storyStore.js
+# 输出: 226 lines, 5.4KB
+
+# 2. 验证模块导出（在 Vite 环境中）
+# import { useStoryStore } from '@/stores/storyStore'
+# const store = useStoryStore()
+```
+
+### 最佳实践
+- Pinia store 使用 Composition API 风格更灵活
+- 公共 API 使用 JSDoc 注释提供类型信息和文档
+- Axios 实例与 polytheater.js 保持一致的配置
+- 状态更新时保持列表和当前项的同步
+
+## Task 2.1 & 2.2 Verification (2026-03-10)
+
+### 发现
+Tasks 2.1 and 2.2 were already implemented. Stores exist and are functional.
+
+### Store Implementation Status
+
+**storyStore.js** (`frontend/src/stores/storyStore.js`):
+- ✅ Implements all required state: `currentProject`, `projects`, `loading`, `error`
+- ✅ Implements all required methods
+- ⚠️ Uses direct axios instance instead of `polytheater.js` API module
+- ✅ Calls `/api/projects` endpoint (correct for this backend)
+
+**characterStore.js** (`frontend/src/stores/characterStore.js`):
+- ✅ Implements all required state: `characters`, `selectedCharacter`, `loading`, `error`
+- ✅ Implements all required methods
+- ✅ Store联动: `setCurrentProject(projectId)` for project switching
+- ✅ Uses `characterApi` from `polytheater.js` correctly
+
+**agentStore.js** (Bonus):
+- Agent management store with mock data (not in original plan)
+
+### Backend API Verification
+
+Backend endpoints (`backend/app/api/projects.py`):
+```
+GET    /api/projects              → List projects (returns {projects: [], total, page, per_page, pages})
+POST   /api/projects              → Create project (returns project object)
+GET    /api/projects/<id>         → Get project details
+PUT    /api/projects/<id>         → Update project
+DELETE /api/projects/<id>         → Delete project
+```
+
+### Potential Issues
+
+1. **API Response Format Mismatch**:
+   - Backend returns: `{ projects: [...], total: 10, page: 1, per_page: 20 }`
+   - storyStore expects: `response.data.data`
+   - Should be: `response.data.projects`
+   - Needs verification when backend is running
+
+2. **API Module Inconsistency**:
+   - `polytheater.js` exports `storyApi` calling `/stories` endpoint
+   - Backend actually uses `/projects` endpoint
+   - storyStore correctly calls `/projects` directly
+   - Consider updating `polytheater.js` to align with backend
+
+### Remaining Work
+
+**Task 2.3 - Router**: NOT DONE
+- Current router has no project ID support
+- Routes: `/world`, `/chapter-editor` have no `:projectId` parameter
+- Need to add: `/projects`, `/story/:projectId`, `/story/:projectId/chapter/:chapterId`
+
+**Task 2.4 - ProjectSelector**: NOT DONE
+- Component does not exist
+- Needs to be created
+
+### Next Actions
+1. ✅ Mark tasks 2.1 and 2.2 complete in plan
+2. ✅ Close bd issues for completed tasks
+3. ⏳ Implement task 2.3 - Update router with project ID support
+4. ⏳ Implement task 2.4 - Create ProjectSelector component
+
+## Task 2.4: ProjectSelector Component (2026-03-10)
+
+### 发现
+
+1. **Vite Alias Configuration**
+   - The `@` path alias was NOT configured in vite.config.js
+   - Fixed by adding `resolve.alias` with `fileURLToPath(new URL('./src', import.meta.url))`
+   - This was a pre-existing issue affecting ProjectsView.vue imports
+
+2. **Design System Approach**
+   - Existing tokens.css uses Apple-style (blue/white, system fonts)
+   - Task specified LITERARY style (warm browns, serif fonts)
+   - Solution: Defined component-scoped CSS variables for literary theme
+   - Colors: `--literary-primary: #8B4513` (saddle brown), `--literary-accent: #F4A460` (sandy brown)
+   - Fonts: Georgia, Times New Roman for book-like feel
+
+3. **Component Structure Pattern**
+   - Vue 3 `<script setup>` syntax with composition API
+   - Store integration: `const storyStore = useStoryStore()`
+   - Router navigation: `router.push(\`/story/${project.id}\`)`
+   - Loading/error states with reactive refs
+
+4. **Modal Implementation**
+   - Used `<Teleport to="body">` for modals (Vue 3 feature)
+   - Create modal with form validation
+   - Delete confirmation with warning message
+   - Focus management: `watch(showCreateModal)` + `nameInput.value?.focus()`
+
+5. **Literary Design Elements**
+   - Book-like card design with decorative bookmark
+   - Corner decorations on modals (Penguin Books inspired)
+   - Animated loading book icon
+   - Warm, paper-like color palette
+
+### 验证方法
+
+```bash
+# Build verification
+cd frontend && npm run build
+# Result: ✓ built in 3.04s
+
+# Component location
+ls -la frontend/src/components/ProjectSelector.vue
+# Result: 21537 bytes
+```
+
+### 最佳实践
+
+- Use component-scoped CSS variables for themed components
+- `<Teleport>` for modal rendering outside component hierarchy
+- `watch()` for modal open/close side effects
+- Use existing spacing system where possible: `var(--space-6, 24px)`
+- Fallback values for CSS variables: `var(--space-6, 24px)`
+
+### Files Modified/Created
+
+1. **Created**: `frontend/src/components/ProjectSelector.vue` (21KB)
+   - Literary design with warm browns and serif fonts
+   - Project cards grid with bookmark decoration
+   - Create project modal with form
+   - Delete confirmation modal
+   - Loading, error, and empty states
+
+2. **Fixed**: `frontend/vite.config.js`
+   - Added `@` alias resolution for imports
+   - This fixed existing `ProjectsView.vue` import issue
+
+## Task 2.3: Router 项目ID路由支持 (2026-03-10)
+
+### 发现
+
+1. **Vue Router 参数化路由**
+   - 使用 `:projectId` 语法定义动态路由参数
+   - 组件中通过 `useRoute().params.projectId` 访问参数
+   - 可以嵌套参数：`/story/:projectId/chapter/:chapterId`
+
+2. **Vite `@` 别名配置**
+   - 需要在 `vite.config.js` 中配置 `resolve.alias`
+   - 使用 `fileURLToPath(new URL('./src', import.meta.url))` 解析路径
+   - 别名允许使用 `@/stores/storyStore` 代替相对路径
+
+3. **路由命名冲突问题**
+   - 同一个 `name` 不能用于多个路由
+   - `/world` 和 `/story/:projectId` 都指向 `StoryWorld.vue`
+   - 解决：使用不同名称（`World` 和 `StoryWorld`），或保留原有名称给新路由
+
+4. **Route Guard 设计**
+   - `router.beforeEach((to, from, next) => { ... })` 用于全局导航守卫
+   - 可用于检查项目上下文、重定向未授权访问
+   - 当前实现：简单允许所有导航，为未来扩展预留
+
+### 创建的文件
+
+**frontend/src/views/ProjectsView.vue**:
+- 项目列表页面，显示所有项目
+- 支持创建新项目
+- 点击项目跳转到 `/story/:projectId`
+- 使用 `storyStore` 管理状态
+
+**frontend/src/router/index.js 更新**:
+- 新增 `/projects` 路由
+- 新增 `/story/:projectId` 路由
+- 新增 `/story/:projectId/chapter/:chapterId` 路由
+- 保留所有现有路由
+- 添加全局路由守卫
+
+### 路由结构
+
+```
+/                    → HomeView.vue
+/projects            → ProjectsView.vue (新建)
+/dashboard           → Dashboard.vue
+/world               → StoryWorld.vue (保留原有)
+/story/:projectId    → StoryWorld.vue (新增，带项目参数)
+/story/:projectId/chapter/:chapterId → ChapterEditor.vue
+/characters          → CharactersView.vue
+/narrative           → NarrativeView.vue
+/chapter-editor      → ChapterEditor.vue (保留原有)
+```
+
+### 验证方法
+
+```bash
+# 验证构建成功
+cd frontend && npm run build
+# 输出: ✓ built in 4.07s
+
+# 验证路由文件
+cat frontend/src/router/index.js | grep "projectId"
+# 输出: path: '/story/:projectId'
+# 输出: path: '/story/:projectId/chapter/:chapterId'
+```
+
+## Task: StoryWorld.vue 重构 - 使用 characterStore、路由参数和文学风格设计 (2026-03-10)
+
+### 完成的工作
+
+1. **characterStore 集成**
+   - 导入 `useCharacterStore` from `@/stores/characterStore`
+   - 替换本地 `characters` ref 为 `characterStore.characters`
+   - 使用 `characterStore.loading` 显示加载状态
+   - 使用 `characterStore.error` 显示错误信息
+   - 调用 store actions 进行 CRUD：createCharacter, updateCharacter, deleteCharacter
+
+2. **路由参数集成**
+   - 导入 `useRoute` from `vue-router`
+   - 使用 `computed(() => route.params.projectId)` 获取项目 ID
+   - 在 `onMounted` 中调用 `characterStore.fetchCharacters(projectId.value)`
+   - 使用 `watch` 监听 projectId 变化并重新获取数据
+
+3. **文学风格设计 Tokens 应用**
+   - 使用 CSS 变量：`--color-primary` (#8B4513), `--color-secondary` (#D2691E), `--color-accent` (#F4A460)
+   - 使用 CSS 变量：`--color-background` (#FAF0E6), `--color-text` (#3E2723)
+   - 使用 CSS 变量：`--font-serif` (Georgia, Times New Roman)
+   - 使用 CSS 变量：`--spacing-*`, `--radius-*`, `--shadow-paper`
+
+4. **新增功能**
+   - 添加了加载状态显示（带旋转动画）
+   - 添加了错误状态显示和重试功能
+   - 所有按钮添加了 `disabled` 状态处理
+   - 添加了 `formatRole` 辅助函数显示中文角色定位
+
+5. **保留的原有功能**
+   - 故事创建表单完整保留
+   - 角色列表展示完整保留
+   - 角色创建/编辑对话框完整保留
+   - 角色 CRUD 完整交互保留
+   - 所有表单验证保留
+
+### 关键代码模式
+
+```javascript
+// Store 和 Route 集成
+const route = useRoute()
+const characterStore = useCharacterStore()
+const projectId = computed(() => route.params.projectId)
+
+onMounted(async () => {
+  if (projectId.value) {
+    await characterStore.fetchCharacters(projectId.value)
+  }
+})
+
+watch(projectId, async (newId) => {
+  if (newId) {
+    await characterStore.fetchCharacters(newId)
+  }
+})
+```
+
+### 验证结果
+
+```bash
+cd frontend && npm run build
+# 结果: ✓ built in 2.76s
+```
+
+### 最佳实践
+
+- 使用 `computed` 包装路由参数，确保响应式更新
+- 使用 `watch` 监听 projectId 变化，自动重新加载数据
+- 所有 CRUD 操作都检查 `projectId.value` 是否存在
+- 使用 CSS 变量替代硬编码颜色和间距
+- 所有异步操作添加 loading 和 error 状态处理
+

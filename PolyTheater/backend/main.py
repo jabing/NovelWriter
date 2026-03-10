@@ -9,6 +9,7 @@ from app.api.characters import characters_bp
 from app.api.simulation import simulation_bp
 from app.api.narratives import narratives_bp
 from app.api.projects import projects_bp
+from app.api.dashboard import dashboard_bp
 from app.database import db
 
 # 记录应用启动时间
@@ -47,6 +48,7 @@ def create_app(config_class=DevelopmentConfig):
     app.register_blueprint(simulation_bp)
     app.register_blueprint(narratives_bp)
     app.register_blueprint(projects_bp)
+    app.register_blueprint(dashboard_bp)
     
     # 健康检查端点
     @app.route('/health')
