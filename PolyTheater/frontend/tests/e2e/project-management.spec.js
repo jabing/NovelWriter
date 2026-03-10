@@ -7,7 +7,7 @@ test.describe('项目管理', () => {
 
   test('首页加载', async ({ page }) => {
     // 验证页面标题或主要元素存在
-    await expect(page).toHaveTitle(/PolyTheater/);
+    await expect(page).toHaveTitle(/NovelWriter/);
   });
 
   test('访问项目列表', async ({ page }) => {
