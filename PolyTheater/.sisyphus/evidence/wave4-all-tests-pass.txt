@@ -1,0 +1,33 @@
+
+> polytheater-frontend@0.1.0 test:e2e
+> playwright test
+
+
+Running 25 tests using 8 workers
+
+[1A[2K[1/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:34:3 › Enhanced Dashboard › Dashboard 应该显示图表
+[1A[2K[2/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:4:3 › Enhanced Dashboard › Dashboard 页面应该加载增强版
+[1A[2K[3/25] [chromium] › tests\e2e\character-management.spec.js:26:3 › 角色管理 › 角色 API 端点应该可访问
+[1A[2K[4/25] [chromium] › tests\e2e\character-management.spec.js:18:3 › 角色管理 › 后端 API 应该健康
+[1A[2K[5/25] [chromium] › tests\e2e\character-management.spec.js:11:3 › 角色管理 › 角色页面应该有内容
+[1A[2K[6/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:19:3 › Enhanced Dashboard › Dashboard 应该显示统计卡片
+[1A[2K[7/25] [chromium] › tests\e2e\character-management.spec.js:4:3 › 角色管理 › 应该能访问角色页面
+[1A[2K[8/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:46:3 › Enhanced Dashboard › Dashboard 应该显示活动区域
+[1A[2K[9/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:58:3 › Enhanced Dashboard › Dashboard 应该有刷新按钮
+[1A[2K[10/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:70:3 › Enhanced Dashboard › 点击刷新按钮应该刷新数据
+[1A[2K[11/25] [chromium] › tests\e2e\dashboard-enhanced.spec.js:87:3 › Enhanced Dashboard › Dashboard API 应该返回正确数据
+[1A[2K[12/25] [chromium] › tests\e2e\dashboard.spec.js:4:3 › Dashboard › Dashboard 路由应该存在
+[1A[2K[13/25] [chromium] › tests\e2e\dashboard.spec.js:14:3 › Dashboard › Dashboard API 应该返回统计数据
+[1A[2K[14/25] [chromium] › tests\e2e\dashboard.spec.js:26:3 › Dashboard › Dashboard API 应该返回健康状态
+[1A[2K[15/25] [chromium] › tests\e2e\dashboard.spec.js:37:3 › Dashboard › Dashboard API 应该返回活动日志
+[1A[2K[16/25] [chromium] › tests\e2e\dashboard.spec.js:47:3 › Dashboard › Dashboard 应该支持自动刷新
+[1A[2K[17/25] [chromium] › tests\e2e\dashboard.spec.js:66:3 › Dashboard › 所有 Dashboard 端点都应该可访问
+[1A[2K[18/25] [chromium] › tests\e2e\narrative-generation.spec.js:8:3 › 叙事生成 › 访问章节编辑器
+[1A[2K[19/25] [chromium] › tests\e2e\narrative-generation.spec.js:24:3 › 叙事生成 › API 叙事生成检查
+[1A[2K[20/25] [chromium] › tests\e2e\narrative-generation.spec.js:16:3 › 叙事生成 › 叙事生成页面元素
+[1A[2K[21/25] [chromium] › tests\e2e\narrative-generation.spec.js:30:3 › 叙事生成 › API 状态检查
+[1A[2K[22/25] [chromium] › tests\e2e\project-management.spec.js:4:3 › 项目管理 › 首页应该加载
+[1A[2K[23/25] [chromium] › tests\e2e\project-management.spec.js:15:3 › 项目管理 › 应该能访问项目列表页面
+[1A[2K[24/25] [chromium] › tests\e2e\project-management.spec.js:22:3 › 项目管理 › 应该能访问创建项目表单
+[1A[2K[25/25] [chromium] › tests\e2e\project-management.spec.js:29:3 › 项目管理 › 后端 API 应该健康
+[1A[2K  25 passed (9.1s)

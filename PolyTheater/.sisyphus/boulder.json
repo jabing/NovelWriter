@@ -1,11 +1,11 @@
 {
-  "active_plan": "C:\\dev_projects\\PolyTheater\\.sisyphus\\plans\\add-root-route.md",
-  "started_at": "2026-03-10T15:30:25.559Z",
-  "completed_at": "2026-03-10T15:36:00.000Z",
+  "active_plan": "C:\dev_projects\PolyTheater\.sisyphus\plans\fix-dashboard-tests.md",
+  "started_at": "2026-03-10T20:48:23.836Z",
+  "completed_at": "2026-03-10T21:55:00.000Z",
   "session_ids": [
-    "ses_327b50a90ffe6txkAkVAxNf2TQ"
+    "ses_32685e06effe47LMtkN0xRMp9w"
   ],
-  "plan_name": "add-root-route",
+  "plan_name": "fix-dashboard-tests",
   "agent": "atlas",
   "status": "completed"
 }
