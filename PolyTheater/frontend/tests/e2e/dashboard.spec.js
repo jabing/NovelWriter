@@ -8,7 +8,7 @@ test.describe('Dashboard', () => {
     await expect(page).toHaveURL(/\/dashboard/);
     
     // 验证页面加载（即使内容是空的）
-    await expect(page.locator('#app')).toBeAttached();
+    await expect(page.locator('#app').first()).toBeAttached();
   });
 
   test('Dashboard API 应该返回统计数据', async ({ page }) => {

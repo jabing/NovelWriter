@@ -8,7 +8,7 @@ test.describe('项目管理', () => {
     await expect(page).toHaveTitle(/NovelWriter|PolyTheater/);
     
     // 验证 #app 元素存在
-    const app = page.locator('#app');
+    const app = page.locator('#app').first();
     await expect(app).toBeAttached();
   });
 
