@@ -15,7 +15,7 @@ import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import Any, Callable
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -283,7 +283,7 @@ class Neo4jClient:
         self,
         nodes: list[tuple[str, dict[str, Any]]],
         batch_size: int = 1000,
-        progress_callback: callable | None = None,
+        progress_callback: Callable | None = None,
     ) -> tuple[int, list[str]]:
         """Batch create nodes for better performance.
 
@@ -353,7 +353,7 @@ class Neo4jClient:
         self,
         relationships: list[tuple[str, str, str, dict[str, Any]]],
         batch_size: int = 1000,
-        progress_callback: callable | None = None,
+        progress_callback: Callable | None = None,
     ) -> tuple[int, list[str]]:
         """Batch create relationships for better performance.
 

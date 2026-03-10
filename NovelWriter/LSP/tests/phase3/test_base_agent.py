@@ -4,7 +4,10 @@ Tests for NovelWriter LSP Base Agent.
 This module tests the base agent class defined in novelwriter_lsp.agents.base.
 """
 
-from typing import override
+try:
+    from typing import override
+except ImportError:
+    from typing_extensions import override
 import pytest
 from novelwriter_lsp.agents import AgentState, AgentResult, BaseAgent
 
