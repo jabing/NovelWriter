@@ -160,6 +160,10 @@ def generate_narrative():
         if not isinstance(events_data, list):
             return error_response(ErrorCode.VALIDATION_ERROR, message="events must be a list")
         
+        
+        # Validate events are not empty
+        if len(events_data) == 0:
+            return error_response(ErrorCode.VALIDATION_ERROR, message="events must not be empty")
         validated_characters = []
         for i, char_data in enumerate(characters_data):
             try:

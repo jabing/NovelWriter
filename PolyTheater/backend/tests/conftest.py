@@ -113,7 +113,7 @@ def sample_milestone():
 @pytest.fixture
 def test_app():
     """创建测试 Flask 应用"""
-    from flask import Flask
+    from flask import Flask, jsonify
     from flask_cors import CORS
     from app.database import db
     from app.api.characters import characters_bp
@@ -129,6 +129,35 @@ def test_app():
     
     CORS(app)
     db.init_app(app)
+    
+    # Add health and status routes (from main.py)
+    import time
+    from datetime import datetime, timezone
+    
+    @app.route('/health')
+    def health():
+        return jsonify({
+            "status": "healthy",
+            "database": "connected",
+            "version": "1.0.0",
+            "uptime": "0h 0m 0s",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        })
+    
+    @app.route('/')
+    def root():
+        return jsonify({
+            "welcome": "PolyTheater API",
+            "version": "1.0.0"
+        })
+    
+    @app.route('/api/v1/status')
+    def status():
+        return jsonify({
+            "status": "running",
+            "version": "1.0.0"
+        })
+
     
     app.register_blueprint(characters_bp)
     app.register_blueprint(simulation_bp)
