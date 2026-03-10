@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "PolyTheater",
+  "project_id": "e355c3e5-b776-4169-bcad-2e3e63ba6ffc"
+}
