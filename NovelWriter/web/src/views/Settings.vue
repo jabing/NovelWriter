@@ -238,14 +238,16 @@ const clearApiKey = () => {
 }
 
 .quality-mode-item:hover {
-  background: var(--color-surface-elevated);
+  background: var(--color-bg-secondary);
   border-color: var(--color-primary);
   transform: translateY(-1px);
 }
 
 .quality-mode-item.active {
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(139, 90, 43, 0.25);
   border-color: transparent;
 }
 
@@ -256,9 +258,20 @@ const clearApiKey = () => {
 }
 
 .quality-mode-content p {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   opacity: 0.9;
 }
+}
+
+.quality-mode-item.active .quality-mode-content h3 {
+  color: #fff;
+}
+
+.quality-mode-item.active .quality-mode-content p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 
 .quality-mode-indicator {
   width: 40px;
@@ -434,7 +447,7 @@ const clearApiKey = () => {
 
 .theme-option.active {
   border-color: var(--color-primary);
-  background: var(--color-surface-elevated);
+  background: var(--color-bg-secondary);
 }
 
 .theme-preview {
@@ -523,7 +536,7 @@ const clearApiKey = () => {
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
+  background: var(--color-primary);
   color: white;
 }
 
