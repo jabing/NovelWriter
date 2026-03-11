@@ -11,6 +11,7 @@ const router = createRouter({
         { path: '', name: 'Dashboard', component: () => import('@/views/Dashboard.vue') },
         { path: 'projects', name: 'Projects', component: () => import('@/views/Projects.vue') },
         { path: 'projects/:id', name: 'ProjectDetail', component: () => import('@/views/ProjectDetail.vue') },
+        { path: 'writing', name: 'Writing', component: () => import('@/views/Writing.vue') },
         { path: 'reading', name: 'Reading', component: () => import('@/views/Reading.vue') },
         { path: 'agents', name: 'Agents', component: () => import('@/views/Agents.vue') },
         { path: 'publish', name: 'Publish', component: () => import('@/views/Publish.vue') },

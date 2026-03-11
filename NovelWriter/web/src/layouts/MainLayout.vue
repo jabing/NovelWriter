@@ -11,6 +11,7 @@ const projectStore = useProjectStore()
 const navItems = [
   { name: 'Dashboard', path: '/', icon: 'house' },
   { name: 'Projects', path: '/projects', icon: 'folder' },
+  { name: 'Writing', path: '/writing', icon: 'pencil' },
   { name: 'Reading', path: '/reading', icon: 'book' },
   { name: 'Agents', path: '/agents', icon: 'cpu' },
   { name: 'Publish', path: '/publish', icon: 'paperplane' },
@@ -73,6 +74,10 @@ const navigate = (path: string) => {
                 <!-- Folder Icon -->
                 <svg v-else-if="item.icon === 'folder'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
+                <!-- Pencil Icon -->
+                <svg v-else-if="item.icon === 'pencil'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                 </svg>
                 <!-- Book Icon -->
                 <svg v-else-if="item.icon === 'book'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
