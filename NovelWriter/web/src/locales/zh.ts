@@ -367,9 +367,7 @@ export default {
     books: '本书',
     noBooks: '暂无书籍',
     noBooksDesc: '创建你的第一个项目开始阅读'
-  }
-};
-,
+  },
   writing: {
     title: '写作工作台',
     subtitle: 'AI辅助创作，让写作更轻松',
