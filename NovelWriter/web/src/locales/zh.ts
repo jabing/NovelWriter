@@ -130,14 +130,33 @@ export default {
     restart: '重启',
     viewLogs: '查看日志'
   },
+  agents: {
+    page: {
+      title: '智能体',
+      subtitle: '管理您的 AI 写作助手'
+    },
+    stats: {
+      activeAgents: '活跃智能体',
+      totalAgents: '智能体总数'
+    },
+    list: {
+      id: 'ID: {id}',
+      lastSeen: '最后在线: {time}'
+    }
+  },
   publish: {
     title: '发布',
+    subtitle: '将您的作品发布到各个平台',
     platform: '发布平台',
     format: '导出格式',
     status: '发布状态',
     publishNow: '立即发布',
     schedule: '定时发布',
-    exportOnly: '仅导出'
+    exportOnly: '仅导出',
+    chapters: '章节',
+    reads: '阅读数',
+    manage: '管理',
+    connect: '连接'
   },
   settings: {
     title: '设置',

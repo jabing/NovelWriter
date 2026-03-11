@@ -130,14 +130,33 @@ export default {
     restart: 'Restart',
     viewLogs: 'View Logs'
   },
+  agents: {
+    page: {
+      title: 'Agents',
+      subtitle: 'Manage your AI writing assistants'
+    },
+    stats: {
+      activeAgents: 'Active Agents',
+      totalAgents: 'Total Agents'
+    },
+    list: {
+      id: 'ID: {id}',
+      lastSeen: 'Last seen: {time}'
+    }
+  },
   publish: {
     title: 'Publish',
+    subtitle: 'Publish your work to various platforms',
     platform: 'Publish Platform',
     format: 'Export Format',
     status: 'Publish Status',
     publishNow: 'Publish Now',
     schedule: 'Schedule',
-    exportOnly: 'Export Only'
+    exportOnly: 'Export Only',
+    chapters: 'Chapters',
+    reads: 'Reads',
+    manage: 'Manage',
+    connect: 'Connect'
   },
   settings: {
     title: 'Settings',
