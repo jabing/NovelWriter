@@ -41,6 +41,7 @@ export default {
     updatedAt: 'Updated At',
     wordCount: 'Word Count',
     chapterCount: 'Chapter Count',
+    genre: 'Genre',
     confirmDelete: 'Are you sure you want to delete this project? This action cannot be undone.',
     searchPlaceholder: 'Search projects...',
     viewCard: 'Card',
@@ -56,6 +57,52 @@ export default {
     in_progress: 'in progress',
     completed: 'completed',
     archived: 'archived'
+  },
+  projectDetail: {
+    tabs: {
+      overview: 'Overview',
+      chapters: 'Chapters',
+      characters: 'Characters',
+      settings: 'Settings'
+    },
+    actions: {
+      edit: 'Edit Project',
+      addChapter: 'Add Chapter',
+      export: 'Export'
+    },
+    notFound: {
+      title: 'Project Not Found',
+      description: "The project you're looking for doesn't exist or has been deleted.",
+      backButton: 'Back to Projects'
+    },
+    aria: {
+      goBack: 'Go back'
+    },
+    progress: {
+      unit: '%'
+    },
+    overview: {
+      premise: 'Premise',
+      statistics: 'Statistics',
+      chapters: 'Chapters',
+      words: 'Words',
+      target: 'Target',
+      themes: 'Themes',
+      details: 'Details',
+      pov: 'POV',
+      tone: 'Tone',
+      audience: 'Audience',
+      structure: 'Structure'
+    },
+    settings: {
+      title: 'Project Settings'
+    },
+    empty: {
+      chapters: 'Chapter management coming soon',
+      chaptersHint: '{completed} of {total} chapters completed',
+      characters: 'Character management coming soon',
+      settings: 'Project settings coming soon'
+    }
   },
   chapter: {
     title: 'Chapter',

@@ -41,6 +41,7 @@ export default {
     updatedAt: '更新时间',
     wordCount: '字数统计',
     chapterCount: '章节数量',
+    genre: '类型',
     confirmDelete: '确定要删除此项目吗？此操作不可撤销。',
     searchPlaceholder: '搜索项目...',
     viewCard: '卡片',
@@ -56,6 +57,52 @@ export default {
     in_progress: '进行中',
     completed: '已完成',
     archived: '已归档'
+  },
+  projectDetail: {
+    tabs: {
+      overview: '概览',
+      chapters: '章节',
+      characters: '角色',
+      settings: '设置'
+    },
+    actions: {
+      edit: '编辑项目',
+      addChapter: '添加章节',
+      export: '导出'
+    },
+    notFound: {
+      title: '项目未找到',
+      description: '您查找的项目不存在或已被删除。',
+      backButton: '返回项目列表'
+    },
+    aria: {
+      goBack: '返回'
+    },
+    progress: {
+      unit: '%'
+    },
+    overview: {
+      premise: '前提',
+      statistics: '统计',
+      chapters: '章节',
+      words: '字数',
+      target: '目标',
+      themes: '主题',
+      details: '详情',
+      pov: '视角',
+      tone: '基调',
+      audience: '受众',
+      structure: '结构'
+    },
+    settings: {
+      title: '项目设置'
+    },
+    empty: {
+      chapters: '章节管理即将推出',
+      chaptersHint: '已完成 {completed}/{total} 章节',
+      characters: '角色管理即将推出',
+      settings: '项目设置即将推出'
+    }
   },
   chapter: {
     title: '章节',
