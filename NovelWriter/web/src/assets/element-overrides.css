@@ -1,0 +1,670 @@
+/**
+ * Element Plus Literary Style Overrides
+ * NovelWriter - Book-inspired component theming
+ *
+ * This file overrides Element Plus default styles with literary aesthetics
+ * that match the NovelWriter design system.
+ */
+
+/* ========================================
+   BUTTONS - Literary Button Styles
+   ======================================== */
+
+/* Base button styling */
+.el-button {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary button - leather-bound style */
+.el-button--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 4px rgba(139, 90, 43, 0.2);
+}
+
+.el-button--primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 12px rgba(139, 90, 43, 0.25);
+}
+
+.el-button--primary:active {
+  background: var(--color-primary-active);
+  border-color: var(--color-primary-active);
+  transform: translateY(0);
+}
+
+.el-button--primary:focus-visible {
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
+}
+
+/* Default button - subtle paper style */
+.el-button--default {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.el-button--default:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-focus);
+  color: var(--color-primary);
+}
+
+/* Success button - manuscript ink style */
+.el-button--success {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  box-shadow: 0 2px 4px rgba(74, 124, 89, 0.2);
+}
+
+.el-button--success:hover {
+  background: #5A8C69;
+  border-color: #5A8C69;
+}
+
+/* Warning button - aged parchment style */
+.el-button--warning {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  box-shadow: 0 2px 4px rgba(184, 134, 11, 0.2);
+}
+
+.el-button--warning:hover {
+  background: #C8961B;
+  border-color: #C8961B;
+}
+
+/* Danger button - red ink style */
+.el-button--danger {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  box-shadow: 0 2px 4px rgba(155, 44, 44, 0.2);
+}
+
+.el-button--danger:hover {
+  background: #AB3C3C;
+  border-color: #AB3C3C;
+}
+
+/* Info button - library blue style */
+.el-button--info {
+  background: var(--color-info);
+  border-color: var(--color-info);
+  box-shadow: 0 2px 4px rgba(91, 124, 153, 0.2);
+}
+
+.el-button--info:hover {
+  background: #6B8CA9;
+  border-color: #6B8CA9;
+}
+
+/* Text button - subtle link style */
+.el-button--text {
+  color: var(--color-primary);
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+
+.el-button--text:hover {
+  color: var(--color-primary-hover);
+  background: transparent;
+}
+
+/* Link button */
+.el-button.is-link {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.el-button.is-link:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Plain button variant */
+.el-button.is-plain {
+  background: transparent;
+}
+
+.el-button--primary.is-plain {
+  color: var(--color-primary);
+  background: var(--color-primary-muted);
+  border-color: var(--color-primary-light);
+}
+
+.el-button--primary.is-plain:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Disabled state */
+.el-button.is-disabled,
+.el-button.is-disabled:hover,
+.el-button.is-disabled:focus {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button with icon */
+.el-button [class*='el-icon'] + span {
+  margin-left: var(--space-2);
+}
+
+/* Large button */
+.el-button--large {
+  padding: 12px 24px;
+  font-size: var(--font-size-body);
+  border-radius: var(--radius-lg);
+}
+
+/* Small button */
+.el-button--small {
+  padding: 6px 12px;
+  font-size: var(--font-size-body-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* ========================================
+   INPUTS - Paper-texture Input Fields
+   ======================================== */
+
+/* Base input wrapper */
+.el-input {
+  font-family: var(--font-sans);
+}
+
+/* Input inner field */
+.el-input__wrapper {
+  background: var(--color-bg-input);
+  border-radius: var(--radius-md);
+  box-shadow:
+    0 1px 2px rgba(44, 36, 22, 0.04),
+    inset 0 1px 3px rgba(44, 36, 22, 0.03);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-base);
+  padding: 1px 12px;
+}
+
+.el-input__wrapper:hover {
+  border-color: var(--color-border-focus);
+  box-shadow:
+    0 2px 4px rgba(44, 36, 22, 0.06),
+    inset 0 1px 3px rgba(44, 36, 22, 0.03);
+}
+
+.el-input__wrapper.is-focus {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 3px var(--color-primary-muted),
+    inset 0 1px 3px rgba(44, 36, 22, 0.03);
+}
+
+/* Input inner text */
+.el-input__inner {
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  padding: 8px 0;
+}
+
+.el-input__inner::placeholder {
+  color: var(--color-text-placeholder);
+  font-style: italic;
+}
+
+/* Input prefix/suffix icons */
+.el-input__prefix-inner,
+.el-input__suffix-inner {
+  color: var(--color-text-tertiary);
+}
+
+.el-input__wrapper.is-focus .el-input__prefix-inner,
+.el-input__wrapper.is-focus .el-input__suffix-inner {
+  color: var(--color-primary);
+}
+
+/* Textarea styling */
+.el-textarea__inner {
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--font-serif);
+  font-size: var(--font-size-body);
+  line-height: 1.7;
+  padding: var(--space-3) var(--space-4);
+  box-shadow:
+    inset 0 1px 3px rgba(44, 36, 22, 0.03);
+  transition: all var(--transition-base);
+}
+
+.el-textarea__inner:hover {
+  border-color: var(--color-border-focus);
+}
+
+.el-textarea__inner:focus {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 3px var(--color-primary-muted),
+    inset 0 1px 3px rgba(44, 36, 22, 0.03);
+  outline: none;
+}
+
+.el-textarea__inner::placeholder {
+  color: var(--color-text-placeholder);
+  font-style: italic;
+}
+
+/* Disabled input */
+.el-input.is-disabled .el-input__wrapper {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-light);
+  cursor: not-allowed;
+}
+
+.el-input.is-disabled .el-input__inner {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* ========================================
+   CARDS - Book-texture Card Components
+   ======================================== */
+
+.el-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-base);
+  overflow: hidden;
+}
+
+.el-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Card header - book spine style */
+.el-card__header {
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-tertiary) 100%
+  );
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-6);
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-h4);
+}
+
+/* Card body */
+.el-card__body {
+  padding: var(--space-6);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Card footer */
+.el-card__footer {
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-6);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-body-sm);
+}
+
+/* ========================================
+   ICONS - Literary Icon Styling
+   ======================================== */
+
+/* Base icon color */
+.el-icon {
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast);
+}
+
+/* Icon within interactive elements */
+.el-button .el-icon {
+  color: inherit;
+}
+
+/* Icon hover states */
+.el-icon:hover {
+  color: var(--color-primary);
+}
+
+/* Primary icon variant */
+.el-icon.is-primary {
+  color: var(--color-primary);
+}
+
+/* Success icon variant */
+.el-icon.is-success {
+  color: var(--color-success);
+}
+
+/* Warning icon variant */
+.el-icon.is-warning {
+  color: var(--color-warning);
+}
+
+/* Danger icon variant */
+.el-icon.is-danger {
+  color: var(--color-error);
+}
+
+/* Info icon variant */
+.el-icon.is-info {
+  color: var(--color-info);
+}
+
+/* Icon button */
+.el-button--text .el-icon {
+  font-size: 1.2em;
+}
+
+/* ========================================
+   DIALOG - Literary Modal Styling
+   ======================================== */
+
+/* Dialog overlay */
+.el-overlay {
+  background: rgba(44, 36, 22, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+/* Dialog wrapper */
+.el-dialog {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 25px 50px -12px rgba(44, 36, 22, 0.25),
+    0 0 0 1px rgba(139, 90, 43, 0.1);
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+/* Dialog header - decorative title style */
+.el-dialog__header {
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-tertiary) 100%
+  );
+  border-bottom: 2px solid var(--color-border);
+  padding: var(--space-6) var(--space-8);
+  position: relative;
+}
+
+.el-dialog__header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: var(--space-8);
+  right: var(--space-8);
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary-light) 20%,
+    var(--color-primary) 50%,
+    var(--color-primary-light) 80%,
+    transparent 100%
+  );
+}
+
+/* Dialog title */
+.el-dialog__title {
+  font-family: var(--font-serif);
+  font-size: var(--font-size-h3);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+/* Dialog close button */
+.el-dialog__headerbtn {
+  top: 50%;
+  transform: translateY(-50%);
+  right: var(--space-6);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.el-dialog__headerbtn:hover {
+  background: var(--color-primary-muted);
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--color-text-tertiary);
+  font-size: 16px;
+  transition: color var(--transition-fast);
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--color-primary);
+}
+
+/* Dialog body */
+.el-dialog__body {
+  padding: var(--space-6) var(--space-8);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  line-height: 1.7;
+}
+
+/* Dialog footer */
+.el-dialog__footer {
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-8);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ========================================
+   DARK THEME OVERRIDES
+   ======================================== */
+
+[data-theme="dark"] {
+  /* Dark theme buttons */
+  .el-button--primary {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .el-button--primary:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .el-button--default {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+
+  .el-button--default:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  /* Dark theme inputs */
+  .el-input__wrapper {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .el-input__wrapper:hover {
+    border-color: var(--color-primary-hover);
+  }
+
+  .el-input__wrapper.is-focus {
+    border-color: var(--color-primary);
+    box-shadow:
+      0 0 0 3px rgba(166, 123, 91, 0.2),
+      inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .el-input__inner {
+    color: var(--color-text-primary);
+  }
+
+  .el-input__inner::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  .el-textarea__inner {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .el-textarea__inner:focus {
+    border-color: var(--color-primary);
+    box-shadow:
+      0 0 0 3px rgba(166, 123, 91, 0.2),
+      inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Dark theme cards */
+  .el-card {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .el-card__header {
+    background: linear-gradient(
+      180deg,
+      var(--color-bg-tertiary) 0%,
+      var(--color-bg-secondary) 100%
+    );
+    border-bottom-color: var(--color-border);
+  }
+
+  .el-card__footer {
+    background: var(--color-bg-secondary);
+    border-top-color: var(--color-border);
+  }
+
+  /* Dark theme icons */
+  .el-icon {
+    color: var(--color-text-secondary);
+  }
+
+  /* Dark theme dialog */
+  .el-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .el-dialog {
+    background: var(--color-bg-elevated);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(166, 123, 91, 0.15);
+  }
+
+  .el-dialog__header {
+    background: linear-gradient(
+      135deg,
+      var(--color-bg-tertiary) 0%,
+      var(--color-bg-secondary) 100%
+    );
+    border-bottom-color: var(--color-border);
+  }
+
+  .el-dialog__header::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-primary) 20%,
+      var(--color-primary-hover) 50%,
+      var(--color-primary) 80%,
+      transparent 100%
+    );
+  }
+
+  .el-dialog__title {
+    color: var(--color-text-primary);
+  }
+
+  .el-dialog__headerbtn:hover {
+    background: rgba(166, 123, 91, 0.2);
+  }
+
+  .el-dialog__body {
+    color: var(--color-text-secondary);
+  }
+
+  .el-dialog__footer {
+    background: var(--color-bg-secondary);
+    border-top-color: var(--color-border);
+  }
+}
+
+/* ========================================
+   ANIMATIONS & TRANSITIONS
+   ======================================== */
+
+/* Dialog enter animation */
+.el-dialog {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Card hover lift */
+.el-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.el-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Button click feedback */
+.el-button:active {
+  transform: scale(0.98);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .el-dialog,
+  .el-card,
+  .el-button {
+    animation: none;
+    transition: none;
+  }
+
+  .el-card:hover {
+    transform: none;
+  }
+}
