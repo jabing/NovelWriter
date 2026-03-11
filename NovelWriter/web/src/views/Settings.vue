@@ -171,10 +171,13 @@ const clearApiKey = () => {
 .settings-page {
   padding: var(--space-6);
   max-width: 900px;
+  animation: fadeIn var(--transition-slow);
 }
 
 .page-header {
   margin-bottom: var(--space-8);
+  animation: fadeInUp var(--transition-slow) backwards;
+  animation-delay: 0.05s;
 }
 
 .page-header h1 {
@@ -197,7 +200,13 @@ const clearApiKey = () => {
 
 .settings-section {
   padding: var(--space-6);
+  animation: fadeInUp var(--transition-slow) backwards;
 }
+
+.settings-section:nth-child(1) { animation-delay: 0.1s; }
+.settings-section:nth-child(2) { animation-delay: 0.15s; }
+.settings-section:nth-child(3) { animation-delay: 0.2s; }
+.settings-section:nth-child(4) { animation-delay: 0.25s; }
 
 .settings-section h2 {
   font-size: var(--font-size-xl);
@@ -223,13 +232,15 @@ const clearApiKey = () => {
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all var(--transition-fast);
   border: 1px solid var(--color-border-light);
+  will-change: transform, box-shadow, background-color;
 }
 
 .quality-mode-item:hover {
   background: var(--color-surface-elevated);
   border-color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .quality-mode-item.active {
@@ -258,12 +269,18 @@ const clearApiKey = () => {
   justify-content: center;
   background: var(--color-surface);
   border: 2px solid var(--color-border);
+  transition: all var(--transition-fast);
 }
 
 .quality-indicator {
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.quality-mode-item:hover .quality-indicator {
+  transform: scale(1.1);
 }
 
 .quality-indicator.high {
@@ -307,6 +324,7 @@ const clearApiKey = () => {
   font-weight: var(--font-weight-medium);
   min-width: 24px;
   text-align: center;
+  transition: color var(--transition-fast);
 }
 
 /* API Key Styles */
@@ -342,6 +360,13 @@ const clearApiKey = () => {
   font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   background: var(--color-surface);
+  transition: all var(--transition-fast);
+}
+
+.api-key-input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px var(--color-primary-muted);
+  outline: none;
 }
 
 .api-key-mask {
@@ -369,6 +394,7 @@ const clearApiKey = () => {
   cursor: pointer;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .reveal-btn:hover {
@@ -395,13 +421,15 @@ const clearApiKey = () => {
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all var(--transition-fast);
   border: 1px solid var(--color-border-light);
+  will-change: transform, box-shadow, border-color;
 }
 
 .theme-option:hover {
   border-color: var(--color-primary);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .theme-option.active {
@@ -415,6 +443,11 @@ const clearApiKey = () => {
   border-radius: var(--radius-md);
   margin-bottom: var(--space-2);
   border: 1px solid var(--color-border);
+  transition: transform var(--transition-fast);
+}
+
+.theme-option:hover .theme-preview {
+  transform: scale(1.05);
 }
 
 .theme-label {
@@ -484,8 +517,9 @@ const clearApiKey = () => {
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all var(--transition-fast);
   min-height: 36px;
+  will-change: transform, box-shadow;
 }
 
 .btn-primary {
@@ -496,6 +530,11 @@ const clearApiKey = () => {
 .btn-primary:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -506,11 +545,53 @@ const clearApiKey = () => {
 
 .btn-secondary:hover {
   background: var(--color-border-light);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
 }
 
 .btn-sm {
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-xs);
   min-height: 32px;
+}
+
+/* Keyframe animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(12px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .settings-page,
+  .page-header,
+  .settings-section {
+    animation: none;
+  }
+  
+  .quality-mode-item:hover,
+  .theme-option:hover,
+  .btn:hover {
+    transform: none;
+  }
+  
+  .toggle-slider,
+  .toggle-slider:before {
+    transition: none;
+  }
 }
 </style>

@@ -56,10 +56,13 @@ function getStatusClass(status: string): string {
 <style scoped>
 .agents-page {
   padding: var(--space-6);
+  animation: fadeIn var(--transition-slow);
 }
 
 .page-header {
   margin-bottom: var(--space-8);
+  animation: fadeInUp var(--transition-slow) backwards;
+  animation-delay: 0.05s;
 }
 
 .page-header h1 {
@@ -82,6 +85,23 @@ function getStatusClass(status: string): string {
 
 .stat-card {
   text-align: center;
+  transition: all var(--transition-fast);
+  will-change: transform, box-shadow;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card:nth-child(1) {
+  animation: fadeInUp var(--transition-slow) backwards;
+  animation-delay: 0.1s;
+}
+
+.stat-card:nth-child(2) {
+  animation: fadeInUp var(--transition-slow) backwards;
+  animation-delay: 0.15s;
 }
 
 .stat-card h3 {
@@ -100,12 +120,23 @@ function getStatusClass(status: string): string {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  animation: fadeInUp var(--transition-slow) backwards;
+  animation-delay: 0.2s;
 }
 
 .agent-item {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  transition: all var(--transition-fast);
+  will-change: transform, box-shadow;
+  cursor: pointer;
+}
+
+.agent-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-focus);
 }
 
 .agent-header {
@@ -129,5 +160,35 @@ function getStatusClass(status: string): string {
 .agent-meta {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(12px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agents-page,
+  .page-header,
+  .stat-card,
+  .agents-list {
+    animation: none;
+  }
+  
+  .stat-card:hover,
+  .agent-item:hover {
+    transform: none;
+  }
 }
 </style>
