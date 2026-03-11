@@ -160,12 +160,44 @@ export default {
   },
   settings: {
     title: '设置',
+    subtitle: '配置您的偏好和应用设置',
+    qualityMode: {
+      title: '质量模式'
+    },
+    qualityModes: {
+      high: {
+        label: '高质量',
+        description: '最佳质量输出，包含详细分析'
+      },
+      medium: {
+        label: '中等质量',
+        description: '平衡质量和性能'
+      },
+      low: {
+        label: '低质量',
+        description: '最快生成速度，基础分析'
+      }
+    },
+    language: {
+      title: '语言',
+      interfaceLabel: '界面语言',
+      interfaceDescription: '选择您的首选语言'
+    },
+    apiConfig: {
+      title: 'API 配置',
+      apiKeyLabel: 'API 密钥',
+      apiKeyDescription: '输入您的 API 密钥以使用 AI 服务',
+      placeholder: '输入 API 密钥',
+      show: '显示'
+    },
+    theme: {
+      title: '主题',
+      description: '选择您的首选主题',
+      light: '浅色',
+      dark: '深色'
+    },
     general: '通用设置',
     appearance: '外观',
-    language: '语言',
-    theme: '主题',
-    light: '浅色',
-    dark: '深色',
     auto: '跟随系统',
     editor: '编辑器设置',
     fontSize: '字体大小',
@@ -183,6 +215,7 @@ export default {
     delete: '删除',
     edit: '编辑',
     create: '创建',
+    clear: '清除',
     confirm: '确认',
     close: '关闭',
     loading: '加载中...',

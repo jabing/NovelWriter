@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '@/stores/settingsStore';
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
-const qualityModes = [
-  { value: 'high', label: 'High Quality', description: 'Best quality output with detailed analysis' },
-  { value: 'medium', label: 'Medium Quality', description: 'Balanced quality and performance' },
-  { value: 'low', label: 'Low Quality', description: 'Fastest generation with basic analysis' }
-];
+const qualityModes = computed(() => [
+  { value: 'high', label: t('settings.qualityModes.high.label'), description: t('settings.qualityModes.high.description') },
+  { value: 'medium', label: t('settings.qualityModes.medium.label'), description: t('settings.qualityModes.medium.description') },
+  { value: 'low', label: t('settings.qualityModes.low.label'), description: t('settings.qualityModes.low.description') }
+]);
 
-const themes = [
-  { value: 'light', label: 'Light', preview: 'bg-white' },
-  { value: 'dark', label: 'Dark', preview: 'bg-gray-900' }
-];
+const themes = computed(() => [
+  { value: 'light', label: t('settings.themes.light'), preview: 'bg-white' },
+  { value: 'dark', label: t('settings.themes.dark'), preview: 'bg-gray-900' }
+]);
 
 const apiKey = ref('');
 const showApiKey = ref(false);
@@ -46,14 +48,14 @@ const clearApiKey = () => {
 <template>
   <div class="settings-page" data-testid="settings-page">
     <header class="page-header">
-      <h1 data-testid="settings-page-title">Settings</h1>
-      <p>Configure your preferences and application settings</p>
+      <h1 data-testid="settings-page-title">{{ t('settings.title') }}</h1>
+      <p>{{ t('settings.subtitle') }}</p>
     </header>
 
     <div class="settings-grid">
       <!-- Quality Mode Section -->
       <section class="settings-section card" data-testid="settings-quality-mode-section">
-        <h2>Quality Mode</h2>
+        <h2>{{ t('settings.qualityMode.title') }}</h2>
         <div class="quality-modes">
           <div
             v-for="mode in qualityModes"
@@ -76,11 +78,11 @@ const clearApiKey = () => {
 
       <!-- Language Section -->
       <section class="settings-section card" data-testid="settings-language-section">
-        <h2>Language</h2>
+        <h2>{{ t('settings.language.title') }}</h2>
         <div class="language-toggle">
           <div class="language-info">
-            <label>Interface Language</label>
-            <p>Select your preferred language for the application</p>
+            <label>{{ t('settings.language.interfaceLabel') }}</label>
+            <p>{{ t('settings.language.interfaceDescription') }}</p>
           </div>
           <div class="toggle-container">
             <span class="toggle-label">EN</span>
@@ -95,24 +97,24 @@ const clearApiKey = () => {
 
       <!-- API Key Section -->
       <section class="settings-section card" data-testid="settings-api-key-section">
-        <h2>API Configuration</h2>
+        <h2>{{ t('settings.apiConfig.title') }}</h2>
         <div class="api-key-section">
           <div class="api-key-info">
-            <label>API Key</label>
-            <p>Enter your API key for AI services</p>
+            <label>{{ t('settings.apiConfig.apiKeyLabel') }}</label>
+            <p>{{ t('settings.apiConfig.apiKeyDescription') }}</p>
           </div>
           <div class="api-key-input-container">
             <input
               v-if="showApiKey"
               v-model="apiKey"
               type="password"
-              placeholder="Enter API key"
+              :placeholder="t('settings.apiConfig.placeholder')"
               class="api-key-input"
               data-testid="api-key-input"
             />
             <div v-else class="api-key-mask" data-testid="api-key-masked">
               <span>••••••••</span>
-              <button @click="showApiKey = true" class="reveal-btn" data-testid="api-key-reveal-btn">Show</button>
+              <button @click="showApiKey = true" class="reveal-btn" data-testid="api-key-reveal-btn">{{ t('settings.apiConfig.show') }}</button>
             </div>
             <div class="api-key-actions">
               <button
@@ -121,7 +123,7 @@ const clearApiKey = () => {
                 class="btn btn-primary btn-sm"
                 data-testid="api-key-save-btn"
               >
-                Save
+                {{ t('common.save') }}
               </button>
               <button
                 v-if="showApiKey"
@@ -129,7 +131,7 @@ const clearApiKey = () => {
                 class="btn btn-secondary btn-sm"
                 data-testid="api-key-clear-btn"
               >
-                Clear
+                {{ t('common.clear') }}
               </button>
               <button
                 v-else
@@ -137,7 +139,7 @@ const clearApiKey = () => {
                 class="btn btn-secondary btn-sm"
                 data-testid="api-key-edit-btn"
               >
-                Edit
+                {{ t('common.edit') }}
               </button>
             </div>
           </div>
@@ -146,7 +148,7 @@ const clearApiKey = () => {
 
       <!-- Theme Section -->
       <section class="settings-section card" data-testid="settings-theme-section">
-        <h2>Theme</h2>
+        <h2>{{ t('settings.theme.title') }}</h2>
         <div class="theme-options">
           <div
             v-for="themeOption in themes"

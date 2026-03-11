@@ -160,12 +160,44 @@ export default {
   },
   settings: {
     title: 'Settings',
+    subtitle: 'Configure your preferences and application settings',
+    qualityMode: {
+      title: 'Quality Mode'
+    },
+    qualityModes: {
+      high: {
+        label: 'High Quality',
+        description: 'Best quality output with detailed analysis'
+      },
+      medium: {
+        label: 'Medium Quality',
+        description: 'Balanced quality and performance'
+      },
+      low: {
+        label: 'Low Quality',
+        description: 'Fastest generation with basic analysis'
+      }
+    },
+    language: {
+      title: 'Language',
+      interfaceLabel: 'Interface Language',
+      interfaceDescription: 'Select your preferred language for the application'
+    },
+    apiConfig: {
+      title: 'API Configuration',
+      apiKeyLabel: 'API Key',
+      apiKeyDescription: 'Enter your API key for AI services',
+      placeholder: 'Enter API key',
+      show: 'Show'
+    },
+    theme: {
+      title: 'Theme',
+      description: 'Select your preferred theme',
+      light: 'Light',
+      dark: 'Dark'
+    },
     general: 'General',
     appearance: 'Appearance',
-    language: 'Language',
-    theme: 'Theme',
-    light: 'Light',
-    dark: 'Dark',
     auto: 'Auto',
     editor: 'Editor Settings',
     fontSize: 'Font Size',
@@ -183,6 +215,7 @@ export default {
     delete: 'Delete',
     edit: 'Edit',
     create: 'Create',
+    clear: 'Clear',
     confirm: 'Confirm',
     close: 'Close',
     loading: 'Loading...',
