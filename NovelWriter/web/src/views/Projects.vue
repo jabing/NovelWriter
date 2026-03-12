@@ -14,8 +14,10 @@ import {
   Close,
   Warning,
   Loading,
-  Edit
+  Edit,
+  Delete
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -39,6 +41,11 @@ const isEditModalOpen = ref(false)
 const isEditSubmitting = ref(false)
 const editFormError = ref('')
 const editingProject = ref<Project | null>(null)
+
+// Delete confirmation modal state
+const isDeleteModalOpen = ref(false)
+const isDeleting = ref(false)
+const projectToDelete = ref<Project | null>(null)
 
 const newProjectForm = reactive<CreateProjectPayload>({
   title: '',
@@ -257,6 +264,40 @@ async function submitEditProject() {
   }
 }
 
+// Open delete confirmation modal
+function openDeleteModal(project: Project, event: Event) {
+  event.stopPropagation()
+  projectToDelete.value = project
+  isDeleteModalOpen.value = true
+}
+
+// Close delete confirmation modal
+function closeDeleteModal() {
+  isDeleteModalOpen.value = false
+  projectToDelete.value = null
+}
+
+// Confirm delete project
+async function confirmDeleteProject() {
+  if (!projectToDelete.value) return
+
+  isDeleting.value = true
+
+  try {
+    const success = await projectStore.deleteProject(projectToDelete.value.id)
+    if (success) {
+      closeDeleteModal()
+      ElMessage.success('项目删除成功')
+    } else {
+      ElMessage.error(projectStore.error || '删除项目失败')
+    }
+  } catch (err) {
+    ElMessage.error(err instanceof Error ? err.message : '删除项目失败')
+  } finally {
+    isDeleting.value = false
+  }
+}
+
 // Clear filters
 function clearFilters() {
   searchQuery.value = ''
@@ -412,6 +453,14 @@ onMounted(() => {
             :title="t('project.edit') || '编辑项目'"
           >
             <el-icon><Edit /></el-icon>
+          </button>
+          <!-- Delete Button -->
+          <button
+            class="delete-btn"
+            @click="openDeleteModal(project, $event)"
+            title="删除项目"
+          >
+            <el-icon><Delete /></el-icon>
           </button>
         </div>
 
@@ -708,6 +757,57 @@ onMounted(() => {
               >
                 <el-icon v-if="isEditSubmitting" class="spinning"><Loading /></el-icon>
                 <span v-else>保存修改</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+    <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="isDeleteModalOpen" class="modal-overlay" @click.self="closeDeleteModal">
+          <div class="modal-container delete-modal">
+            <!-- Modal Header -->
+            <div class="modal-header delete-header">
+              <div class="delete-warning-icon">
+                <el-icon :size="32"><Warning /></el-icon>
+              </div>
+              <h2 class="modal-title delete-title">确认删除项目</h2>
+              <button class="modal-close" @click="closeDeleteModal" :disabled="isDeleting">
+                <el-icon><Close /></el-icon>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <div class="delete-content">
+                <p class="delete-message">
+                  确定要删除项目 <strong>"{{ projectToDelete?.title }}"</strong> 吗？
+                </p>
+                <div class="delete-warning">
+                  <el-icon><Warning /></el-icon>
+                  <span>此操作不可撤销。项目及其所有相关数据将被永久删除。</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer delete-footer">
+              <button
+                class="btn btn-secondary"
+                @click="closeDeleteModal"
+                :disabled="isDeleting"
+              >
+                取消
+              </button>
+              <button
+                class="btn btn-danger"
+                @click="confirmDeleteProject"
+                :disabled="isDeleting"
+              >
+                <el-icon v-if="isDeleting" class="spinning"><Loading /></el-icon>
+                <span v-else>确认删除</span>
               </button>
             </div>
           </div>
@@ -1066,6 +1166,49 @@ onMounted(() => {
 
 [data-theme="dark"] .edit-btn:hover {
   background: var(--color-primary);
+  color: white;
+}
+
+/* Delete Button */
+.delete-btn {
+  position: absolute;
+  top: var(--space-3);
+  left: calc(var(--space-3) + 40px);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.project-card:hover .delete-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delete-btn:hover {
+  background: var(--color-error);
+  color: white;
+  transform: scale(1.1);
+}
+
+[data-theme="dark"] .delete-btn {
+  background: rgba(44, 36, 22, 0.9);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .delete-btn:hover {
+  background: var(--color-error);
   color: white;
 }
 
@@ -1723,6 +1866,86 @@ onMounted(() => {
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--color-bg-tertiary);
+}
+
+.modal-container.delete-modal {
+  max-width: 420px;
+}
+
+.modal-header.delete-header {
+  flex-direction: column;
+  gap: var(--space-3);
+  text-align: center;
+  border-bottom: none;
+  padding-bottom: var(--space-3);
+  position: relative;
+}
+
+.delete-warning-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 59, 48, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-error);
+}
+
+.modal-title.delete-title {
+  color: var(--color-error);
+}
+
+.modal-header.delete-header .modal-close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+}
+
+.delete-content {
+  text-align: center;
+}
+
+.delete-message {
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+  line-height: 1.6;
+}
+
+.delete-message strong {
+  color: var(--color-error);
+}
+
+.delete-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: rgba(255, 59, 48, 0.08);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+.delete-warning .el-icon {
+  flex-shrink: 0;
+}
+
+.modal-footer.delete-footer {
+  border-top: none;
+  background: transparent;
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #e0352b;
+  transform: translateY(-1px);
 }
 
 /* Modal Transition */
