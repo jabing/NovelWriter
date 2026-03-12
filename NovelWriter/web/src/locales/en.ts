@@ -6,6 +6,7 @@ export default {
     agents: 'Agents',
     writing: 'Writing',
     publish: 'Publish',
+    comments: 'Comments',
     settings: 'Settings'
   },
   dashboard: {
@@ -22,13 +23,42 @@ export default {
     noProjectsDesc: 'Start your writing journey by creating your first project. Define your story\'s premise, characters, and world.',
     createFirstProject: 'Create Your First Project',
     total: '{count} total',
-    complete: 'Complete',
     systemHealth: 'System Health',
     overallStatus: 'Overall Status',
     activeAgents: 'Active Agents',
     lastBackup: 'Last Backup',
     storageUsed: 'Storage Used',
-    activityDescription: '{completed}/{total} chapters • {words} words'
+    activityDescription: '{completed}/{total} chapters • {words} words',
+    cpuUsage: 'CPU Usage',
+    memoryUsage: 'Memory Usage',
+    activeProjects: 'Active Projects',
+    totalChapters: 'Total Chapters',
+    uptime: 'Uptime',
+    version: 'Version',
+    lastChecked: 'Last checked',
+    activeAlerts: 'Active Alerts'
+  },
+  alerts: {
+    acknowledge: 'Acknowledge',
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    critical: 'Critical',
+    filterBySeverity: 'Filter by Severity',
+    allSeverities: 'All Severities',
+    info: 'Info',
+    warning: 'Warning',
+    error: 'Error',
+    noAlerts: 'No Alerts',
+    noAlertsDescription: 'There are no active alerts at the moment.',
+    details: 'Details'
+  },
+  status: {
+    healthy: 'Healthy',
+    warning: 'Warning',
+    error: 'Error',
+    unhealthy: 'Unhealthy',
+    unknown: 'Unknown'
   },
   project: {
     title: 'Project',
@@ -243,15 +273,64 @@ export default {
     title: 'Publish',
     subtitle: 'Publish your work to various platforms',
     platform: 'Publish Platform',
+    platforms: 'Platforms',
     format: 'Export Format',
     status: 'Publish Status',
     publishNow: 'Publish Now',
+    publish: 'Publish',
+    publishing: 'Publishing...',
+    published: 'Published',
     schedule: 'Schedule',
     exportOnly: 'Export Only',
     chapters: 'Chapters',
     reads: 'Reads',
     manage: 'Manage',
-    connect: 'Connect'
+    connect: 'Connect',
+    connected: 'Connected',
+    disconnected: 'Disconnected',
+    selectProject: 'Select Project',
+    selectPlatform: 'Select Platform',
+    selectProjectPlaceholder: 'Choose a project to publish',
+    selectPlatforms: 'Select Platforms',
+    selectPlatformsPlaceholder: 'Choose target platforms',
+    selectChapters: 'Select Chapters',
+    selectChaptersPlaceholder: 'Choose chapters to publish',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    chapterCount: '{count} chapters selected',
+    noProjects: 'No projects available',
+    noPlatforms: 'No platforms available',
+    noChapters: 'No chapters available',
+    readyToPublish: 'Ready to Publish',
+    publishingProgress: 'Publishing Progress',
+    publishSuccess: 'Published successfully!',
+    success: 'Published successfully',
+    publishFailed: 'Publishing failed',
+    error: 'Publishing failed',
+    publishInProgress: 'Publishing in progress...',
+    platformStatus: {
+      active: 'Active',
+      inactive: 'Inactive',
+      maintenance: 'Maintenance'
+    },
+    projectInfo: {
+      title: 'Project',
+      genre: 'Genre',
+      chapters: 'Chapters',
+      words: 'Words',
+      progress: 'Progress'
+    },
+    validation: {
+      selectProject: 'Please select a project',
+      selectPlatforms: 'Please select at least one platform',
+      selectChapters: 'Please select at least one chapter'
+    },
+    progress: {
+      preparing: 'Preparing...',
+      uploading: 'Uploading to {platform}...',
+      completed: 'Completed',
+      failed: 'Failed'
+    }
   },
   settings: {
     title: 'Settings',
@@ -476,11 +555,12 @@ export default {
   },
   character: {
     title: 'Characters',
-    create: 'New Character',
+    create: 'Create Character',
     edit: 'Edit Character',
     delete: 'Delete Character',
     view: 'View Details',
-    name: 'Name',
+    name: 'Character Name',
+    type: 'Character Type',
     role: 'Role',
     description: 'Description',
     status: 'Status',
@@ -492,8 +572,12 @@ export default {
     antagonist: 'Antagonist',
     supporting: 'Supporting',
     minor: 'Minor',
+    mbti: 'MBTI Type',
+    profession: 'Profession',
+    bio: 'Character Bio',
     active: 'Active',
-    archived: 'Archived'
+    archived: 'Archived',
+    noDescription: 'No description'
   },
   bookshelf: {
     title: 'Bookshelf',
@@ -555,5 +639,42 @@ export default {
     saveError: 'Save failed',
     confirmDelete: 'Delete this chapter?',
     untitledChapter: 'Untitled Chapter'
+  },
+  comments: {
+    title: 'Comments',
+    subtitle: 'Read and manage reader feedback from all platforms',
+    filterByPlatform: 'Filter by Platform',
+    allPlatforms: 'All Platforms',
+    chapter: 'Chapter',
+    reply: 'Reply',
+    loading: 'Loading comments...',
+    noComments: 'No comments yet',
+    noCommentsDesc: 'Comments from your readers will appear here once they start engaging with your work.',
+    loadError: 'Failed to load comments. Please try again.',
+    retry: 'Retry',
+    prev: 'Previous',
+    next: 'Next',
+    showing: 'Showing {from} to {to} of {total} comments',
+    sentiment: {
+      positive: 'Positive',
+      neutral: 'Neutral',
+      negative: 'Negative'
+    },
+    time: {
+      justNow: 'Just now',
+      minutesAgo: '{count} minutes ago',
+      hoursAgo: '{count} hours ago',
+      daysAgo: '{count} days ago'
+    }
+  },
+  monitoring: {
+    health: 'System Health',
+    metrics: 'Performance Metrics',
+    alerts: 'Alerts',
+    status: 'Status',
+    healthy: 'Healthy',
+    warning: 'Warning',
+    unhealthy: 'Unhealthy',
+    acknowledge: 'Acknowledge'
   }
 };
