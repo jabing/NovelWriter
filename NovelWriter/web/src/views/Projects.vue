@@ -3,7 +3,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProjectStore } from '@/stores/projectStore'
-import type { CreateProjectPayload } from '@/types'
+import type { CreateProjectPayload, Project } from '@/types'
 import {
   Plus,
   Search,
@@ -13,7 +13,8 @@ import {
   Document,
   Close,
   Warning,
-  Loading
+  Loading,
+  Edit
 } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
@@ -33,7 +34,20 @@ const isCreateModalOpen = ref(false)
 const isSubmitting = ref(false)
 const formError = ref('')
 
+// Edit project modal state
+const isEditModalOpen = ref(false)
+const isEditSubmitting = ref(false)
+const editFormError = ref('')
+const editingProject = ref<Project | null>(null)
+
 const newProjectForm = reactive<CreateProjectPayload>({
+  title: '',
+  genre: '',
+  language: 'zh',
+  premise: ''
+})
+
+const editProjectForm = reactive<CreateProjectPayload>({
   title: '',
   genre: '',
   language: 'zh',
@@ -180,6 +194,66 @@ async function submitCreateProject() {
     formError.value = err instanceof Error ? err.message : t('project.createFailed') || '创建项目失败'
   } finally {
     isSubmitting.value = false
+  }
+}
+
+// Open edit project modal
+function openEditModal(project: Project, event: Event) {
+  event.stopPropagation()
+  editingProject.value = project
+  editFormError.value = ''
+  // Pre-fill form with project data
+  editProjectForm.title = project.title
+  editProjectForm.genre = project.genre || ''
+  editProjectForm.language = project.language || 'zh'
+  editProjectForm.premise = project.premise || ''
+  isEditModalOpen.value = true
+}
+
+// Close edit project modal
+function closeEditModal() {
+  isEditModalOpen.value = false
+  editFormError.value = ''
+  editingProject.value = null
+}
+
+// Validate edit form
+function validateEditForm(): boolean {
+  if (!editProjectForm.title || editProjectForm.title.trim().length < 2) {
+    editFormError.value = t('project.validation.titleRequired') || '项目标题至少需要2个字符'
+    return false
+  }
+  editFormError.value = ''
+  return true
+}
+
+// Submit edit project
+async function submitEditProject() {
+  if (!validateEditForm()) return
+  if (!editingProject.value) return
+
+  isEditSubmitting.value = true
+  editFormError.value = ''
+
+  try {
+    const updatedProject = await projectStore.updateProject(editingProject.value.id, {
+      title: editProjectForm.title.trim(),
+      genre: editProjectForm.genre || undefined,
+      language: editProjectForm.language,
+      premise: editProjectForm.premise || undefined
+    })
+
+    if (updatedProject) {
+      closeEditModal()
+      // Refresh projects list
+      await projectStore.fetchProjects()
+    } else {
+      editFormError.value = projectStore.error || t('project.updateFailed') || '更新项目失败'
+    }
+  } catch (err) {
+    editFormError.value = err instanceof Error ? err.message : t('project.updateFailed') || '更新项目失败'
+  } finally {
+    isEditSubmitting.value = false
   }
 }
 
@@ -331,6 +405,14 @@ onMounted(() => {
           <span :class="['status-badge', getStatusClass(project.status)]">
             {{ formatStatus(project.status) }}
           </span>
+          <!-- Edit Button -->
+          <button
+            class="edit-btn"
+            @click="openEditModal(project, $event)"
+            :title="t('project.edit') || '编辑项目'"
+          >
+            <el-icon><Edit /></el-icon>
+          </button>
         </div>
 
         <!-- Content -->
@@ -519,6 +601,113 @@ onMounted(() => {
               >
                 <el-icon v-if="isSubmitting" class="spinning"><Loading /></el-icon>
                 <span v-else>创建项目</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Edit Project Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="isEditModalOpen" class="modal-overlay" @click.self="closeEditModal">
+          <div class="modal-container">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h2 class="modal-title">编辑项目</h2>
+              <button class="modal-close" @click="closeEditModal" :disabled="isEditSubmitting">
+                <el-icon><Close /></el-icon>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <form class="create-project-form" @submit.prevent="submitEditProject">
+                <!-- Title Field -->
+                <div class="form-group">
+                  <label class="form-label" for="edit-project-title">
+                    项目标题 <span class="required">*</span>
+                  </label>
+                  <input
+                    id="edit-project-title"
+                    v-model="editProjectForm.title"
+                    type="text"
+                    class="form-input"
+                    placeholder="请输入项目名称"
+                    :disabled="isEditSubmitting"
+                    @blur="validateEditForm"
+                  />
+                </div>
+
+                <!-- Genre Field -->
+                <div class="form-group">
+                  <label class="form-label" for="edit-project-genre">类型</label>
+                  <select
+                    id="edit-project-genre"
+                    v-model="editProjectForm.genre"
+                    class="form-select"
+                    :disabled="isEditSubmitting"
+                  >
+                    <option value="">请选择类型</option>
+                    <option v-for="genre in genreOptions" :key="genre.value" :value="genre.value">
+                      {{ genre.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Language Field -->
+                <div class="form-group">
+                  <label class="form-label" for="edit-project-language">语言</label>
+                  <select
+                    id="edit-project-language"
+                    v-model="editProjectForm.language"
+                    class="form-select"
+                    :disabled="isEditSubmitting"
+                  >
+                    <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
+                      {{ lang.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Premise Field -->
+                <div class="form-group">
+                  <label class="form-label" for="edit-project-premise">故事前提</label>
+                  <textarea
+                    id="edit-project-premise"
+                    v-model="editProjectForm.premise"
+                    class="form-textarea"
+                    rows="4"
+                    placeholder="简要描述你的故事..."
+                    :disabled="isEditSubmitting"
+                  ></textarea>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="editFormError" class="form-error">
+                  <el-icon><Warning /></el-icon>
+                  <span>{{ editFormError }}</span>
+                </div>
+              </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button
+                class="btn btn-secondary"
+                @click="closeEditModal"
+                :disabled="isEditSubmitting"
+              >
+                取消
+              </button>
+              <button
+                class="btn btn-primary"
+                @click="submitEditProject"
+                :disabled="isEditSubmitting || !editProjectForm.title.trim()"
+              >
+                <el-icon v-if="isEditSubmitting" class="spinning"><Loading /></el-icon>
+                <span v-else>保存修改</span>
               </button>
             </div>
           </div>
@@ -834,6 +1023,49 @@ onMounted(() => {
 
 .status-badge.badge-error {
   background: var(--color-error);
+  color: white;
+}
+
+/* Edit Button */
+.edit-btn {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.project-card:hover .edit-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.edit-btn:hover {
+  background: var(--color-primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+[data-theme="dark"] .edit-btn {
+  background: rgba(44, 36, 22, 0.9);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .edit-btn:hover {
+  background: var(--color-primary);
   color: white;
 }
 
