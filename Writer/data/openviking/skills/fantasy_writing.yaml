@@ -1,0 +1,77 @@
+# Fantasy Writing Skill
+# Contains domain knowledge for fantasy writing
+
+skill_id: fantasy_writing
+name: Fantasy Writing
+description: Domain knowledge for writing fantasy fiction
+version: 1.0.0
+
+# Core Knowledge Areas
+knowledge_areas:
+  magic_systems:
+    - Hard magic (clear rules, costs, limitations)
+    - Soft magic (mysterious, wonder-focused)
+    - Sympathetic magic (like affects like)
+    - Elemental magic
+    - Rune/symbol-based magic
+    - Blood/sacrifice magic
+    - Pact/bargain magic
+    
+  worldbuilding:
+    - Secondary world creation
+    - Mythology and legends
+    - Fantasy races and cultures
+    - Political systems in fantasy settings
+    - Economics of magic
+    - Religion and divine intervention
+    
+  creatures:
+    - Classical mythological creatures
+    - Original creature design
+    - Dragon lore variations
+    - Undead and necromancy
+    - Fae and fairy courts
+
+# Writing Guidelines
+guidelines:
+  - Establish clear rules for magic (even if not fully explained to reader)
+  - Create cultures that feel authentic and distinct
+  - Balance epic scope with intimate character moments
+  - Build tension through limitations, not just powers
+  - Use sensory details to bring magic to life
+  - Make the fantastical feel grounded and real
+  - Subvert tropes thoughtfully, not randomly
+
+# Magic System Design Checklist
+magic_checklist:
+  - What is the source of magic?
+  - What are the costs/limitations?
+  - Who can use magic and why?
+  - How does magic affect society?
+  - What are the unintended consequences?
+  - How does magic evolve or change?
+
+# Common Tropes
+tropes:
+  recommended:
+    - The chosen one (with twists)
+    - Hidden magical worlds
+    - Quest narratives
+    - Found family
+    - Power with cost
+    
+  avoid_or_subvert:
+    - Orcs as inherently evil
+    - Women as rewards/objects
+    - Medieval stasis
+    - Magic as solution to everything
+    - Dark Lord without motivation
+
+# Genre Subtypes
+subgenres:
+  - High Fantasy (epic scope, secondary world)
+  - Low Fantasy (magic rare or hidden)
+  - Urban Fantasy (magic in modern world)
+  - Dark Fantasy (horror elements)
+  - Portal Fantasy (travel between worlds)
+  - Grimdark (morally gray, harsh world)

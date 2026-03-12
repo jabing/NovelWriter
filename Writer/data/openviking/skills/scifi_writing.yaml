@@ -1,0 +1,70 @@
+# Sci-Fi Writing Skill
+# Contains domain knowledge for science fiction writing
+
+skill_id: scifi_writing
+name: Science Fiction Writing
+description: Domain knowledge for writing science fiction
+version: 1.0.0
+
+# Core Knowledge Areas
+knowledge_areas:
+  physics:
+    - Faster-than-light travel limitations and theoretical workarounds
+    - Time dilation effects at relativistic speeds
+    - Black hole physics (event horizon, Hawking radiation, spaghettification)
+    - Dyson spheres and megastructures
+    - Quantum mechanics and its narrative possibilities
+    - Exoplanet science and habitability
+    - Orbital mechanics and space travel
+    
+  technology:
+    - Genetic engineering and its ethical implications
+    - Artificial intelligence and consciousness
+    - Nanotechnology and molecular manufacturing
+    - Energy generation (fusion, antimatter, zero-point)
+    - Communication across interstellar distances
+    - Cybernetics and human augmentation
+    
+  worldbuilding:
+    - Space opera vs hard sci-fi spectrum
+    - Alien psychology and sociology
+    - Galactic civilizations (Fermi paradox)
+    - Terraforming and colony worlds
+    - Post-scarcity economies
+
+# Writing Guidelines
+guidelines:
+  - Ensure scientific plausibility or clearly establish fictional rules
+  - Use correct terminology consistently
+  - Consider implications of technology on society
+  - Balance hard science with emotional storytelling
+  - Ground fantastic elements in recognizable human experience
+  - Show, don't tell the science
+  - Avoid info-dumps; weave exposition into action
+
+# Common Tropes (use deliberately)
+tropes:
+  recommended:
+    - First contact scenarios
+    - Technological singularity
+    - Generation ships
+    - Planetary colonization
+    - AI ethics and rights
+    
+  avoid_or_subvert:
+    - Humanoid aliens without explanation
+    - Single-biome planets
+    - Instant universal translators
+    - Sound in space (without justification)
+    - Aliens speaking English
+
+# Example Terminology
+terminology:
+  ftl: Faster-than-light travel
+  ansible: Instantaneous communication device
+  holo: Holographic display
+  ai: Artificial Intelligence
+  terraform: Transform planet to be Earth-like
+  cryo: Cryogenic suspension
+  warp: Faster-than-light propulsion
+  cyber: Cybernetic enhancement

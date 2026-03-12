@@ -1,0 +1,7 @@
+{
+  "iterations": 1,
+  "approval_threshold": 7.0,
+  "auto_revise_threshold": 5.0,
+  "enable_learning": false,
+  "quality_mode": "fast"
+}

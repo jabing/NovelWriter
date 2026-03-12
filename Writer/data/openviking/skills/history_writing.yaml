@@ -1,0 +1,103 @@
+# History Writing Skill
+# Contains domain knowledge for historical fiction writing
+
+skill_id: history_writing
+name: Historical Fiction Writing
+description: Domain knowledge for writing historical fiction
+version: 1.0.0
+
+# Core Knowledge Areas
+knowledge_areas:
+  period_research:
+    - Major historical events and timelines
+    - Daily life details across different eras
+    - Social hierarchies and customs
+    - Period-appropriate language and expressions
+    - Historical weapons, clothing, architecture
+    - Political systems and governance
+    - Economic systems and trade
+    - Religious beliefs and practices
+    
+  worldbuilding:
+    - Authentic setting recreation
+    - Balancing accuracy with narrative
+    - Handling anachronisms
+    - Social class dynamics
+    - Gender roles in different periods
+    - Historical prejudices and how to address
+
+# Writing Guidelines
+guidelines:
+  - Research the specific time period thoroughly
+  - Avoid anachronisms (verify technology, language, customs)
+  - Balance accuracy with narrative engagement
+  - Consider different perspectives of the era
+  - Use period-appropriate dialogue without being impenetrable
+  - Show history through character experience
+  - Acknowledge uncomfortable historical truths
+
+# Common Periods and Considerations
+periods:
+  medieval:
+    timeline: "500-1500 CE"
+    key_elements:
+      - Feudal system
+      - Religious dominance
+      - Limited technology
+      - Class rigidity
+    pitfalls:
+      - Universal filth and ignorance
+      - Modern attitudes in characters
+      
+  renaissance:
+    timeline: "1400-1600 CE"
+    key_elements:
+      - Art and science flowering
+      - Religious upheaval
+      - Exploration
+      - Court politics
+    pitfalls:
+      - Ignoring religious conflict
+      
+  victorian:
+    timeline: "1837-1901"
+    key_elements:
+      - Industrial revolution
+      - Empire and colonialism
+      - Strict social codes
+      - Scientific advancement
+    pitfalls:
+      - Romance without class context
+      
+  world_wars:
+    timeline: "1914-1945"
+    key_elements:
+      - Total war
+      - Social upheaval
+      - Technology acceleration
+      - Psychological impact
+    pitfalls:
+      - Glorifying war
+      - Ignoring atrocities
+
+# Language Considerations
+language:
+  do:
+    - Use period-appropriate terms
+    - Maintain formal/informal distinctions
+    - Include period slang sparingly
+    - Show education level through speech
+    
+  dont:
+    - Use modern idioms
+    - Overdo archaic language
+    - Ignore class speech differences
+    - Use obviously wrong terms
+
+# Research Resources
+research_tips:
+  - Primary sources when possible
+  - Academic histories for context
+  - Period literature for voice
+  - Museum visits for material culture
+  - Expert consultation for details

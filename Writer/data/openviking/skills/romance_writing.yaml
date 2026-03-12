@@ -1,0 +1,93 @@
+# Romance Writing Skill
+# Contains domain knowledge for romance writing
+
+skill_id: romance_writing
+name: Romance Writing
+description: Domain knowledge for writing romance fiction
+version: 1.0.0
+
+# Core Knowledge Areas
+knowledge_areas:
+  emotional_writing:
+    - Show emotions through physical cues
+    - Internal monologue and vulnerability
+    - Pacing of emotional intimacy
+    - Chemistry through small moments
+    - Tension and release cycles
+    
+  character_dynamics:
+    - Character archetypes and how to subvert
+    - Complementary traits and conflicts
+    - Growth through relationship
+    - Individual goals vs relationship goals
+    - Miscommunication and obstacles
+    
+  dialogue:
+    - Banter and wit
+    - Subtext and what's unsaid
+    - Voice differentiation
+    - Emotional reveals through dialogue
+    - Conflict through conversation
+
+# Writing Guidelines
+guidelines:
+  - Show chemistry through small moments, not just declarations
+  - Create meaningful obstacles (internal and external)
+  - Balance dialogue with internal monologue
+  - Make both characters compelling with own arcs
+  - Earn the emotional payoff
+  - Use sensory details for romantic scenes
+  - Pacing is crucial - build, don't rush
+
+# Trope Categories
+tropes:
+  enemies_to_lovers:
+    key_elements:
+      - Initial conflict/misunderstanding
+      - Forced proximity
+      - Moment of vulnerability
+      - Gradual respect
+      - Realization of feelings
+    pitfalls:
+      - Toxic behavior romanticized
+      - Overnight personality change
+      - Lack of genuine conflict resolution
+      
+  friends_to_lovers:
+    key_elements:
+      - Established comfortable dynamic
+      - Growing awareness
+      - Fear of ruining friendship
+      - Jealousy catalyst
+      - Risk and reward
+    pitfalls:
+      - No real obstacles
+      - Ignoring existing friendship depth
+      
+  second_chance:
+    key_elements:
+      - Past relationship history
+      - Reason for original breakup
+      - Personal growth since
+      - Rediscovery of connection
+      - Addressing past issues
+    pitfalls:
+      - Amnesia about why it failed
+      - No real change in characters
+
+# Emotional Beats
+beats:
+  - Meet cute / inciting incident
+  - Initial attraction / conflict
+  - Growing connection
+  - Midpoint revelation / deepening
+  - Black moment / breakup
+  - Grand gesture / reconciliation
+  - Happy ending (HEA) or Happy for now (HFN)
+
+# Heat Levels
+heat_levels:
+  sweet: No explicit content, fade to black
+  moderate: Some sensuality, implied intimacy
+  steamy: Explicit scenes, detailed intimacy
+  erotic: Primary focus on physical relationship

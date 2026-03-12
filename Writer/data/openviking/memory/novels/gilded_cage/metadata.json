@@ -1,0 +1,135 @@
+{
+  "novel_id": "gilded_cage",
+  "title": {
+    "zh": "镀金笼子",
+    "en": "The Gilded Cage"
+  },
+  "subtitle": {
+    "zh": "当一切闪光的东西都是玻璃",
+    "en": "When Everything That Glitters Is Glass"
+  },
+  "genre": "romance",
+  "subgenres": ["dark romance", "coming of age", "psychological drama"],
+  "target_chapters": 350,
+  "target_words": {
+    "zh": 1000000,
+    "en": 400000
+  },
+  "rating": "mature",
+  "languages": ["zh-CN", "en"],
+  "status": "planning",
+  "platforms": {
+    "wattpad_zh": {
+      "planned": true,
+      "url": null
+    },
+    "wattpad_en": {
+      "planned": true,
+      "url": null
+    },
+    "royalroad": {
+      "planned": true,
+      "url": null
+    },
+    "jjwxc": {
+      "planned": true,
+      "url": null
+    }
+  },
+  
+  "premise": "林晚晚，一个普通初二女生，因为一次偶然的钢琴比赛获奖，被引入了一个她从未想象过的世界。从最纯粹的校园初恋，到被裹挟进入光鲜亮丽却暗流涌动的上流社会。这是一个关于美好如何被摧毁，纯真如何被吞噬，以及一个女孩如何在深渊中寻找自我的故事。",
+  
+  "themes": [
+    "纯真与堕落的对比",
+    "权力与金钱的腐蚀",
+    "成长的代价",
+    "表象与真相",
+    "受害者心理",
+    "生存与救赎"
+  ],
+  
+  "content_warnings": [
+    "未成年人心理创伤",
+    "暗示性内容（隐喻处理）",
+    "权力不对等关系",
+    "心理操控",
+    "物质滥用描写"
+  ],
+  
+  "structure": {
+    "act_one": {
+      "name": "黄金时代",
+      "chapters": "1-100",
+      "words": 300000,
+      "description": "初中校园，纯真的初恋，美好的梦想。林晚晚遇见了转学生江晨，两人青涩而热烈的初恋。一切都像童话一样完美，直到那个改变一切的暑假邀请。"
+    },
+    "act_two": {
+      "name": "镀金笼子",
+      "chapters": "101-250", 
+      "words": 450000,
+      "description": "被引入富人圈，逐渐见识到光鲜表面下的黑暗。从最初的羡慕向往，到发现真相后的恐惧与无力。她被困在一个无法逃脱的金色牢笼中，每一次挣扎都让笼子收得更紧。"
+    },
+    "act_three": {
+      "name": "碎裂与重生",
+      "chapters": "251-350",
+      "words": 250000,
+      "description": "真相的彻底暴露，失去一切的痛苦，以及在废墟中重建自我的艰难旅程。这不是一个大团圆结局，但是一个真实的结局。"
+    }
+  },
+  
+  "main_characters": [
+    {
+      "name": "林晚晚",
+      "age_start": 14,
+      "age_end": 18,
+      "description": "普通家庭女孩，钢琴天赋，性格内向敏感，有一双会说话的眼睛",
+      "arc": "从天真烂漫到创伤后挣扎求存"
+    },
+    {
+      "name": "江晨",
+      "age_start": 15,
+      "age_end": 19,
+      "description": "表面是普通转学生，实际上是某富豪家族的私生子",
+      "arc": "从纯真少年到被家族吞噬的悲剧人物"
+    },
+    {
+      "name": "沈夫人",
+      "age": 45,
+      "description": "上流社会贵妇，优雅迷人，实则是一个庞大网络的招募者",
+      "arc": "表面的慈祥教母，背后的操控者"
+    },
+    {
+      "name": "白露",
+      "age_start": 15,
+      "age_end": 19,
+      "description": "林晚晚在圈中遇到的另一个女孩，表面光鲜实则深陷泥潭",
+      "arc": "从竞争对手到灵魂伴侣般的苦难同盟"
+    }
+  ],
+  
+  "key_settings": [
+    "江南小城普通中学",
+    "省会国际学校",
+    "私人游艇俱乐部",
+    "山顶私人庄园",
+    "海外私人岛屿"
+  ],
+  
+  "symbolism": {
+    "蝴蝶": "美丽但脆弱，从茧中破出的痛苦",
+    "金色笼子": "财富与自由的悖论",
+    "钢琴": "天赋既是礼物也是诅咒",
+    "镜子": "表象与真相的对比",
+    "花园": "精心修剪的美丽掩盖腐烂的根基"
+  },
+  
+  "narrative_style": {
+    "perspective": "第一人称（林晚晚视角）",
+    "tone": "由明亮到阴暗的渐变",
+    "language": "诗意的残酷，美好的事物被残酷地描述，残酷的事物被美丽地描述",
+    "pacing": "前期舒缓美好，中期压抑沉重，后期激烈痛苦"
+  },
+  
+  "created_at": "2026-02-19",
+  "updated_at": "2026-02-19"
+}

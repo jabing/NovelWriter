@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Kael Vane",
+    "role": "protagonist",
+    "age": 22,
+    "appearance": "Young man with dark hair and keen eyes",
+    "personality": {
+      "traits": [
+        "curious",
+        "determined",
+        "brave"
+      ]
+    },
+    "background": "Junior archivist mage",
+    "motivation": "Discover the truth about magic"
+  },
+  {
+    "name": "Lyra Ashford",
+    "role": "love_interest",
+    "age": 24,
+    "appearance": "Elegant scholar with reading glasses",
+    "personality": {
+      "traits": [
+        "intelligent",
+        "compassionate",
+        "methodical"
+      ]
+    },
+    "background": "Archivist of forbidden lore",
+    "motivation": "Help Kael uncover the truth"
+  },
+  {
+    "name": "Malachar",
+    "role": "antagonist",
+    "age": 45,
+    "appearance": "Tall imposing figure in dark robes",
+    "personality": {
+      "traits": [
+        "ruthless",
+        "ambitious",
+        "cunning"
+      ]
+    },
+    "background": "High Council member",
+    "motivation": "Control the last magic"
+  },
+  {
+    "name": "Aurelion",
+    "role": "dragon",
+    "age": "Ancient",
+    "appearance": "Crystalline dragon, imprisoned and emaciated",
+    "personality": {
+      "traits": [
+        "wise",
+        "mysterious",
+        "ancient"
+      ]
+    },
+    "background": "Physical heart of magic itself",
+    "motivation": "Restore natural magic flow"
+  }
+]

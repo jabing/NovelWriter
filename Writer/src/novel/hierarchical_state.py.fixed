@@ -1,0 +1,98 @@
+"""Hierarchical story state management for 100+ chapter novels.
+
+This module provides a three-tier memory architecture:
+- Global state (always in memory, ~500 tokens)
+- Arc summaries (LRU cached, 10 chapters each, ~400 tokens each)
+- Chapter summaries (LRU cached, ~250 tokens each)
+
+The hierarchical approach allows efficient context management for very long
+novels while keeping memory usage bounded.
+"""
+
+import json
+import logging
+from collections import OrderedDict
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+from src.novel.continuity import CharacterState, PlotThread
+from src.novel.summaries import ArcSummary, ChapterSummary
+
+logger = logging.getLogger(__name__)
+
+# Constants for hierarchical state management
+CHAPTERS_PER_ARC = 10  # Each arc covers 10 chapters
+MAX_CACHED_CHAPTERS = 10  # Maximum chapter summaries in memory
+MAX_CACHED_ARCS = 3  # Maximum arc summaries in memory
+
+
+@dataclass
+class GlobalStoryState:
+    """Persistent global state across all chapters.
+
+    This state is always kept in memory (~500 tokens) and contains the
+    essential information needed for continuity across the entire novel.
+
+    Attributes:
+        novel_id: Unique identifier for the novel
+        genre: Genre of the novel (fantasy, scifi, romance, etc.)
+        main_characters: Dictionary of main character states
+        world_rules: Dictionary of world-building rules
+        main_plot_threads: List of main plot threads
+        current_arc: Current arc number (1-indexed)
+        total_chapters: Total chapters written so far
+        style_guide: Writing style guidelines
+        created_at: When this state was created
+        updated_at: When this state was last updated
+    """
+
+    novel_id: str
+    genre: str
+    main_characters: dict[str, CharacterState] = field(default_factory=dict)
+    world_rules: dict[str, Any] = field(default_factory=dict)
+    main_plot_threads: list[PlotThread] = field(default_factory=list)
+    current_arc: int = 1
+    total_chapters: int = 0
+    style_guide: str = ""
+    created_at: datetime = field(default_factory=datetime.now)
+    updated_at: datetime = field(default_factory=datetime.now)
+
+
+class HierarchicalStoryState:
+    """Three-tier story state with lazy loading and LRU caching.
+
+    This class manages story state across potentially 100+ chapters by using
+    a hierarchical approach:
+
+    1. Global state: Always in memory, contains essential continuity info
+    2. Arc summaries: Cached summaries of 10-chapter arcs
+    3. Chapter summaries: Cached individual chapter summaries
+
+    The LRU caching ensures memory usage stays bounded while providing
+    fast access to recently used content.
+
+    Attributes:
+        storage_path: Base path for storing state files
+        global_state: The global story state (always loaded)
+        current_chapter: The current chapter being processed
+    """
+
+    def __init__(self, storage_path: Path, novel_id: str, maxsize_chapters: int = MAX_CACHED_CHAPTERS, maxsize_arcs: int = MAX_CACHED_ARCS) -> None:
+        """Initialize hierarchical story state.
+
+        Args:
+            storage_path: Base directory for storing state files
+            novel_id: Unique identifier for the novel
+            maxsize_chapters: Maximum number of chapter summaries to cache (default: MAX_CACHED_CHAPTERS)
+            maxsize_arcs: Maximum number of arc summaries to cache (default: MAX_CACHED_ARCS)
+        """
+        self.storage_path = storage_path / novel_id
+        self.storage_path.mkdir(parents=True, exist_ok=True)
+
+        # Store cache limits
+        self._maxsize_chapters = maxsize_chapters
+        self._maxsize_arcs = maxsize_arcs
+
+        Args

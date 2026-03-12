@@ -1,0 +1,62 @@
+{
+  "data": {
+    "fictions": [
+      {
+        "id": "21220",
+        "title": "Mother of Learning",
+        "url": "https://www.royalroad.com/fiction/21220"
+      },
+      {
+        "id": "36735",
+        "title": "The Perfect Run",
+        "url": "https://www.royalroad.com/fiction/36735"
+      },
+      {
+        "id": "21410",
+        "title": "Super Minion",
+        "url": "https://www.royalroad.com/fiction/21410"
+      },
+      {
+        "id": "54508",
+        "title": "The Unexpected Engagement of the Marvelous Mr. Penn",
+        "url": "https://www.royalroad.com/fiction/54508"
+      },
+      {
+        "id": "65629",
+        "title": "The Game at Carousel: A Horror Movie LitRPG",
+        "url": "https://www.royalroad.com/fiction/65629"
+      },
+      {
+        "id": "107917",
+        "title": "Sky Pride",
+        "url": "https://www.royalroad.com/fiction/107917"
+      },
+      {
+        "id": "104434",
+        "title": "The Elf Who Would Become A Dragon [Vols 1&#x2013;3 Complete]",
+        "url": "https://www.royalroad.com/fiction/104434"
+      },
+      {
+        "id": "62125",
+        "title": "Ghost in the City: Cyberpunk Gamer SI",
+        "url": "https://www.royalroad.com/fiction/62125"
+      },
+      {
+        "id": "92144",
+        "title": "The Legend of William Oh",
+        "url": "https://www.royalroad.com/fiction/92144"
+      },
+      {
+        "id": "65058",
+        "title": "Pale Lights",
+        "url": "https://www.royalroad.com/fiction/65058"
+      }
+    ],
+    "list_type": "best_rated",
+    "total": 10,
+    "url": "https://www.royalroad.com/fictions/best-rated"
+  },
+  "cached_at": 1772657336.1531048,
+  "expires_at": 1772660936.1531055,
+  "key": "royalroad_best_rated_10"
+}
