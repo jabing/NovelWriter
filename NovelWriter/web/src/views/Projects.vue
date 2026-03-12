@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useProjectStore } from '@/stores/projectStore'
+import type { CreateProjectPayload } from '@/types'
 import {
   Plus,
   Search,
   Grid,
   List,
   FolderOpened,
-  Document
+  Document,
+  Close,
+  Warning,
+  Loading
 } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
@@ -23,6 +27,38 @@ const viewMode = ref<'card' | 'table'>('card')
 const searchQuery = ref('')
 const selectedGenre = ref('')
 const selectedStatus = ref('')
+
+// Create project modal state
+const isCreateModalOpen = ref(false)
+const isSubmitting = ref(false)
+const formError = ref('')
+
+const newProjectForm = reactive<CreateProjectPayload>({
+  title: '',
+  genre: '',
+  language: 'zh',
+  premise: ''
+})
+
+// Genre options
+const genreOptions = [
+  { value: 'fantasy', label: '奇幻' },
+  { value: 'sci-fi', label: '科幻' },
+  { value: 'romance', label: '言情' },
+  { value: 'mystery', label: '悬疑' },
+  { value: 'thriller', label: '惊悚' },
+  { value: 'horror', label: '恐怖' },
+  { value: 'literary', label: '文学' },
+  { value: 'historical', label: '历史' },
+  { value: 'adventure', label: '冒险' },
+  { value: 'young_adult', label: '青春' }
+]
+
+// Language options
+const languageOptions = [
+  { value: 'zh', label: '中文' },
+  { value: 'en', label: 'English' }
+]
 
 // Computed properties
 const projects = computed(() => projectStore.projectList)
@@ -91,9 +127,60 @@ function openProject(projectId: string) {
   router.push(`/projects/${projectId}`)
 }
 
-// Create new project
-function createNewProject() {
-  router.push('/projects/new')
+// Open create project modal
+function openCreateModal() {
+  isCreateModalOpen.value = true
+  formError.value = ''
+  // Reset form
+  newProjectForm.title = ''
+  newProjectForm.genre = ''
+  newProjectForm.language = 'zh'
+  newProjectForm.premise = ''
+}
+
+// Close create project modal
+function closeCreateModal() {
+  isCreateModalOpen.value = false
+  formError.value = ''
+}
+
+// Validate form
+function validateForm(): boolean {
+  if (!newProjectForm.title || newProjectForm.title.trim().length < 2) {
+    formError.value = t('project.validation.titleRequired') || '项目标题至少需要2个字符'
+    return false
+  }
+  formError.value = ''
+  return true
+}
+
+// Submit create project
+async function submitCreateProject() {
+  if (!validateForm()) return
+
+  isSubmitting.value = true
+  formError.value = ''
+
+  try {
+    const newProject = await projectStore.createProject({
+      title: newProjectForm.title.trim(),
+      genre: newProjectForm.genre || undefined,
+      language: newProjectForm.language,
+      premise: newProjectForm.premise || undefined
+    })
+
+    if (newProject) {
+      closeCreateModal()
+      // Refresh projects list
+      await projectStore.fetchProjects()
+    } else {
+      formError.value = projectStore.error || t('project.createFailed') || '创建项目失败'
+    }
+  } catch (err) {
+    formError.value = err instanceof Error ? err.message : t('project.createFailed') || '创建项目失败'
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // Clear filters
@@ -118,7 +205,7 @@ onMounted(() => {
           <h1 class="page-title">{{ t('project.projects') }}</h1>
           <p class="page-subtitle">{{ t('project.description') }}</p>
         </div>
-        <button class="btn btn-primary create-btn" @click="createNewProject">
+        <button class="btn btn-primary create-btn" @click="openCreateModal">
           <el-icon><Plus /></el-icon>
           {{ t('project.create') }}
         </button>
@@ -206,7 +293,7 @@ onMounted(() => {
       <p class="empty-state-description">
         {{ t('dashboard.noRecentActivity') }}
       </p>
-      <button class="btn btn-primary empty-state-action" @click="createNewProject">
+      <button class="btn btn-primary empty-state-action" @click="openCreateModal">
         <el-icon><Plus /></el-icon>
         {{ t('project.create') }}
       </button>
@@ -332,6 +419,112 @@ onMounted(() => {
         </tbody>
       </table>
     </div>
+    <!-- Create Project Modal -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="isCreateModalOpen" class="modal-overlay" @click.self="closeCreateModal">
+          <div class="modal-container">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h2 class="modal-title">创建新项目</h2>
+              <button class="modal-close" @click="closeCreateModal" :disabled="isSubmitting">
+                <el-icon><Close /></el-icon>
+              </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+              <form class="create-project-form" @submit.prevent="submitCreateProject">
+                <!-- Title Field -->
+                <div class="form-group">
+                  <label class="form-label" for="project-title">
+                    项目标题 <span class="required">*</span>
+                  </label>
+                  <input
+                    id="project-title"
+                    v-model="newProjectForm.title"
+                    type="text"
+                    class="form-input"
+                    placeholder="请输入项目名称"
+                    :disabled="isSubmitting"
+                    @blur="validateForm"
+                  />
+                </div>
+
+                <!-- Genre Field -->
+                <div class="form-group">
+                  <label class="form-label" for="project-genre">类型</label>
+                  <select
+                    id="project-genre"
+                    v-model="newProjectForm.genre"
+                    class="form-select"
+                    :disabled="isSubmitting"
+                  >
+                    <option value="">请选择类型</option>
+                    <option v-for="genre in genreOptions" :key="genre.value" :value="genre.value">
+                      {{ genre.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Language Field -->
+                <div class="form-group">
+                  <label class="form-label" for="project-language">语言</label>
+                  <select
+                    id="project-language"
+                    v-model="newProjectForm.language"
+                    class="form-select"
+                    :disabled="isSubmitting"
+                  >
+                    <option v-for="lang in languageOptions" :key="lang.value" :value="lang.value">
+                      {{ lang.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Premise Field -->
+                <div class="form-group">
+                  <label class="form-label" for="project-premise">故事前提</label>
+                  <textarea
+                    id="project-premise"
+                    v-model="newProjectForm.premise"
+                    class="form-textarea"
+                    rows="4"
+                    placeholder="简要描述你的故事..."
+                    :disabled="isSubmitting"
+                  ></textarea>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="formError" class="form-error">
+                  <el-icon><Warning /></el-icon>
+                  <span>{{ formError }}</span>
+                </div>
+              </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+              <button
+                class="btn btn-secondary"
+                @click="closeCreateModal"
+                :disabled="isSubmitting"
+              >
+                取消
+              </button>
+              <button
+                class="btn btn-primary"
+                @click="submitCreateProject"
+                :disabled="isSubmitting || !newProjectForm.title.trim()"
+              >
+                <el-icon v-if="isSubmitting" class="spinning"><Loading /></el-icon>
+                <span v-else>创建项目</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -1116,3 +1309,197 @@ onMounted(() => {
   background-size: 200% 100%;
 }
 </style>
+
+/* Create Project Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-container {
+  background: var(--color-bg-elevated);
+  border-radius: var(--radius-xl);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  animation: modalIn 0.2s ease-out;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  padding: var(--space-2);
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+.modal-body {
+  padding: var(--space-5);
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+/* Form Styles */
+.create-project-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.required {
+  color: var(--color-error);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background: var(--color-bg-input);
+  transition: all var(--transition-fast);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(139, 90, 43, 0.15);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: rgba(155, 44, 44, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-bg-tertiary);
+}
+
+/* Modal Transition */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}

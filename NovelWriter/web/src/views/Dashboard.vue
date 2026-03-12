@@ -121,7 +121,7 @@ function openProject(projectId: string) {
 
 // Create new project
 function createNewProject() {
-  router.push('/projects/new');
+  router.push('/projects');
 }
 
 // Initialize data
