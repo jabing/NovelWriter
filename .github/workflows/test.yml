@@ -1,0 +1,145 @@
+name: Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Code Quality Checks
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff mypy
+
+      - name: Check code formatting with black
+        run: |
+          black --check Writer/src Writer/tests LSP/novelwriter_lsp LSP/tests
+
+      - name: Lint with ruff
+        run: |
+          ruff check Writer/src Writer/tests LSP/novelwriter_lsp LSP/tests
+
+      - name: Type check with mypy
+        run: |
+          cd Writer && pip install -e ".[dev]" && mypy src/
+          cd ../LSP && pip install -e ".[dev]" && mypy novelwriter_lsp/
+
+  # Writer Tests
+  test-writer:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: Writer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        working-directory: Writer
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.10'
+        with:
+          file: Writer/coverage.xml
+          flags: writer
+          name: writer-coverage
+
+      - name: Archive coverage reports
+        if: matrix.python-version == '3.10'
+        uses: actions/upload-artifact@v4
+        with:
+          name: writer-coverage-report
+          path: Writer/htmlcov/
+
+  # LSP Tests
+  test-lsp:
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: LSP
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests with coverage
+        working-directory: LSP
+        run: |
+          pytest tests/ -v --cov=novelwriter_lsp --cov-report=xml --cov-report=html --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.10'
+        with:
+          file: LSP/coverage.xml
+          flags: lsp
+          name: lsp-coverage
+
+      - name: Archive coverage reports
+        if: matrix.python-version == '3.10'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lsp-coverage-report
+          path: LSP/htmlcov/
+
+  # Summary job for branch protection
+  test-results:
+    runs-on: ubuntu-latest
+    needs: [lint, test-writer, test-lsp]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" ]]; then
+            echo "❌ Lint checks failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test-writer.result }}" != "success" ]]; then
+            echo "❌ Writer tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.test-lsp.result }}" != "success" ]]; then
+            echo "❌ LSP tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed!"

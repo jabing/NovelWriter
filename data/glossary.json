@@ -1,0 +1,191 @@
+{
+  "terms": [
+    {
+      "id": "terms/sir_kael",
+      "key": "terms/sir_kael",
+      "value": {
+        "term": "Sir Kael",
+        "type": "object",
+        "definition": "Appears in chapter content: Sir Kael",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Added from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "object",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/sir_kael",
+      "key": "terms/sir_kael",
+      "value": {
+        "term": "Sir Kael",
+        "type": "object",
+        "definition": "Appears in chapter content: Sir Kael",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "object",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/dark_forest",
+      "key": "terms/dark_forest",
+      "value": {
+        "term": "Dark Forest",
+        "type": "location",
+        "definition": "Appears in chapter content: Dark Forest",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Added from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "location",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/dark_forest",
+      "key": "terms/dark_forest",
+      "value": {
+        "term": "Dark Forest",
+        "type": "location",
+        "definition": "Appears in chapter content: Dark Forest",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "location",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/sir_kael",
+      "key": "terms/sir_kael",
+      "value": {
+        "term": "Sir Kael",
+        "type": "object",
+        "definition": "Appears in chapter content: Sir Kael",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "object",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/sir_kael",
+      "key": "terms/sir_kael",
+      "value": {
+        "term": "Sir Kael",
+        "type": "object",
+        "definition": "Appears in chapter content: Sir Kael",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "object",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/dark_forest",
+      "key": "terms/dark_forest",
+      "value": {
+        "term": "Dark Forest",
+        "type": "location",
+        "definition": "Appears in chapter content: Dark Forest",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "location",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    },
+    {
+      "id": "terms/dark_forest",
+      "key": "terms/dark_forest",
+      "value": {
+        "term": "Dark Forest",
+        "type": "location",
+        "definition": "Appears in chapter content: Dark Forest",
+        "status": "approved",
+        "aliases": [],
+        "related_terms": [],
+        "notes": "Updated from chapter 2",
+        "metadata": {
+          "source_chapter": 2
+        },
+        "_type": "GlossaryTerm"
+      },
+      "metadata": {
+        "type": "location",
+        "status": "approved",
+        "aliases": []
+      },
+      "namespace": "default"
+    }
+  ],
+  "embeddings": {},
+  "namespace": "default",
+  "version": "1.0"
+}

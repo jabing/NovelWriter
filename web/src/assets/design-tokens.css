@@ -1,0 +1,491 @@
+/**
+ * NovelWriter Design Tokens v2.0
+ * Literary/Book Aesthetic System
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+  /* Primary Colors - 皮革棕 */
+  --color-primary: #8B5A2B;
+  --color-primary-hover: #A67B5B;
+  --color-primary-active: #6B4423;
+  --color-primary-light: #D4A574;
+  --color-primary-muted: #F5E6D3;
+  
+  /* Background Colors - 纸张色调 */
+  --color-bg-primary: #F5F1E8;
+  --color-bg-secondary: #EDE7DB;
+  --color-bg-tertiary: #E5DED0;
+  --color-bg-elevated: #FAF8F3;
+  --color-bg-input: #FFFFFF;
+  
+  /* Text Colors - 墨水色调 */
+  --color-text-primary: #2C2416;
+  --color-text-secondary: #5C4D3D;
+  --color-text-tertiary: #8B7355;
+  --color-text-placeholder: #A09080;
+  --color-text-disabled: #B8A99A;
+  
+  /* Accent Colors */
+  --color-accent-gold: #C9A227;
+  --color-accent-bronze: #B87333;
+  
+  /* Semantic Colors */
+  --color-success: #4A7C59;
+  --color-warning: #B8860B;
+  --color-error: #9B2C2C;
+  --color-info: #5B7C99;
+  
+  /* Border Colors */
+  --color-border: #D4C8B8;
+  --color-border-light: #E5DED0;
+  --color-border-focus: #8B5A2B;
+  
+  /* Typography */
+  --font-serif: 'Merriweather', Georgia, 'Noto Serif SC', serif;
+  --font-sans: 'Source Sans 3', -apple-system, 'Noto Sans SC', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  
+  --font-size-h1: 3.052rem;
+  --font-size-h2: 2.441rem;
+  --font-size-h3: 1.953rem;
+  --font-size-h4: 1.563rem;
+  --font-size-body: 1rem;
+  --font-size-body-sm: 0.875rem;
+  
+  /* Spacing (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(44, 36, 22, 0.04);
+  --shadow-md: 0 2px 8px rgba(44, 36, 22, 0.06);
+  --shadow-lg: 0 4px 16px rgba(44, 36, 22, 0.08);
+  --shadow-card: 0 2px 12px rgba(44, 36, 22, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(44, 36, 22, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease-out;
+  --transition-base: 200ms ease-out;
+  --transition-slow: 400ms ease-in-out;
+  --transition-theme: 300ms ease-in-out;
+  
+  /* Animation Durations */
+  --duration-instant: 0ms;
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  
+  /* Easing Functions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --color-primary: #A67B5B;
+  --color-primary-hover: #C49B7B;
+  
+  --color-bg-primary: #1A1512;
+  --color-bg-secondary: #252018;
+  --color-bg-elevated: #3A3128;
+  
+  --color-text-primary: #F5F0E8;
+  --color-text-secondary: #D4C8B8;
+  
+  --color-border: #4A4035;
+  --color-border-focus: #A67B5B;
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   ANIMATION KEYFRAMES
+   ======================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInDown {
+  from { 
+    opacity: 0; 
+    transform: translateY(-16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(-16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes fadeInRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(16px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes slideInUp {
+  from { 
+    transform: translateY(100%); 
+  }
+  to { 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideInDown {
+  from { 
+    transform: translateY(-100%); 
+  }
+  to { 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.6; 
+  }
+}
+
+@keyframes shimmer {
+  0% { 
+    background-position: -200% 0; 
+  }
+  100% { 
+    background-position: 200% 0; 
+  }
+}
+
+@keyframes spin {
+  from { 
+    transform: rotate(0deg); 
+  }
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-4px); 
+  }
+}
+
+/* ========================================
+   ANIMATION UTILITY CLASSES
+   ======================================== */
+
+/* Base animation class */
+.animate {
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+
+/* Fade animations */
+.animate-fadeIn {
+  animation: fadeIn var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fadeInDown {
+  animation: fadeInDown var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fadeInLeft {
+  animation: fadeInLeft var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-fadeInRight {
+  animation: fadeInRight var(--duration-slow) var(--ease-out) both;
+}
+
+.animate-scaleIn {
+  animation: scaleIn var(--duration-slow) var(--ease-spring) both;
+}
+
+/* Animation durations */
+.animate-instant {
+  animation-duration: var(--duration-instant);
+}
+
+.animate-fast {
+  animation-duration: var(--duration-fast);
+}
+
+.animate-base {
+  animation-duration: var(--duration-base);
+}
+
+.animate-slow {
+  animation-duration: var(--duration-slow);
+}
+
+.animate-slower {
+  animation-duration: var(--duration-slower);
+}
+
+/* Stagger delays */
+.animate-delay-1 { animation-delay: 0.05s; }
+.animate-delay-2 { animation-delay: 0.1s; }
+.animate-delay-3 { animation-delay: 0.15s; }
+.animate-delay-4 { animation-delay: 0.2s; }
+.animate-delay-5 { animation-delay: 0.25s; }
+.animate-delay-6 { animation-delay: 0.3s; }
+.animate-delay-7 { animation-delay: 0.35s; }
+.animate-delay-8 { animation-delay: 0.4s; }
+
+/* ========================================
+   HOVER EFFECTS
+   ======================================== */
+
+/* Interactive element hover */
+.hover-lift {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  will-change: transform;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.hover-scale {
+  transition: transform var(--transition-fast);
+  will-change: transform;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-brightness {
+  transition: filter var(--transition-fast), opacity var(--transition-fast);
+}
+
+.hover-brightness:hover {
+  filter: brightness(1.1);
+}
+
+/* Focus states */
+.focus-ring {
+  transition: box-shadow var(--transition-fast), outline var(--transition-fast);
+}
+
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-muted);
+}
+
+/* ========================================
+   THEME TRANSITIONS
+   ======================================== */
+
+/* Smooth theme switching for color properties */
+.theme-transition {
+  transition: 
+    background-color var(--transition-theme),
+    color var(--transition-theme),
+    border-color var(--transition-theme),
+    box-shadow var(--transition-theme);
+}
+
+/* Apply theme transition to common elements */
+body,
+.main-layout,
+.sidebar,
+.header,
+.card,
+.btn,
+input,
+select,
+textarea {
+  transition: 
+    background-color var(--transition-theme),
+    border-color var(--transition-theme),
+    color var(--transition-theme);
+}
+
+/* ========================================
+   PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* GPU acceleration for animated elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Contain layout for complex animations */
+.animate-container {
+  contain: layout style;
+}
+
+/* Optimize painting for frequently animated elements */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes */
+.will-animate-done {
+  will-change: auto;
+}
+
+/* ========================================
+   PREFERS-REDUCED-MOTION
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable all animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Keep essential transitions for accessibility */
+  .motion-essential,
+  [aria-expanded],
+  [aria-hidden] {
+    transition-duration: var(--duration-fast) !important;
+  }
+  
+  /* Disable hover transforms */
+  .hover-lift:hover,
+  .hover-scale:hover {
+    transform: none;
+  }
+  
+  /* Disable skeleton shimmer */
+  .skeleton,
+  [class*="skeleton"] {
+    animation: none !important;
+  }
+  
+  /* Remove will-change to save memory */
+  .will-animate,
+  .gpu-accelerated {
+    will-change: auto;
+  }
+}
+
+/* ========================================
+   PAGE TRANSITION ANIMATIONS
+   ======================================== */
+
+/* Page enter animation */
+.page-enter {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+
+.page-enter-slow {
+  animation: fadeIn var(--duration-slower) var(--ease-out) both;
+}
+
+/* Content stagger animation container */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.35s; }
+
+/* Card hover effects */
+.card-hover {
+  transition: 
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+  will-change: transform, box-shadow;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Button press effect */
+.btn-press {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-press:active {
+  transform: scale(0.98);
+}
