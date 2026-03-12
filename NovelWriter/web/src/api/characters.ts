@@ -36,6 +36,8 @@ export interface CreateCharacterPayload {
   interested_topics?: string[];
 }
 
+export interface UpdateCharacterPayload extends Partial<CreateCharacterPayload> {}
+
 // API functions
 export async function getCharacters(projectId: string): Promise<CharacterListResponse> {
   const res = await apiClient.get<CharacterListResponse>(`/novels/${projectId}/characters`);
@@ -52,5 +54,14 @@ export async function createCharacter(
   payload: CreateCharacterPayload
 ): Promise<Character> {
   const res = await apiClient.post<Character>(`/novels/${projectId}/characters`, payload);
+  return res.data;
+}
+
+export async function updateCharacter(
+  projectId: string,
+  characterName: string,
+  payload: UpdateCharacterPayload
+): Promise<Character> {
+  const res = await apiClient.put<Character>(`/novels/${projectId}/characters/${characterName}`, payload);
   return res.data;
 }

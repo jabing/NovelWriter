@@ -1,11 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProjectStore } from '@/stores/projectStore'
+import { useAuthStore } from '@/stores/auth'
+import { useI18n } from 'vue-i18n'
+import GlobalSearch from '@/components/GlobalSearch.vue'
 
 const route = useRoute()
 const router = useRouter()
 const projectStore = useProjectStore()
+const authStore = useAuthStore()
+const { t } = useI18n()
+
+// Search modal state
+const showSearch = ref(false)
+
+// Mobile sidebar state
+const isSidebarOpen = ref(false)
+
+// Toggle sidebar for mobile
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+// Close sidebar
+const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
+
+// Load auth state from storage on mount
+onMounted(() => {
+  authStore.loadFromStorage()
+})
+
+// Auth state
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+const currentUser = computed(() => authStore.user)
+
+// Logout handler
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/login')
+}
 
 // Navigation items with SF Symbols-style icons
 const navItems = [
@@ -15,6 +51,8 @@ const navItems = [
   { name: 'Reading', path: '/reading', icon: 'book' },
   { name: 'Agents', path: '/agents', icon: 'cpu' },
   { name: 'Publish', path: '/publish', icon: 'paperplane' },
+  { name: 'Comments', path: '/comments', icon: 'bubble' },
+  { name: 'Analytics', path: '/analytics', icon: 'chart' },
   { name: 'Settings', path: '/settings', icon: 'gear' }
 ]
 
@@ -32,13 +70,34 @@ const isActive = (path: string) => {
 // Navigate to route
 const navigate = (path: string) => {
   router.push(path)
+  closeSidebar()
 }
+
+// Open search modal
+const openSearch = () => {
+  showSearch.value = true
+}
+
+// Keyboard shortcut for search (Ctrl/Cmd + K)
+const handleKeyDown = (e: KeyboardEvent) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault()
+    openSearch()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeyDown)
+})
 </script>
 
 <template>
   <div class="main-layout">
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
+      <!-- Mobile Overlay -->
+      <div class="sidebar-overlay" @click="closeSidebar"></div>
+      
       <!-- Logo/Brand -->
       <div class="sidebar-header">
         <div class="brand">
@@ -102,6 +161,16 @@ const navigate = (path: string) => {
                   <line x1="22" y1="2" x2="11" y2="13" />
                   <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
+                <!-- Bubble/Comment Icon -->
+                <svg v-else-if="item.icon === 'bubble'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <!-- Chart/Analytics Icon -->
+                <svg v-else-if="item.icon === 'chart'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
                 <!-- Gear Icon -->
                 <svg v-else-if="item.icon === 'gear'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="3" />
@@ -116,14 +185,33 @@ const navigate = (path: string) => {
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="user-info">
+        <div v-if="isLoggedIn" class="user-info">
           <div class="user-avatar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <span class="user-name">Writer</span>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser?.name || 'User' }}</span>
+            <span class="user-email">{{ currentUser?.email || '' }}</span>
+          </div>
+          <button class="logout-btn" @click="handleLogout" title="Logout">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+        <div v-else class="user-info guest-user" @click="navigate('/login')">
+          <div class="user-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+          <span class="user-name">Login</span>
         </div>
       </div>
     </aside>
@@ -133,6 +221,14 @@ const navigate = (path: string) => {
       <!-- Header -->
       <header class="header">
         <div class="header-left">
+          <!-- Hamburger Menu Button (Mobile Only) -->
+          <button class="hamburger-btn" @click="toggleSidebar" aria-label="Toggle menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
           <h1 class="page-title">{{ route.name || 'Dashboard' }}</h1>
         </div>
         <div class="header-center">
@@ -152,7 +248,7 @@ const navigate = (path: string) => {
         </div>
         <div class="header-right">
           <!-- Actions -->
-          <button class="header-action" title="Search">
+          <button class="header-action" title="Search (Ctrl+K)" @click="openSearch">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -172,6 +268,9 @@ const navigate = (path: string) => {
         <router-view />
       </main>
     </div>
+
+    <!-- Global Search Modal -->
+    <GlobalSearch v-model="showSearch" />
   </div>
 </template>
 
@@ -336,9 +435,17 @@ const navigate = (path: string) => {
   cursor: pointer;
 }
 
-.user-info:hover {
+.user-info:not(.guest-user):hover {
   background: var(--color-bg-secondary);
   border-color: var(--color-border);
+}
+
+.guest-user {
+  opacity: 0.7;
+}
+
+.guest-user:hover {
+  opacity: 1;
 }
 
 .user-avatar {
@@ -353,11 +460,52 @@ const navigate = (path: string) => {
   border: 1px solid var(--color-border-light);
 }
 
+.user-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
 .user-name {
   font-family: var(--font-sans);
   font-size: var(--font-size-body-sm);
   font-weight: 600;
   color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.logout-btn:hover {
+  background: rgba(155, 44, 44, 0.1);
+  color: var(--color-error);
 }
 
 /* ========== MAIN CONTENT ========== */
@@ -538,6 +686,26 @@ const navigate = (path: string) => {
     transform: translateX(-100%);
   }
 
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Sidebar Overlay for Mobile */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+  }
+
+  .sidebar.sidebar-open .sidebar-overlay {
+    display: block;
+    opacity: 1;
+  }
+
   .main-content {
     margin-left: 0;
   }
@@ -548,6 +716,31 @@ const navigate = (path: string) => {
 
   .page-title {
     font-size: var(--font-size-h4);
+  }
+
+  /* Hamburger Button */
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: var(--space-3);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .hamburger-btn:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
   }
 }
 

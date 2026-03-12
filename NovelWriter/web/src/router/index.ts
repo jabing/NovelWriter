@@ -18,12 +18,14 @@ const router = createRouter({
         { path: '', name: 'Dashboard', component: () => import('@/views/Dashboard.vue'), meta: { requiresAuth: true } },
         { path: 'projects', name: 'Projects', component: () => import('@/views/Projects.vue'), meta: { requiresAuth: true } },
         { path: 'projects/:id', name: 'ProjectDetail', component: () => import('@/views/ProjectDetail.vue'), meta: { requiresAuth: true } },
+        { path: 'projects/:projectId/characters/:characterId', name: 'CharacterDetail', component: () => import('@/views/CharacterDetail.vue'), meta: { requiresAuth: true } },
         { path: 'writing', name: 'Writing', component: () => import('@/views/Writing.vue'), meta: { requiresAuth: true } },
         { path: 'reading', name: 'Reading', component: () => import('@/views/Reading.vue'), meta: { requiresAuth: true } },
         { path: 'agents', name: 'Agents', component: () => import('@/views/Agents.vue'), meta: { requiresAuth: true } },
         { path: 'publish', name: 'Publish', component: () => import('@/views/Publish.vue'), meta: { requiresAuth: true } },
         { path: 'comments', name: 'Comments', component: () => import('@/views/Comments.vue'), meta: { requiresAuth: true } },
-        { path: 'settings', name: 'Settings', component: () => import('@/views/Settings.vue'), meta: { requiresAuth: true } }
+        { path: 'settings', name: 'Settings', component: () => import('@/views/Settings.vue'), meta: { requiresAuth: true } },
+        { path: 'analytics', name: 'Analytics', component: () => import('@/views/Analytics.vue'), meta: { requiresAuth: true } }
       ]
     },
     // Full-screen reader (outside MainLayout)
