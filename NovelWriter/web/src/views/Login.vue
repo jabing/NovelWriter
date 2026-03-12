@@ -271,6 +271,9 @@ const toggleAction = computed(() =>
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
 }
 
 .input-group:focus-within {
