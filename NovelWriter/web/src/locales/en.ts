@@ -458,18 +458,6 @@ export default {
     hoursAgo: '{n}h ago',
     minutesAgo: '{n}m ago'
   },
-  status: {
-    online: 'Online',
-    offline: 'Offline',
-    busy: 'Busy',
-    error: 'Error',
-    idle: 'Idle',
-    connecting: 'Connecting',
-    connected: 'Connected',
-    disconnected: 'Disconnected',
-    healthy: 'Healthy',
-    warning: 'Warning'
-  },
   message: {
     saveSuccess: 'Saved successfully',
     saveFailed: 'Failed to save',
@@ -676,5 +664,18 @@ export default {
     warning: 'Warning',
     unhealthy: 'Unhealthy',
     acknowledge: 'Acknowledge'
+  },
+  auth: {
+    loginTitle: 'Welcome Back',
+    registerTitle: 'Create Account',
+    tagline: 'AI-powered novel writing and publishing',
+    login: 'Sign In',
+    register: 'Sign Up',
+    needAccount: "Don't have an account?",
+    haveAccount: 'Already have an account?',
+    emailPlaceholder: 'Enter your email',
+    passwordPlaceholder: 'Enter your password',
+    namePlaceholder: 'Enter your name',
+    error: 'Authentication failed. Please try again.'
   }
 };

@@ -553,5 +553,25 @@ export default {
     warning: '警告',
     unhealthy: '不健康',
     acknowledge: '确认'
+  },
+  alerts: {
+    title: '告警',
+    noAlerts: '暂无告警',
+    noAlertsDesc: '系统运行正常，没有需要关注的告警。',
+    acknowledge: '确认',
+    acknowledged: '已确认'
+  },
+  auth: {
+    loginTitle: '欢迎回来',
+    registerTitle: '创建账户',
+    tagline: 'AI 驱动的小说创作与出版',
+    login: '登录',
+    register: '注册',
+    needAccount: '还没有账户？',
+    haveAccount: '已有账户？',
+    emailPlaceholder: '输入您的邮箱',
+    passwordPlaceholder: '输入您的密码',
+    namePlaceholder: '输入您的姓名',
+    error: '认证失败，请重试。'
   }
 };
