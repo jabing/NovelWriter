@@ -889,16 +889,17 @@ onMounted(() => {
 .toolbar {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: 70px;
   margin-bottom: var(--space-8);
   flex-wrap: wrap;
 }
 
 .search-wrapper {
+  width: 200px;
+  flex-shrink: 0;
   position: relative;
-  flex: 1;
   min-width: 200px;
-  max-width: 400px;
+  max-width: 300px;
 }
 
 .search-icon {
@@ -1396,7 +1397,7 @@ onMounted(() => {
 .skeleton-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr;
-  gap: var(--space-4);
+  gap: 70px;
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--color-border-light);
 }
@@ -1586,7 +1587,6 @@ onMounted(() => {
 }
 
 .progress-bar-mini {
-  flex: 1;
   height: 6px;
   background: var(--color-bg-tertiary);
   border-radius: var(--radius-full);
@@ -1614,7 +1614,7 @@ onMounted(() => {
   .header-content {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-4);
+    gap: 70px;
   }
 
   .page-title {
@@ -1628,6 +1628,8 @@ onMounted(() => {
   }
 
   .search-wrapper {
+  width: 200px;
+  flex-shrink: 0;
     max-width: none;
   }
 
@@ -1636,7 +1638,6 @@ onMounted(() => {
   }
 
   .filter-select {
-    flex: 1;
   }
 
   .view-toggle {
@@ -1768,7 +1769,7 @@ onMounted(() => {
 .create-project-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 70px;
 }
 
 .form-group {

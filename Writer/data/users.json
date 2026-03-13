@@ -1,0 +1,16 @@
+{
+  "16e1ce41-03fe-4ece-9571-ad7d93e0e43e": {
+    "id": "16e1ce41-03fe-4ece-9571-ad7d93e0e43e",
+    "email": "jiang.jiaping@gmail.com",
+    "name": "Terence",
+    "password_hash": "$2b$12$Y6/kLKEO2QtakhMJsSQNFO1V3sVdEZ4AmczaIP71h56v5nvlrky76",
+    "created_at": "2026-03-13T05:55:05.794479"
+  },
+  "c1187588-cc83-4e50-a498-a6c7f6cf9363": {
+    "id": "c1187588-cc83-4e50-a498-a6c7f6cf9363",
+    "email": "jabing@qq.com",
+    "name": "jabing",
+    "password_hash": "$2b$12$9..P/JpmAeLqbajBCtta6.osVcC8WqfISBgJgs6krxaGvE/GNFzee",
+    "created_at": "2026-03-13T06:20:09.002421"
+  }
+}

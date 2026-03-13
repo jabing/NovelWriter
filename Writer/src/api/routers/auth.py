@@ -6,13 +6,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Response, status
-from passlib.context import CryptContext
+import bcrypt
 import jwt
 
 from src.api.schemas.auth import UserRegister, UserLogin, UserResponse, TokenResponse
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "novelwriter-secret-key-change-in-production"
 ALGORITHM = "HS256"
 
@@ -41,8 +40,21 @@ def _create_token(user_id: str) -> str:
     return jwt.encode({"sub": user_id, "exp": exp}, SECRET_KEY, algorithm=ALGORITHM)
 
 
-@router.post("/register", response_model=UserResponse, status_code=201)
-def register(user: UserRegister) -> UserResponse:
+def _hash_password(password: str) -> str:
+    """Hash password using bcrypt, truncating to 72 bytes if needed."""
+    password_bytes = password.encode('utf-8')[:72]
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
+
+
+def _verify_password(password: str, hashed: str) -> bool:
+    """Verify password against hash, truncating to 72 bytes if needed."""
+    password_bytes = password.encode('utf-8')[:72]
+    hashed_bytes = hashed.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hashed_bytes)
+
+
+@router.post("/register", response_model=TokenResponse, status_code=201)
+def register(user: UserRegister) -> TokenResponse:
     users = _get_users()
     email = user.email.lower()
     
@@ -56,13 +68,19 @@ def register(user: UserRegister) -> UserResponse:
         "id": user_id,
         "email": email,
         "name": user.name,
-        "password_hash": pwd_context.hash(user.password),
+        "password_hash": _hash_password(user.password),
         "created_at": now,
     }
     users[user_id] = new_user
     _save_users(users)
     
-    return UserResponse(id=user_id, email=email, name=user.name, created_at=now)
+    # Also create a token for the newly registered user
+    token = _create_token(user_id)
+    
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(id=user_id, email=email, name=user.name, created_at=now)
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -76,7 +94,7 @@ def login(creds: UserLogin, response: Response) -> TokenResponse:
             user_data = u
             break
     
-    if not user_data or not pwd_context.verify(creds.password, user_data["password_hash"]):
+    if not user_data or not _verify_password(creds.password, user_data["password_hash"]):
         raise HTTPException(401, "Invalid credentials")
     
     token = _create_token(user_data["id"])

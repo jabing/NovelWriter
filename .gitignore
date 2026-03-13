@@ -41,8 +41,6 @@ yarn-error.log*
 # Project specific
 .sisyphus/evidence/
 *.log
-Writer/data/version_control/
-Writer/data/studio/
 LSP/.sisyphus/evidence/
 LSP/.sisyphus/boulder.json
 
@@ -64,4 +62,3 @@ py10env/
 .pytest_cache/
 .ruff_cache/
 .benchmarks/
-Writer/
