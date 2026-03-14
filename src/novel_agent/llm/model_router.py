@@ -64,41 +64,68 @@ class ModelRouter:
 
     # Model configurations
     MODELS = {
-        "kimi_k2.5": {
+        "kimi_k2_5": {
             "name": "Kimi K2.5",
-            "provider": "moonshot",
-            "strengths": ["emotion", "creativity", "multimodal", "long_context"],
-            "cost_per_1k_tokens": 0.015,  # ¥0.015
+            "provider": "infini-openai",
+            "strengths": ["emotion", "creativity", "golden_chapters", "chinese_culture"],
+            "cost_per_1k_tokens": 0.015,
             "context_window": 256000,
             "temperature_range": (0.3, 0.9),
             "best_for": ["romance", "emotional_peaks", "golden_chapters"],
         },
-        "glm5": {
+        "glm_5": {
             "name": "GLM-5",
-            "provider": "zhipu",
-            "strengths": ["logic", "coding", "agent", "reasoning"],
-            "cost_per_1k_tokens": 0.012,
+            "provider": "zhipuai-coding-plan",
+            "strengths": ["coding", "architecture", "worldbuilding", "system_design"],
+            "cost_per_1k_tokens": 0.0,  # Free via Coding Plan
             "context_window": 200000,
             "temperature_range": (0.2, 0.8),
             "best_for": ["scifi", "system", "architecture", "plotting"],
         },
-        "deepseek_v3": {
-            "name": "DeepSeek V3",
-            "provider": "deepseek",
-            "strengths": ["chinese", "cost_efficiency", "long_context"],
+        "deepseek_v3_2": {
+            "name": "DeepSeek V3.2",
+            "provider": "infini-openai",
+            "strengths": ["cost_efficiency", "consistency", "volume", "chinese"],
             "cost_per_1k_tokens": 0.002,
-            "context_window": 1000000,  # 1M
+            "context_window": 1000000,
             "temperature_range": (0.3, 0.9),
             "best_for": ["daily_chapters", "bulk_generation", "standard_content"],
         },
-        "minimax_m2.5": {
-            "name": "MiniMax M2.5",
-            "provider": "minimax",
-            "strengths": ["speed", "ultra_long_context", "cost_efficiency"],
-            "cost_per_1k_tokens": 0.0015,
-            "context_window": 1000000,  # 1M
+        "deepseek_v3_2_thinking": {
+            "name": "DeepSeek V3.2 Thinking",
+            "provider": "infini-openai",
+            "strengths": ["reasoning", "logic", "plot_consistency", "problem_solving"],
+            "cost_per_1k_tokens": 0.004,
+            "context_window": 64000,
+            "temperature_range": (0.3, 0.7),
+            "best_for": ["plot_planning", "mystery", "logic_checking", "revision"],
+        },
+        "minimax_m2_1": {
+            "name": "MiniMax M2.1",
+            "provider": "infini-openai",
+            "strengths": ["speed", "cost_efficiency"],
+            "cost_per_1k_tokens": 0.001,
+            "context_window": 256000,
             "temperature_range": (0.3, 0.8),
-            "best_for": ["filler", "rough_drafts", "volume_content"],
+            "best_for": ["filler", "rough_drafts"],
+        },
+        "minimax_m2_5": {
+            "name": "MiniMax M2.5",
+            "provider": "infini-openai",
+            "strengths": ["ultra_long_context", "cost_efficiency"],
+            "cost_per_1k_tokens": 0.0015,
+            "context_window": 1000000,
+            "temperature_range": (0.3, 0.8),
+            "best_for": ["filler", "volume_content"],
+        },
+        "glm_4_7": {
+            "name": "GLM-4.7",
+            "provider": "infini-openai",
+            "strengths": ["balanced", "cost_efficiency"],
+            "cost_per_1k_tokens": 0.005,
+            "context_window": 128000,
+            "temperature_range": (0.3, 0.8),
+            "best_for": ["standard_content", "transition"],
         },
     }
 
@@ -118,45 +145,45 @@ class ModelRouter:
     # Genre model preferences
     GENRE_PREFERENCES = {
         NovelGenre.ROMANCE: {
-            "elite": "kimi_k2.5",
-            "standard": "deepseek_v3",
-            "mass_prod": "deepseek_v3",
+            "elite": "kimi_k2_5",
+            "standard": "deepseek_v3_2",
+            "mass_prod": "deepseek_v3_2",
             "reason": "Romance requires high emotional nuance",
         },
         NovelGenre.FANTASY: {
-            "elite": "glm5",  # Worldbuilding logic
-            "standard": "deepseek_v3",
-            "mass_prod": "minimax_m2.5",
+            "elite": "glm_5",  # Worldbuilding logic
+            "standard": "deepseek_v3_2",
+            "mass_prod": "minimax_m2_5",
             "reason": "Fantasy needs strong worldbuilding logic",
         },
         NovelGenre.SCIFI: {
-            "elite": "glm5",  # Logic + consistency
-            "standard": "glm5",
-            "mass_prod": "deepseek_v3",
+            "elite": "glm_5",  # Logic + consistency
+            "standard": "glm_5",
+            "mass_prod": "deepseek_v3_2",
             "reason": "Sci-fi requires scientific consistency",
         },
         NovelGenre.HISTORY: {
-            "elite": "kimi_k2.5",  # Detail accuracy
-            "standard": "deepseek_v3",
-            "mass_prod": "minimax_m2.5",
+            "elite": "kimi_k2_5",  # Detail accuracy
+            "standard": "deepseek_v3_2",
+            "mass_prod": "minimax_m2_5",
             "reason": "Historical accuracy + cultural nuance",
         },
         NovelGenre.MILITARY: {
-            "elite": "glm5",  # Tactical accuracy
-            "standard": "deepseek_v3",
-            "mass_prod": "minimax_m2.5",
+            "elite": "glm_5",  # Tactical accuracy
+            "standard": "deepseek_v3_2",
+            "mass_prod": "minimax_m2_5",
             "reason": "Military needs tactical logic",
         },
         NovelGenre.SYSTEM: {
-            "elite": "glm5",  # Programming ability
-            "standard": "glm5",
-            "mass_prod": "deepseek_v3",
+            "elite": "glm_5",  # Programming ability
+            "standard": "glm_5",
+            "mass_prod": "deepseek_v3_2",
             "reason": "System novels require coding logic",
         },
         NovelGenre.URBAN: {
-            "elite": "kimi_k2.5",
-            "standard": "deepseek_v3",
-            "mass_prod": "minimax_m2.5",
+            "elite": "kimi_k2_5",
+            "standard": "deepseek_v3_2",
+            "mass_prod": "minimax_m2_5",
             "reason": "Urban fiction needs relatability",
         },
     }
@@ -333,18 +360,19 @@ class ModelRouter:
             raise ValueError(f"No API key for provider: {provider}")
 
         # Create appropriate LLM instance
-        if provider == "deepseek":
-            return DeepSeekLLM(api_key=api_key)
-        elif provider == "moonshot":
-            # Would need to implement KimiLLM
-            from src.novel_agent.llm.kimi import KimiLLM
-            return KimiLLM(api_key=api_key)
-        elif provider == "zhipu":
+        if provider == "infini-openai":
+            # Use InfiniAILM for all Infini AI models (Kimi, DeepSeek, MiniMax, GLM)
+            from src.novel_agent.llm.infini import InfiniAILLM
+            return InfiniAILLM(api_key=api_key, model=model_key)
+        elif provider == "zhipuai-coding-plan":
             from src.novel_agent.llm.glm import GLMLLM
             return GLMLLM(api_key=api_key)
-        elif provider == "minimax":
-            from src.novel_agent.llm.minimax import MiniMaxLLM
-            return MiniMaxLLM(api_key=api_key)
+        elif provider == "bailian-coding-plan":
+            from src.novel_agent.llm.bailian import BailianLLM
+            return BailianLLM(api_key=api_key, model=model_key)
+        elif provider == "volcengine":
+            from src.novel_agent.llm.volcengine import VolcengineLLM
+            return VolcengineLLM(api_key=api_key, model=model_key)
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
@@ -378,25 +406,25 @@ class ModelRouter:
         strategies = {
             "premium": {
                 "description": "Maximum quality - Kimi K2.5 for everything",
-                "model_mix": {"kimi_k2.5": 100},
+                "model_mix": {"kimi_k2_5": 100},
                 "avg_cost_per_chapter": 0.045,  # 3000 tokens * 0.015
                 "total_cost": total_chapters * 0.045,
             },
             "hybrid_elite": {
                 "description": "Elite hybrid - Kimi+GLM5 for golden, DeepSeek for rest",
-                "model_mix": {"kimi_k2.5": 10, "glm5": 10, "deepseek_v3": 80},
+                "model_mix": {"kimi_k2_5": 10, "glm_5": 10, "deepseek_v3_2": 80},
                 "avg_cost_per_chapter": 0.015,
                 "total_cost": total_chapters * 0.015,
             },
             "balanced": {
                 "description": "Balanced - DeepSeek main, Kimi for golden only",
-                "model_mix": {"kimi_k2.5": 5, "deepseek_v3": 95},
+                "model_mix": {"kimi_k2_5": 5, "deepseek_v3_2": 95},
                 "avg_cost_per_chapter": 0.003,
                 "total_cost": total_chapters * 0.003,
             },
             "economy": {
                 "description": "Economy - MiniMax bulk, DeepSeek standard",
-                "model_mix": {"deepseek_v3": 70, "minimax_m2.5": 30},
+                "model_mix": {"deepseek_v3_2": 70, "minimax_m2_5": 30},
                 "avg_cost_per_chapter": 0.002,
                 "total_cost": total_chapters * 0.002,
             },
