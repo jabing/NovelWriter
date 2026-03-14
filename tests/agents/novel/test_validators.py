@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.novel.continuity import CharacterState, PlotThread, StoryState
-from src.novel.validators import ContinuityValidator, ValidationError, ValidationResult
+from src.novel_agent.novel.continuity import CharacterState, PlotThread, StoryState
+from src.novel_agent.novel.validators import ContinuityValidator, ValidationError, ValidationResult
 
 
 class TestValidationError:

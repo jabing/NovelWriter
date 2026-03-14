@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.schemas import (
+from src.novel_agent.novel.schemas import (
     ChapterWritingInput,
     CharacterCreationInput,
     Genre,

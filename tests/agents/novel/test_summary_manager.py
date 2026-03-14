@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.llm.base import LLMResponse
-from src.novel.continuity import CharacterState, PlotThread
-from src.novel.summary_manager import SummaryManager
+from src.novel_agent.llm.base import LLMResponse
+from src.novel_agent.novel.continuity import CharacterState, PlotThread
+from src.novel_agent.novel.summary_manager import SummaryManager
 
 
 class TestSummaryManager:

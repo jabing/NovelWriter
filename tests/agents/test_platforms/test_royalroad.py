@@ -3,8 +3,8 @@
 
 import pytest
 
-from src.platforms.base import PublishStatus
-from src.platforms.royalroad import RoyalRoadPlatform
+from src.novel_agent.platforms.base import PublishStatus
+from src.novel_agent.platforms.royalroad import RoyalRoadPlatform
 
 
 class TestRoyalRoadPlatform:

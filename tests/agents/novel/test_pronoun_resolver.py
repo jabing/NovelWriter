@@ -1,6 +1,6 @@
 """Tests for pronoun resolution system."""
 
-from src.novel.pronoun_resolver import (
+from src.novel_agent.novel.pronoun_resolver import (
     CharacterMention,
     PronounResolver,
     replace_pronouns_in_text,

@@ -4,21 +4,21 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.llm.base import LLMResponse
-from src.novel.auto_fixer import (
+from src.novel_agent.llm.base import LLMResponse
+from src.novel_agent.novel.auto_fixer import (
     AutoFixer,
     AutoFixResult,
     FixPriority,
     FixSuggestion,
     SuggestionType,
 )
-from src.novel.consistency_verifier import (
+from src.novel_agent.novel.consistency_verifier import (
     ConsistencyVerifier,
     Inconsistency,
     InconsistencyType,
     VerificationResult,
 )
-from src.novel.continuity import CharacterState, StoryState
+from src.novel_agent.novel.continuity import CharacterState, StoryState
 
 
 class TestFixSuggestion:
@@ -818,7 +818,7 @@ class TestIntegrationWithSummaryManager:
     @pytest.mark.asyncio
     async def test_process_chapter_with_autofix(self, tmp_path, mock_llm):
         """Test end-to-end with SummaryManager."""
-        from src.novel.summary_manager import SummaryManager
+        from src.novel_agent.novel.summary_manager import SummaryManager
 
         # Setup mock responses
         mock_llm.generate_with_system.return_value = LLMResponse(
@@ -830,7 +830,7 @@ class TestIntegrationWithSummaryManager:
         manager = SummaryManager(tmp_path, "test", mock_llm, use_auto_fix=True)
 
         # Setup global state with character
-        from src.novel.continuity import CharacterState, PlotThread
+        from src.novel_agent.novel.continuity import CharacterState, PlotThread
 
         manager.update_global_characters(
             {
@@ -866,7 +866,7 @@ class TestIntegrationWithSummaryManager:
     @pytest.mark.asyncio
     async def test_process_chapter_no_issues(self, tmp_path, mock_llm):
         """Test processing chapter with no issues."""
-        from src.novel.summary_manager import SummaryManager
+        from src.novel_agent.novel.summary_manager import SummaryManager
 
         mock_llm.generate_with_system.return_value = LLMResponse(
             content='{"summary": "Good chapter", "key_events": [], "sentiment": "positive"}',
@@ -877,7 +877,7 @@ class TestIntegrationWithSummaryManager:
         manager = SummaryManager(tmp_path, "test", mock_llm, use_auto_fix=True)
 
         # Setup with alive character
-        from src.novel.continuity import CharacterState
+        from src.novel_agent.novel.continuity import CharacterState
 
         manager.update_global_characters(
             {
@@ -906,7 +906,7 @@ class TestIntegrationWithSummaryManager:
     @pytest.mark.asyncio
     async def test_integration_with_fixed_content(self, tmp_path, mock_llm):
         """Test that fixed content is used for summary generation."""
-        from src.novel.summary_manager import SummaryManager
+        from src.novel_agent.novel.summary_manager import SummaryManager
 
         # The summary should be generated from fixed content, not original
         mock_llm.generate_with_system.side_effect = [
@@ -926,7 +926,7 @@ class TestIntegrationWithSummaryManager:
 
         manager = SummaryManager(tmp_path, "test", mock_llm, use_auto_fix=True)
 
-        from src.novel.continuity import CharacterState
+        from src.novel_agent.novel.continuity import CharacterState
 
         manager.update_global_characters(
             {

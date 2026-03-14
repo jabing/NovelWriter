@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pytest
 
-from src.novel.timeline_manager import (
+from src.novel_agent.novel.timeline_manager import (
     TemporalRelation,
     TimelineEvent,
     TimelineManager,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.novel.outline_validator import (
+from src.novel_agent.novel.outline_validator import (
     ChapterValidationResult,
     Deviation,
     DeviationReport,

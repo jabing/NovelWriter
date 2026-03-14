@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.db.neo4j_client import (
+from src.novel_agent.db.neo4j_client import (
     Neo4jClient,
     Neo4jConfig,
     QueryResult,
@@ -160,7 +160,7 @@ class TestNeo4jClient:
         """Test successful connection to Neo4j."""
         client = Neo4jClient(neo4j_config)
 
-        with patch("src.db.neo4j_client.AsyncGraphDatabase") as mock_db:
+        with patch("src.novel_agent.db.neo4j_client.AsyncGraphDatabase") as mock_db:
             mock_driver = MagicMock()
             mock_driver.verify_connectivity = AsyncMock()
             mock_db.driver.return_value = mock_driver

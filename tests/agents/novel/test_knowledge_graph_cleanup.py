@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.knowledge_graph import (
+from src.novel_agent.novel.knowledge_graph import (
     CLEANUP_FREQUENCY,
     LOOKBACK_CHAPTERS,
     KnowledgeGraph,

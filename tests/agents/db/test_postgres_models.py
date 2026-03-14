@@ -10,8 +10,8 @@ import os
 
 import pytest
 
-from src.db.postgres_client import PostgresClient
-from src.db.postgres_models import (
+from src.novel_agent.db.postgres_client import PostgresClient
+from src.novel_agent.db.postgres_models import (
     CharacterStatus,
     ContradictionType,
     EntityType,

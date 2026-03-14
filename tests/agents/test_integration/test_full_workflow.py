@@ -6,16 +6,16 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.character import CharacterAgent
-from src.agents.comment_analyzer import CommentAnalyzerAgent
-from src.agents.editor import EditorAgent
-from src.agents.engagement import EngagementAgent
-from src.agents.market_research import MarketResearchAgent
-from src.agents.orchestrator import AgentOrchestrator, WorkflowStep
-from src.agents.plot import PlotAgent
-from src.agents.publisher import PublisherAgent
-from src.agents.worldbuilding import WorldbuildingAgent
-from src.agents.writers.writer_factory import get_writer
+from src.novel_agent.agents.character import CharacterAgent
+from src.novel_agent.agents.comment_analyzer import CommentAnalyzerAgent
+from src.novel_agent.agents.editor import EditorAgent
+from src.novel_agent.agents.engagement import EngagementAgent
+from src.novel_agent.agents.market_research import MarketResearchAgent
+from src.novel_agent.agents.orchestrator import AgentOrchestrator, WorkflowStep
+from src.novel_agent.agents.plot import PlotAgent
+from src.novel_agent.agents.publisher import PublisherAgent
+from src.novel_agent.agents.worldbuilding import WorldbuildingAgent
+from src.novel_agent.agents.writers.writer_factory import get_writer
 from src.memory import MemSearchAdapter
 
 
@@ -255,7 +255,7 @@ class TestScheduledWorkflow:
     @pytest.mark.asyncio
     async def test_daily_chapter_workflow(self) -> None:
         """Test the daily chapter generation workflow."""
-        from src.scheduler.tasks import (
+        from src.novel_agent.scheduler.tasks import (
             TaskScheduler,
             daily_chapter_generation_handler,
         )

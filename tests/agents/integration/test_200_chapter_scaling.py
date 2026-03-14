@@ -21,7 +21,7 @@ import pytest
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.novel.summary_manager import SummaryManager
+from src.novel_agent.novel.summary_manager import SummaryManager
 
 
 class MockLLM:

@@ -2,15 +2,15 @@
 
 import pytest
 
-from src.novel.cognitive_graph import CognitiveGraph
-from src.novel.consistency_verifier import (
+from src.novel_agent.novel.cognitive_graph import CognitiveGraph
+from src.novel_agent.novel.consistency_verifier import (
     ChapterVerificationResult,
     ConsistencyVerifier,
     DoubleLayerResult,
     LayerVerificationResult,
     VerificationReport,
 )
-from src.novel.global_fact_layer import Conflict, ConflictSeverity, ConflictType
+from src.novel_agent.novel.global_fact_layer import Conflict, ConflictSeverity, ConflictType
 
 
 class TestConsistencyVerifierInit:

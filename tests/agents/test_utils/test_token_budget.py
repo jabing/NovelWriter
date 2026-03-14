@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.utils.token_budget import (
+from src.novel_agent.utils.token_budget import (
     TokenBudgetConfig,
     TokenBudgetManager,
     TokenCount,

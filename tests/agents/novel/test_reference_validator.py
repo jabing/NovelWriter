@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.db.pinecone_client import VectorSearchResult, VectorStore
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.reference_validator import (
+from src.novel_agent.db.pinecone_client import VectorSearchResult, VectorStore
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.reference_validator import (
     Reference,
     ReferenceValidator,
 )

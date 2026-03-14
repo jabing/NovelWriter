@@ -14,11 +14,11 @@ import pytest
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.agents.writers.base_writer import BaseWriter
-from src.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.outline_manager import ChapterSpec
-from src.utils.token_budget import TokenBudgetConfig
+from src.novel_agent.agents.writers.base_writer import BaseWriter
+from src.novel_agent.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.outline_manager import ChapterSpec
+from src.novel_agent.utils.token_budget import TokenBudgetConfig
 
 
 class MockWriter(BaseWriter):
@@ -201,7 +201,7 @@ class TestMemoryBenchmarks:
 
     def test_token_budget_manager_memory(self) -> None:
         """Test that token budget manager doesn't accumulate state."""
-        from src.utils.token_budget import TokenBudgetManager
+        from src.novel_agent.utils.token_budget import TokenBudgetManager
 
         tracemalloc.start()
 

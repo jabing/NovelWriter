@@ -31,7 +31,7 @@ class TestListChapters:
             novel_dir = Path(tmpdir) / "test-novel" / "chapters"
             novel_dir.mkdir(parents=True)
             
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters")
@@ -59,7 +59,7 @@ class TestListChapters:
             with open(novel_dir / "chapter_001.json", "w") as f:
                 json.dump(chapter_data, f)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters")
@@ -89,7 +89,7 @@ class TestListChapters:
                 with open(novel_dir / f"chapter_{i:03d}.json", "w") as f:
                     json.dump(chapter_data, f)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters")
@@ -114,7 +114,7 @@ class TestListChapters:
             with open(novel_dir / "chapter_001.md", "w") as f:
                 f.write(md_content)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters")
@@ -144,7 +144,7 @@ class TestListChapters:
             with open(novel_dir / "chapter_001.md", "w") as f:
                 f.write(md_content)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters")
@@ -179,7 +179,7 @@ class TestGetChapter:
             with open(novel_dir / "chapter_005.json", "w") as f:
                 json.dump(chapter_data, f)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters/5")
@@ -201,7 +201,7 @@ class TestGetChapter:
             with open(novel_dir / "chapter_007.md", "w") as f:
                 f.write(md_content)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters/7")
@@ -225,7 +225,7 @@ class TestGetChapter:
             with open(novel_dir / "chapter_010.json", "w") as f:
                 json.dump(chapter_data, f)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters/10")
@@ -242,7 +242,7 @@ class TestGetChapter:
             novel_dir = Path(tmpdir) / "test-novel" / "chapters"
             novel_dir.mkdir(parents=True)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 
                 response = client.get("/api/novels/test-novel/chapters/999")
@@ -303,7 +303,7 @@ class TestCreateChapter:
             novel_dir = Path(tmpdir) / "test-novel"
             novel_dir.mkdir(parents=True)
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = novel_dir
                 mock_path_instance = MagicMock()
                 mock_path_instance.exists.return_value = True
@@ -363,7 +363,7 @@ class TestCreateChapter:
             mock_path_instance.exists.return_value = True
             mock_path_instance.__truediv__.return_value = chapters_dir
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = mock_path_instance
                 mock_path_instance.glob.side_effect = lambda pattern: []
 
@@ -408,7 +408,7 @@ class TestCreateChapter:
             mock_path_instance = MagicMock()
             mock_path_instance.exists.return_value = True
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = mock_path_instance
                 mock_path_instance.glob.return_value = []
 
@@ -441,7 +441,7 @@ class TestCreateChapter:
             mock_path_instance = MagicMock()
             mock_path_instance.exists.return_value = True
 
-            with patch("src.api.routers.chapters.Path") as mock_path:
+            with patch("src.novel_agent.api.routers.chapters.Path") as mock_path:
                 mock_path.return_value = mock_path_instance
                 mock_path_instance.glob.return_value = []
 
@@ -498,7 +498,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {
                     "title": "第一章 修改后",
                     "content": "新内容...",
@@ -553,7 +553,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {"title": "Updated Title Only"}
 
                 response = client.put("/api/novels/test-novel/chapters/1", json=update_data)
@@ -602,7 +602,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {"status": "published"}
 
                 response = client.put("/api/novels/test-novel/chapters/chapter-1", json=update_data)
@@ -649,7 +649,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {"order": 5}
 
                 response = client.put("/api/novels/test-novel/chapters/chapter-1", json=update_data)
@@ -680,7 +680,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {"title": "New Title"}
 
                 response = client.put("/api/novels/test-novel/chapters/chapter-999", json=update_data)
@@ -719,7 +719,7 @@ class TestUpdateChapter:
                     path_str = path_str.replace("data/openviking/memory/novels/test-novel", str(novel_dir))
                 return Path(path_str, *args, **kwargs)
 
-            with patch("src.api.routers.chapters.Path", side_effect=path_side_effect):
+            with patch("src.novel_agent.api.routers.chapters.Path", side_effect=path_side_effect):
                 update_data = {"title": "New Title"}
 
                 response = client.put("/api/novels/test-novel/chapters/invalid-id", json=update_data)

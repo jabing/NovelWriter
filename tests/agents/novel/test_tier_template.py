@@ -10,7 +10,7 @@ Tests cover:
 
 import pytest
 
-from src.novel.tier_template import (
+from src.novel_agent.novel.tier_template import (
     FIELD_DESCRIPTIONS,
     TIER_TEMPLATES,
     TierTemplate,

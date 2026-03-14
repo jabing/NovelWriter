@@ -24,7 +24,7 @@ class TestListCharacters:
             characters_dir = Path(tmpdir) / "characters"
             characters_dir.mkdir(parents=True)
             
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.get(f"/api/novels/{sample_project.id}/characters")
             
             assert response.status_code == 200
@@ -59,7 +59,7 @@ class TestListCharacters:
             with open(characters_dir / "Bob.json", "w") as f:
                 json.dump(char_data2, f)
 
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.get(f"/api/novels/{sample_project.id}/characters")
                 
                 assert response.status_code == 200
@@ -79,7 +79,7 @@ class TestGetCharacter:
             characters_dir = Path(tmpdir) / "characters"
             characters_dir.mkdir(parents=True)
             
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.get(f"/api/novels/{sample_project.id}/characters/Unknown")
                 
                 assert response.status_code == 404
@@ -99,7 +99,7 @@ class TestGetCharacter:
             with open(characters_dir / "Charlie.json", "w") as f:
                 json.dump(char_data, f)
 
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.get(f"/api/novels/{sample_project.id}/characters/Charlie")
                 
                 assert response.status_code == 200
@@ -126,7 +126,7 @@ class TestCreateCharacter:
             characters_dir = Path(tmpdir) / "characters"
             characters_dir.mkdir(parents=True)
             
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.post(
                     f"/api/novels/{sample_project.id}/characters",
                     json={"name": "NewCharacter", "tier": 3},
@@ -147,7 +147,7 @@ class TestCreateCharacter:
             with open(characters_dir / "Existing.json", "w") as f:
                 json.dump({"name": "Existing"}, f)
 
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.post(
                     f"/api/novels/{sample_project.id}/characters",
                     json={"name": "Existing", "tier": 1},
@@ -161,7 +161,7 @@ class TestCreateCharacter:
             characters_dir = Path(tmpdir) / "characters"
             characters_dir.mkdir(parents=True)
             
-            with patch("src.api.routers.characters._get_characters_dir", return_value=characters_dir):
+            with patch("src.novel_agent.api.routers.characters._get_characters_dir", return_value=characters_dir):
                 response = client.post(
                     f"/api/novels/{sample_project.id}/characters",
                     json={"name": "Minimal"},

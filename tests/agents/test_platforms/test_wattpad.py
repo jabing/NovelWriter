@@ -3,8 +3,8 @@
 
 import pytest
 
-from src.platforms.base import PublishStatus
-from src.platforms.wattpad import WattpadPlatform
+from src.novel_agent.platforms.base import PublishStatus
+from src.novel_agent.platforms.wattpad import WattpadPlatform
 
 
 class TestWattpadPlatform:

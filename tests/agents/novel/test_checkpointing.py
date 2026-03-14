@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.novel.checkpointing import (
+from src.novel_agent.novel.checkpointing import (
     CHECKPOINT_INTERVAL_WORDS,
     MAX_CHECKPOINT_AGE_DAYS,
     MAX_CHECKPOINT_SIZE_MB,

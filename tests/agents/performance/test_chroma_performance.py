@@ -26,7 +26,7 @@ if sys.version_info >= (3, 14):
 else:
     pytest.importorskip("chromadb", reason="chromadb not installed, skipping performance tests")
 
-from src.db.chroma_client import ChromaVectorStore
+from src.novel_agent.db.chroma_client import ChromaVectorStore
 
 
 class TestChromaPerformance:

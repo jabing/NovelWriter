@@ -3,7 +3,7 @@
 
 import pytest
 
-from src.agents.market_research import MarketResearchAgent
+from src.novel_agent.agents.market_research import MarketResearchAgent
 
 
 class TestMarketResearchAgent:

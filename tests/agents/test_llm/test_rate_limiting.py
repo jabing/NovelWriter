@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.llm.base import BaseLLM, LLMResponse
-from src.llm.rate_limited import RateLimitedLLM, create_rate_limited_llm
+from src.novel_agent.llm.base import BaseLLM, LLMResponse
+from src.novel_agent.llm.rate_limited import RateLimitedLLM, create_rate_limited_llm
 
 
 class MockLLM(BaseLLM):

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.cognitive_graph_extended import (
+from src.novel_agent.novel.cognitive_graph_extended import (
     ConflictResolution,
     ExtendedCognitiveGraph,
     RESOLUTION_SUGGESTIONS,

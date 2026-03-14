@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.entity_extractor import (
+from src.novel_agent.novel.entity_extractor import (
     CharacterEntity,
     EntityExtractor,
     EntityType,
@@ -22,7 +22,7 @@ from src.novel.entity_extractor import (
     RelationType,
     RuleBasedExtractor,
 )
-from src.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
 
 
 class TestEntityClasses:

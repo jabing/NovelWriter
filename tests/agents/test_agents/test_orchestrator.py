@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.agents.base import AgentResult, BaseAgent
-from src.agents.orchestrator import (
+from src.novel_agent.agents.base import AgentResult, BaseAgent
+from src.novel_agent.agents.orchestrator import (
     AgentOrchestrator,
     WorkflowState,
     WorkflowStep,

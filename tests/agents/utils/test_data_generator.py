@@ -12,7 +12,7 @@ import string
 from datetime import datetime
 from typing import Any
 
-from src.novel.schemas import (
+from src.novel_agent.novel.schemas import (
     ChapterWritingInput,
     Genre,
     KnowledgeGraphEdge,

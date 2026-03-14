@@ -20,8 +20,8 @@ import pytest
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.novel.consistency_verifier import ConsistencyVerifier
-from src.novel.summary_manager import SummaryManager
+from src.novel_agent.novel.consistency_verifier import ConsistencyVerifier
+from src.novel_agent.novel.summary_manager import SummaryManager
 
 # Skip tests if API key not configured
 pytestmark = pytest.mark.skipif(
@@ -42,7 +42,7 @@ class TestRealLLMSmoke:
     @pytest.fixture
     def real_llm(self):
         """Create real DeepSeek LLM instance."""
-        from src.llm.deepseek import DeepSeekLLM
+        from src.novel_agent.llm.deepseek import DeepSeekLLM
 
         api_key = os.getenv("DEEPSEEK_API_KEY")
         return DeepSeekLLM(
@@ -176,7 +176,7 @@ class TestRealLLMSmoke:
         verifier: ConsistencyVerifier,
     ) -> None:
         """Test consistency verification with sample content."""
-        from src.novel.continuity import CharacterState, StoryState
+        from src.novel_agent.novel.continuity import CharacterState, StoryState
 
         # Create story state
         story_state = StoryState(
@@ -250,7 +250,7 @@ class TestRealLLMJSONParsing:
     @pytest.fixture
     def real_llm(self):
         """Create real DeepSeek LLM instance."""
-        from src.llm.deepseek import DeepSeekLLM
+        from src.novel_agent.llm.deepseek import DeepSeekLLM
 
         api_key = os.getenv("DEEPSEEK_API_KEY")
         if not api_key or api_key == "sk-your-deepseek-official-key-here":
@@ -265,7 +265,7 @@ class TestRealLLMJSONParsing:
     @pytest.mark.asyncio
     async def test_summarization_json_format(self, real_llm) -> None:
         """Test that LLM returns valid JSON for summarization."""
-        from src.novel.chapter_summarizer import SUMMARY_SYSTEM_PROMPT, SUMMARY_USER_PROMPT_TEMPLATE
+        from src.novel_agent.novel.chapter_summarizer import SUMMARY_SYSTEM_PROMPT, SUMMARY_USER_PROMPT_TEMPLATE
 
         content = "艾琳站在塔楼上，准备开始她的冒险。导师莫里斯为她送行，祝福她一路平安。"
         user_prompt = SUMMARY_USER_PROMPT_TEMPLATE.format(

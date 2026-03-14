@@ -4,7 +4,7 @@
 import pytest
 
 # Import the module under test
-from src.utils.nlp import (
+from src.novel_agent.utils.nlp import (
     SPACY_AVAILABLE,
     EntityExtractor,
     NLPProcessor,

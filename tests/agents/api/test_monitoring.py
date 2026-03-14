@@ -17,7 +17,7 @@ class TestHealth:
 
     def test_health_unavailable(self, client: TestClient):
         """Test health when monitor is not available."""
-        with patch("src.api.routers.monitoring.HealthMonitor", None):
+        with patch("src.novel_agent.api.routers.monitoring.HealthMonitor", None):
             response = client.get("/api/monitoring/health")
             
             assert response.status_code == 200
@@ -29,7 +29,7 @@ class TestHealth:
         mock_monitor = MagicMock()
         mock_monitor.health.return_value = {"database": "connected", "cache": "active"}
         
-        with patch("src.api.routers.monitoring.HealthMonitor") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.HealthMonitor") as mock_class:
             mock_class.return_value = mock_monitor
             
             response = client.get("/api/monitoring/health")
@@ -44,7 +44,7 @@ class TestHealth:
         mock_monitor.health.side_effect = AttributeError()
         mock_monitor.status = "healthy"
         
-        with patch("src.api.routers.monitoring.HealthMonitor") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.HealthMonitor") as mock_class:
             mock_class.return_value = mock_monitor
             
             response = client.get("/api/monitoring/health")
@@ -59,7 +59,7 @@ class TestHealth:
         mock_monitor.health.side_effect = AttributeError()
         del mock_monitor.status
         
-        with patch("src.api.routers.monitoring.HealthMonitor") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.HealthMonitor") as mock_class:
             mock_class.return_value = mock_monitor
             
             response = client.get("/api/monitoring/health")
@@ -74,7 +74,7 @@ class TestMetrics:
 
     def test_metrics_unavailable(self, client: TestClient):
         """Test metrics when collector is not available."""
-        with patch("src.api.routers.monitoring.MetricsCollector", None):
+        with patch("src.novel_agent.api.routers.monitoring.MetricsCollector", None):
             response = client.get("/api/monitoring/metrics")
             
             assert response.status_code == 200
@@ -90,7 +90,7 @@ class TestMetrics:
             "avg_latency_ms": 45
         }
         
-        with patch("src.api.routers.monitoring.MetricsCollector") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.MetricsCollector") as mock_class:
             mock_class.return_value = mock_collector
             
             response = client.get("/api/monitoring/metrics")
@@ -105,7 +105,7 @@ class TestMetrics:
         mock_collector.collect.side_effect = AttributeError()
         mock_collector.get_metrics.return_value = {"cpu": 50, "memory": 60}
         
-        with patch("src.api.routers.monitoring.MetricsCollector") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.MetricsCollector") as mock_class:
             mock_class.return_value = mock_collector
             
             response = client.get("/api/monitoring/metrics")
@@ -120,7 +120,7 @@ class TestMetrics:
         mock_collector.collect.side_effect = AttributeError()
         mock_collector.get_metrics.side_effect = AttributeError()
         
-        with patch("src.api.routers.monitoring.MetricsCollector") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.MetricsCollector") as mock_class:
             mock_class.return_value = mock_collector
             
             response = client.get("/api/monitoring/metrics")
@@ -135,7 +135,7 @@ class TestAlerts:
 
     def test_alerts_unavailable(self, client: TestClient):
         """Test alerts when manager is not available."""
-        with patch("src.api.routers.monitoring.AlertManager", None):
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager", None):
             response = client.get("/api/monitoring/alerts")
             
             assert response.status_code == 200
@@ -150,7 +150,7 @@ class TestAlerts:
             {"id": "alert2", "severity": "medium", "message": "Memory warning"}
         ]
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.get("/api/monitoring/alerts")
@@ -165,7 +165,7 @@ class TestAlerts:
         mock_manager.list_alerts.side_effect = AttributeError()
         mock_manager.get_alerts.return_value = [{"id": "alert1"}]
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.get("/api/monitoring/alerts")
@@ -180,7 +180,7 @@ class TestAlerts:
         mock_manager.list_alerts.side_effect = AttributeError()
         mock_manager.get_alerts.side_effect = AttributeError()
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.get("/api/monitoring/alerts")
@@ -195,7 +195,7 @@ class TestAcknowledgeAlert:
 
     def test_acknowledge_unavailable(self, client: TestClient):
         """Test acknowledge when manager is not available."""
-        with patch("src.api.routers.monitoring.AlertManager", None):
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager", None):
             response = client.post("/api/monitoring/alerts/alert123/acknowledge", json={})
             
             assert response.status_code == 501
@@ -204,7 +204,7 @@ class TestAcknowledgeAlert:
         """Test acknowledge with acknowledge method."""
         mock_manager = MagicMock()
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.post(
@@ -222,7 +222,7 @@ class TestAcknowledgeAlert:
         mock_manager = MagicMock()
         mock_manager.acknowledge.side_effect = AttributeError()
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.post(
@@ -240,7 +240,7 @@ class TestAcknowledgeAlert:
         mock_manager.acknowledge.side_effect = AttributeError()
         mock_manager.ack.side_effect = AttributeError()
         
-        with patch("src.api.routers.monitoring.AlertManager") as mock_class:
+        with patch("src.novel_agent.api.routers.monitoring.AlertManager") as mock_class:
             mock_class.return_value = mock_manager
             
             response = client.post(

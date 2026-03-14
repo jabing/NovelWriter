@@ -1,7 +1,7 @@
 """Tests for continuity management system."""
 
 
-from src.novel.continuity import (
+from src.novel_agent.novel.continuity import (
     CharacterState,
     ContinuityManager,
     PlotThread,

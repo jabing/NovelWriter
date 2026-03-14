@@ -4,14 +4,14 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.entity_extractor import (
+from src.novel_agent.novel.entity_extractor import (
     Entity,
     EntityType,
     Relation,
     RelationType,
 )
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.relation_inference import (
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.relation_inference import (
     RELATION_PATTERNS,
     InferredRelation,
     RelationInference,

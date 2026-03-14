@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.db.neo4j_client import Neo4jClient, Neo4jConfig, QueryResult
+from src.novel_agent.db.neo4j_client import Neo4jClient, Neo4jConfig, QueryResult
 
 
 class TestNeo4jConfig:

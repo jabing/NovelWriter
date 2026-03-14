@@ -3,13 +3,13 @@
 
 import pytest
 
-from src.publishing.base import (
+from src.novel_agent.publishing.base import (
     ChapterInfo,
     PublishResult,
     PublishStatus,
     StoryInfo,
 )
-from src.publishing.publisher_manager import Platform, PublisherManager
+from src.novel_agent.publishing.publisher_manager import Platform, PublisherManager
 
 
 class TestStoryInfo:

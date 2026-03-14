@@ -32,7 +32,7 @@ else:
         chromadb_error = e
         pytest.skip(f"ChromaDB not installed: {e}", allow_module_level=True)
 
-from src.db.chroma_client import ChromaVectorStore
+from src.novel_agent.db.chroma_client import ChromaVectorStore
 
 
 class TestVectorStoreOptimization:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.cognitive_graph import CognitiveGraph
+from src.novel_agent.novel.cognitive_graph import CognitiveGraph
 
 
 class TestCognitiveGraphInit:

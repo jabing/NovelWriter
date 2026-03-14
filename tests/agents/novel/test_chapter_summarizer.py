@@ -4,12 +4,12 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.llm.base import LLMResponse
-from src.novel.chapter_summarizer import (
+from src.novel_agent.llm.base import LLMResponse
+from src.novel_agent.novel.chapter_summarizer import (
     ArcSummarizer,
     ChapterSummarizer,
 )
-from src.novel.summaries import ChapterSummary
+from src.novel_agent.novel.summaries import ChapterSummary
 
 
 class TestChapterSummarizer:

@@ -2,8 +2,8 @@
 
 import pytest
 
-from src.novel.continuity import CharacterState, StoryState
-from src.novel.inventory_updater import InventoryUpdater
+from src.novel_agent.novel.continuity import CharacterState, StoryState
+from src.novel_agent.novel.inventory_updater import InventoryUpdater
 
 
 class TestInventoryUpdater:

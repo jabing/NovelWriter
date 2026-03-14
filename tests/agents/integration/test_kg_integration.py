@@ -9,11 +9,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.entity_extractor import (
+from src.novel_agent.novel.entity_extractor import (
     CharacterEntity,
 )
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.summary_manager import SummaryManager
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.summary_manager import SummaryManager
 
 
 @pytest.fixture

@@ -2,7 +2,7 @@
 
 import re
 
-from src.novel.continuity import ContinuityManager, StateChange
+from src.novel_agent.novel.continuity import ContinuityManager, StateChange
 
 
 class TestStateDetection:

@@ -5,12 +5,12 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.writers.fantasy import FantasyWriter
-from src.agents.writers.history import HistoryWriter
-from src.agents.writers.military import MilitaryWriter
-from src.agents.writers.romance import RomanceWriter
-from src.agents.writers.scifi import SciFiWriter
-from src.agents.writers.writer_factory import get_available_genres, get_writer
+from src.novel_agent.agents.writers.fantasy import FantasyWriter
+from src.novel_agent.agents.writers.history import HistoryWriter
+from src.novel_agent.agents.writers.military import MilitaryWriter
+from src.novel_agent.agents.writers.romance import RomanceWriter
+from src.novel_agent.agents.writers.scifi import SciFiWriter
+from src.novel_agent.agents.writers.writer_factory import get_available_genres, get_writer
 
 
 class TestWriterFactory:

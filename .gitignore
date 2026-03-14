@@ -61,4 +61,5 @@ py10env/
 # pytest cache
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 .benchmarks/

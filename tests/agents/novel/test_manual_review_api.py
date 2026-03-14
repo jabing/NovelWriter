@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.novel.manual_review_api import (
+from src.novel_agent.novel.manual_review_api import (
     ReviewIssue,
     ReviewStatus,
     ReviewStore,

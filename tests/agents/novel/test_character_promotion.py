@@ -10,7 +10,7 @@ Tests cover:
 
 import pytest
 
-from src.novel.character_promotion import (
+from src.novel_agent.novel.character_promotion import (
     DEMOTION_RULES,
     PROMOTION_RULES,
     CharacterPromotion,

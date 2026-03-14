@@ -25,13 +25,13 @@ import pytest
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.novel.consistency_verifier import ConsistencyVerifier
-from src.novel.continuity import CharacterState, StoryState
-from src.novel.fact_database import FactType
-from src.novel.fact_injector import RelevantFactInjector
-from src.novel.hierarchical_state import HierarchicalStoryState
-from src.novel.outline_manager import ChapterSpec, DetailedOutline
-from src.novel.summary_manager import SummaryManager
+from src.novel_agent.novel.consistency_verifier import ConsistencyVerifier
+from src.novel_agent.novel.continuity import CharacterState, StoryState
+from src.novel_agent.novel.fact_database import FactType
+from src.novel_agent.novel.fact_injector import RelevantFactInjector
+from src.novel_agent.novel.hierarchical_state import HierarchicalStoryState
+from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
+from src.novel_agent.novel.summary_manager import SummaryManager
 
 
 class MockLLM:

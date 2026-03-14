@@ -17,7 +17,7 @@ class TestListAgentTypes:
 
     def test_list_agent_types_with_orchestrator(self, client: TestClient, mock_orchestrator):
         """Test listing agent types when orchestrator is available."""
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orchestrator
             
             response = client.get("/api/agents/")
@@ -29,7 +29,7 @@ class TestListAgentTypes:
 
     def test_list_agent_types_without_orchestrator(self, client: TestClient):
         """Test listing agent types when orchestrator is not available."""
-        with patch("src.api.routers.agents.AgentOrchestrator", None):
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator", None):
             response = client.get("/api/agents/")
             
             assert response.status_code == 500
@@ -41,7 +41,7 @@ class TestListAgentTypes:
         # No get_agent_types method, but has agent_types attribute
         mock_orch.agent_types = ["custom1", "custom2"]
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.get("/api/agents/")
@@ -57,7 +57,7 @@ class TestGetAgentStatus:
 
     def test_get_agent_status_success(self, client: TestClient, mock_orchestrator):
         """Test getting agent status successfully."""
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orchestrator
             
             response = client.get("/api/agents/plot/status")
@@ -72,7 +72,7 @@ class TestGetAgentStatus:
         mock_orch.get_status.side_effect = AttributeError()
         mock_orch.status_of.return_value = {"agent_type": "character", "status": "idle"}
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.get("/api/agents/character/status")
@@ -87,7 +87,7 @@ class TestGetAgentStatus:
         del mock_orch.get_status
         del mock_orch.status_of
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.get("/api/agents/unknown/status")
@@ -102,7 +102,7 @@ class TestGetAgentStatus:
         mock_orch = MagicMock()
         mock_orch.get_status.side_effect = Exception("Status error")
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.get("/api/agents/plot/status")
@@ -111,7 +111,7 @@ class TestGetAgentStatus:
 
     def test_get_agent_status_orchestrator_unavailable(self, client: TestClient):
         """Test status when orchestrator is unavailable."""
-        with patch("src.api.routers.agents.AgentOrchestrator", None):
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator", None):
             response = client.get("/api/agents/plot/status")
             
             assert response.status_code == 500
@@ -122,7 +122,7 @@ class TestExecuteAgent:
 
     def test_execute_agent_success(self, client: TestClient, mock_orchestrator):
         """Test executing agent successfully."""
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orchestrator
             
             response = client.post(
@@ -143,7 +143,7 @@ class TestExecuteAgent:
             "tokens_used": 150
         }
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.post(
@@ -160,7 +160,7 @@ class TestExecuteAgent:
         mock_orch = MagicMock()
         del mock_orch.execute
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.post(
@@ -175,7 +175,7 @@ class TestExecuteAgent:
         mock_orch = MagicMock()
         mock_orch.execute.side_effect = Exception("Execution failed")
         
-        with patch("src.api.routers.agents.AgentOrchestrator") as mock_orch_class:
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator") as mock_orch_class:
             mock_orch_class.return_value = mock_orch
             
             response = client.post(
@@ -187,7 +187,7 @@ class TestExecuteAgent:
 
     def test_execute_agent_orchestrator_unavailable(self, client: TestClient):
         """Test execution when orchestrator is unavailable."""
-        with patch("src.api.routers.agents.AgentOrchestrator", None):
+        with patch("src.novel_agent.api.routers.agents.AgentOrchestrator", None):
             response = client.post(
                 "/api/agents/plot/execute",
                 json={"prompt": "Test"}

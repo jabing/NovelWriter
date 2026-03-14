@@ -8,12 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.compression import (
+from src.novel_agent.novel.compression import (
     COMPRESSION_THRESHOLDS,
     SummaryCompressor,
 )
-from src.novel.hierarchical_state import HierarchicalStoryState
-from src.novel.summaries import ArcSummary, ChapterSummary
+from src.novel_agent.novel.hierarchical_state import HierarchicalStoryState
+from src.novel_agent.novel.summaries import ArcSummary, ChapterSummary
 
 
 class TestSummaryCompressorInit:

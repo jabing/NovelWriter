@@ -2,13 +2,13 @@
 
 import pytest
 
-from src.novel.character_knowledge import (
+from src.novel_agent.novel.character_knowledge import (
     CharacterKnowledge,
     CognitiveConflict,
     KnowledgeEntry,
     KnowledgeSource,
 )
-from src.novel.cognitive_graph import CognitiveGraph
+from src.novel_agent.novel.cognitive_graph import CognitiveGraph
 
 
 class TestKnowledgeSource:

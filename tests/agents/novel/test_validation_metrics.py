@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pytest
 
-from src.novel.validation_metrics import (
+from src.novel_agent.novel.validation_metrics import (
     FixRecord,
     ValidationMetrics,
     ValidationRecord,

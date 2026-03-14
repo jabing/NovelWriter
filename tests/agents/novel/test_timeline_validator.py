@@ -12,8 +12,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.db.postgres_models import EventType, ImportanceLevel
-from src.novel.timeline_validator import (
+from src.novel_agent.db.postgres_models import EventType, ImportanceLevel
+from src.novel_agent.novel.timeline_validator import (
     Configuration,
     IntervalWarning,
     OrderViolation,

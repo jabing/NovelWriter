@@ -13,34 +13,34 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.llm.base import LLMResponse
-from src.novel.auto_fixer import (
+from src.novel_agent.llm.base import LLMResponse
+from src.novel_agent.novel.auto_fixer import (
     AutoFixer,
     RepairAttempt,
     RepairHistory,
 )
-from src.novel.consistency_verifier import (
+from src.novel_agent.novel.consistency_verifier import (
     Inconsistency,
     InconsistencyType,
     VerificationResult,
 )
-from src.novel.hallucination_detector import (
+from src.novel_agent.novel.hallucination_detector import (
     ConfidenceLevel,
     Hallucination,
     HallucinationReport,
     HallucinationType,
 )
-from src.novel.reference_validator import (
+from src.novel_agent.novel.reference_validator import (
     Reference,
     ReferenceVerification,
 )
-from src.novel.timeline_validator import (
+from src.novel_agent.novel.timeline_validator import (
     Severity,
     TimeConflict,
     TimeConflictType,
     TimelineReport,
 )
-from src.novel.transition_checker import (
+from src.novel_agent.novel.transition_checker import (
     ChapterTransitionChecker,
     TransitionReport,
     UnresolvedEvent,

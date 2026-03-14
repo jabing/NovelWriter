@@ -1,6 +1,6 @@
 """Tests for outline management system."""
 
-from src.novel.outline_manager import ChapterSpec, DetailedOutline
+from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
 
 
 class TestChapterSpec:

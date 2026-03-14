@@ -4,8 +4,8 @@
 
 import pytest
 
-from src.agents.base import AgentResult
-from src.agents.publisher import PublisherAgent
+from src.novel_agent.agents.base import AgentResult
+from src.novel_agent.agents.publisher import PublisherAgent
 
 
 class TestPublisherAgent:

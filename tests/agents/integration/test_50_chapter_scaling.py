@@ -21,17 +21,17 @@ import pytest
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.agents.writers.base_writer import BaseWriter
-from src.novel.continuity import (
+from src.novel_agent.agents.writers.base_writer import BaseWriter
+from src.novel_agent.novel.continuity import (
     MAX_KEY_EVENTS,
     CharacterState,
     ContinuityManager,
     PlotThread,
     StoryState,
 )
-from src.novel.knowledge_graph import CLEANUP_FREQUENCY, LOOKBACK_CHAPTERS, KnowledgeGraph
-from src.novel.outline_manager import ChapterSpec, DetailedOutline
-from src.utils.token_budget import TokenBudgetConfig
+from src.novel_agent.novel.knowledge_graph import CLEANUP_FREQUENCY, LOOKBACK_CHAPTERS, KnowledgeGraph
+from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
+from src.novel_agent.utils.token_budget import TokenBudgetConfig
 
 
 class MockWriter(BaseWriter):
@@ -397,7 +397,7 @@ class TestPhase1Acceptance:
     def test_gemini_llm_available(self) -> None:
         """Verify GeminiLLM is available for 1M context."""
         try:
-            from src.llm.gemini import GeminiLLM
+            from src.novel_agent.llm.gemini import GeminiLLM
 
             assert GeminiLLM is not None
 

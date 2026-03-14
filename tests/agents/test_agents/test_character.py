@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.character import CharacterAgent
+from src.novel_agent.agents.character import CharacterAgent
 
 
 class TestCharacterAgent:

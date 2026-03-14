@@ -7,7 +7,7 @@ import tempfile
 
 import pytest
 
-from src.deployment.config import (
+from src.novel_agent.deployment.config import (
     AppConfig,
     LLMConfig,
     MemoryConfig,

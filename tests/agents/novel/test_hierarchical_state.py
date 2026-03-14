@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.continuity import CharacterState, PlotThread
-from src.novel.hierarchical_state import (
+from src.novel_agent.novel.continuity import CharacterState, PlotThread
+from src.novel_agent.novel.hierarchical_state import (
     CHAPTERS_PER_ARC,
     MAX_CACHED_ARCS,
     MAX_CACHED_CHAPTERS,
     GlobalStoryState,
     HierarchicalStoryState,
 )
-from src.novel.summaries import ArcSummary, ChapterSummary
+from src.novel_agent.novel.summaries import ArcSummary, ChapterSummary
 
 
 class TestGlobalStoryState:

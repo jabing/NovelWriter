@@ -50,15 +50,14 @@ dev = [
 ]
 
 [project.scripts]
-novel-agent = "src.main:cli"
-novelwriter-lsp = "novelwriter_lsp.__main__:main"
+novel-agent = "src.novel_agent.main:cli"
+novelwriter-lsp = "src.novelwriter_lsp.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = [
     "src*",
     "tests*",
-    "LSP/novelwriter_lsp*",
 ]
 
 [tool.pytest.ini_options]

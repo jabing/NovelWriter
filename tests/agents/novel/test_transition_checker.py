@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.transition_checker import (
+from src.novel_agent.novel.transition_checker import (
     ChapterTransitionChecker,
     TransitionReport,
     UnresolvedEvent,

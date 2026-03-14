@@ -7,8 +7,8 @@ This script demonstrates that arc preloading works correctly.
 import tempfile
 from pathlib import Path
 
-from src.novel.hierarchical_state import HierarchicalStoryState
-from src.novel.summaries import ArcSummary
+from src.novel_agent.novel.hierarchical_state import HierarchicalStoryState
+from src.novel_agent.novel.summaries import ArcSummary
 
 
 def test_preloading_demo():

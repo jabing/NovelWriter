@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.fact_database import (
+from src.novel_agent.novel.fact_database import (
     Fact,
     FactDatabase,
     FactType,
 )
-from src.novel.fact_injector import (
+from src.novel_agent.novel.fact_injector import (
     FactExtractor,
     RelevanceScore,
     RelevanceScorer,

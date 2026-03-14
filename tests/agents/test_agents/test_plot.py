@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.plot import PlotAgent
+from src.novel_agent.agents.plot import PlotAgent
 
 
 class TestPlotAgent:

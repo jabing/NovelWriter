@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.token_budget import ContextSlice, TokenBudget, TokenBudgetManager
+from src.novel_agent.novel.token_budget import ContextSlice, TokenBudget, TokenBudgetManager
 
 
 class TestTokenBudget:

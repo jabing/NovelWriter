@@ -3,7 +3,7 @@
 
 import pytest
 
-from src.agents.comment_analyzer import CommentAnalyzerAgent
+from src.novel_agent.agents.comment_analyzer import CommentAnalyzerAgent
 
 
 class TestCommentAnalyzerAgent:

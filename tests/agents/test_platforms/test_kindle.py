@@ -3,8 +3,8 @@
 
 import pytest
 
-from src.platforms.base import PublishStatus
-from src.platforms.kindle import KindlePlatform
+from src.novel_agent.platforms.base import PublishStatus
+from src.novel_agent.platforms.kindle import KindlePlatform
 
 
 class TestKindlePlatform:

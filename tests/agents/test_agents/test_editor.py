@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.base import AgentResult
-from src.agents.editor import EditorAgent
+from src.novel_agent.agents.base import AgentResult
+from src.novel_agent.agents.editor import EditorAgent
 
 
 class TestEditorAgent:

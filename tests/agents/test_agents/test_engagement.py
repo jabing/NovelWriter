@@ -3,7 +3,7 @@
 
 import pytest
 
-from src.agents.engagement import EngagementAgent
+from src.novel_agent.agents.engagement import EngagementAgent
 
 
 class TestEngagementAgent:

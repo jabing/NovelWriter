@@ -20,14 +20,14 @@ try:
 except (ImportError, Exception) as e:
     pytest.skip(f"chromadb not available or incompatible: {e}", allow_module_level=True)
 
-from src.db.chroma_client import ChromaVectorStore
-from src.db.vector_store_factory import VectorStoreFactory
-from src.novel.hallucination_detector import (
+from src.novel_agent.db.chroma_client import ChromaVectorStore
+from src.novel_agent.db.vector_store_factory import VectorStoreFactory
+from src.novel_agent.novel.hallucination_detector import (
     HallucinationDetector,
     HallucinationReport,
 )
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.reference_validator import ReferenceValidator
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.reference_validator import ReferenceValidator
 
 
 @pytest.fixture
@@ -634,7 +634,7 @@ class TestEndToEndValidationPipeline:
         - Returns ChromaAdapter wrapping ChromaVectorStore
         - Factory integration is correct
         """
-        from src.utils.config import get_settings
+        from src.novel_agent.utils.config import get_settings
 
         settings = get_settings()
 

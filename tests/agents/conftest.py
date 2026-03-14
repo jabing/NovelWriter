@@ -7,7 +7,7 @@ import pytest
 @pytest.fixture
 def mock_settings():
     """Mock settings for testing."""
-    from src.utils.config import Settings
+    from src.novel_agent.utils.config import Settings
     return Settings(
         deepseek_api_key="test_key",
         log_level="DEBUG",

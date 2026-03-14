@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.novel.outline_parser import (
+from src.novel_agent.novel.outline_parser import (
     CHAPTER_PATTERNS,
     PLOT_KEYWORDS,
     TIME_PATTERNS,

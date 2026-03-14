@@ -6,7 +6,7 @@ import time
 
 import pytest
 
-from src.utils.cache import (
+from src.novel_agent.utils.cache import (
     CacheEntry,
     LLMResponseCache,
     LRUCache,

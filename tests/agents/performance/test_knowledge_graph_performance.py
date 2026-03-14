@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.knowledge_graph import KnowledgeGraph
-from src.novel.schemas import KnowledgeGraphQuery
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
+from src.novel_agent.novel.schemas import KnowledgeGraphQuery
 
 
 class TestKnowledgeGraphPerformance:

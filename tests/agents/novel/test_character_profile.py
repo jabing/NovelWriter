@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from src.novel.character_profile import (
+from src.novel_agent.novel.character_profile import (
     CharacterProfile,
     CharacterProfileManager,
     CharacterStatus,

@@ -9,7 +9,7 @@ from pathlib import Path
 from statistics import mean, stdev
 
 try:
-    from src.utils.performance import get_memory_tracker, get_token_tracker
+    from src.novel_agent.utils.performance import get_memory_tracker, get_token_tracker
 except Exception as e:  # pragma: no cover
     raise SystemExit(f"Failed to import performance utilities: {e}")
 

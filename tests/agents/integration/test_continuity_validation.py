@@ -6,9 +6,9 @@ This test specifically verifies:
 3. ContinuityValidator detects violations
 """
 
-from src.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
-from src.novel.outline_manager import ChapterSpec, DetailedOutline
-from src.novel.validators import ContinuityValidator
+from src.novel_agent.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
+from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
+from src.novel_agent.novel.validators import ContinuityValidator
 
 
 def test_continuity_validation():

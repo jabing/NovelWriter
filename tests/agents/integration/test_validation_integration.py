@@ -15,23 +15,23 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.chapter_generator import ChapterGenerator
-from src.novel.character_profile import (
+from src.novel_agent.novel.chapter_generator import ChapterGenerator
+from src.novel_agent.novel.character_profile import (
     CharacterProfileManager,
     CharacterTimelineEvent,
     EventType,
 )
-from src.novel.hallucination_detector import (
+from src.novel_agent.novel.hallucination_detector import (
     Hallucination,
     HallucinationDetector,
     HallucinationReport,
     HallucinationType,
 )
-from src.novel.outline_manager import ChapterSpec
-from src.novel.reference_validator import Reference, ReferenceVerification
-from src.novel.timeline_validator import TimelineReport, TimelineValidator
-from src.novel.transition_checker import ChapterTransitionChecker, TransitionReport
-from src.novel.validation_orchestrator import (
+from src.novel_agent.novel.outline_manager import ChapterSpec
+from src.novel_agent.novel.reference_validator import Reference, ReferenceVerification
+from src.novel_agent.novel.timeline_validator import TimelineReport, TimelineValidator
+from src.novel_agent.novel.transition_checker import ChapterTransitionChecker, TransitionReport
+from src.novel_agent.novel.validation_orchestrator import (
     ValidationIssue,
     ValidationOrchestrator,
     ValidationResult,

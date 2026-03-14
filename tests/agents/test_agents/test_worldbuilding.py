@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.worldbuilding import WorldbuildingAgent
+from src.novel_agent.agents.worldbuilding import WorldbuildingAgent
 
 
 class TestWorldbuildingAgent:

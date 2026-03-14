@@ -21,11 +21,11 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.agents.writers.fantasy import FantasyWriter
-from src.llm.deepseek import DeepSeekLLM
-from src.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
-from src.novel.outline_manager import ChapterSpec, DetailedOutline
-from src.novel.validators import ContinuityValidator
+from src.novel_agent.agents.writers.fantasy import FantasyWriter
+from src.novel_agent.llm.deepseek import DeepSeekLLM
+from src.novel_agent.novel.continuity import CharacterState, ContinuityManager, PlotThread, StoryState
+from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
+from src.novel_agent.novel.validators import ContinuityValidator
 
 
 def create_test_outline() -> DetailedOutline:

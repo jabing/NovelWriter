@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from src.novel.performance_benchmark import (
+from src.novel_agent.novel.performance_benchmark import (
     BenchmarkResult,
     PerformanceBenchmark,
 )

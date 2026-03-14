@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from src.novel.cognitive_graph import CognitiveGraph
-from src.novel.global_fact_layer import (
+from src.novel_agent.novel.cognitive_graph import CognitiveGraph
+from src.novel_agent.novel.global_fact_layer import (
     Conflict,
     ConflictReport,
     ConflictSeverity,

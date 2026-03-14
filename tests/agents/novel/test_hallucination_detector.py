@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.novel.hallucination_detector import (
+from src.novel_agent.novel.hallucination_detector import (
     ConfidenceLevel,
     Hallucination,
     HallucinationDetector,

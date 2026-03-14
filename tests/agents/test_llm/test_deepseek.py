@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.llm.base import LLMResponse
-from src.llm.deepseek import DeepSeekLLM, _retry_with_backoff
+from src.novel_agent.llm.base import LLMResponse
+from src.novel_agent.llm.deepseek import DeepSeekLLM, _retry_with_backoff
 
 
 class TestDeepSeekInitialization:

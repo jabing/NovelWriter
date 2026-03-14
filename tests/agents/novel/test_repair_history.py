@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.auto_fixer import RepairAttempt, RepairHistory
-from src.novel.repair_history import RepairHistoryStore
+from src.novel_agent.novel.auto_fixer import RepairAttempt, RepairHistory
+from src.novel_agent.novel.repair_history import RepairHistoryStore
 
 
 @pytest.fixture

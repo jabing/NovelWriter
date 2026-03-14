@@ -23,10 +23,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.llm.rate_limited import RateLimitedLLM
-from src.novel.checkpointing import CheckpointManager
-from src.novel.continuity import MAX_KEY_EVENTS, ContinuityManager, StoryState
-from src.novel.knowledge_graph import (
+from src.novel_agent.llm.rate_limited import RateLimitedLLM
+from src.novel_agent.novel.checkpointing import CheckpointManager
+from src.novel_agent.novel.continuity import MAX_KEY_EVENTS, ContinuityManager, StoryState
+from src.novel_agent.novel.knowledge_graph import (
     CLEANUP_FREQUENCY,
     LOOKBACK_CHAPTERS,
     KnowledgeGraph,
@@ -480,13 +480,13 @@ class TestTokenBudget:
 
     def test_token_budget_import(self):
         """Test that token budget module can be imported."""
-        from src.utils.token_budget import TokenBudgetManager
+        from src.novel_agent.utils.token_budget import TokenBudgetManager
 
         assert TokenBudgetManager is not None
 
     def test_token_budget_counts_tokens(self):
         """Test that token budget counts tokens correctly."""
-        from src.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
+        from src.novel_agent.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
 
         config = TokenBudgetConfig(max_context_tokens=16000)
         manager = TokenBudgetManager(config)
@@ -499,7 +499,7 @@ class TestTokenBudget:
 
     def test_token_budget_enforces_budget(self):
         """Test that token budget enforces limits."""
-        from src.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
+        from src.novel_agent.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
 
         config = TokenBudgetConfig(max_context_tokens=100)
         manager = TokenBudgetManager(config)
@@ -551,13 +551,13 @@ class TestCheckpointingIntegration:
 
     def test_checkpoint_manager_import(self):
         """Test that CheckpointManager can be imported."""
-        from src.novel.checkpointing import CheckpointManager
+        from src.novel_agent.novel.checkpointing import CheckpointManager
 
         assert CheckpointManager is not None
 
     def test_checkpoint_constants(self):
         """Test checkpoint constants are defined."""
-        from src.novel.checkpointing import (
+        from src.novel_agent.novel.checkpointing import (
             CHECKPOINT_INTERVAL_WORDS,
             MAX_CHECKPOINT_AGE_DAYS,
             MAX_CHECKPOINT_SIZE_MB,

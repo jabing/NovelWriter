@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.novel.continuity import (
+from src.novel_agent.novel.continuity import (
     MAX_KEY_EVENTS,
     CharacterState,
     PlotThread,

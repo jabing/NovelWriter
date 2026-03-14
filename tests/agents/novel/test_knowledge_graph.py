@@ -4,8 +4,8 @@ from datetime import datetime
 
 import pytest
 
-from src.novel.knowledge_graph import KnowledgeGraph, create_knowledge_graph
-from src.novel.schemas import KnowledgeGraphEdge, KnowledgeGraphNode, KnowledgeGraphQuery
+from src.novel_agent.novel.knowledge_graph import KnowledgeGraph, create_knowledge_graph
+from src.novel_agent.novel.schemas import KnowledgeGraphEdge, KnowledgeGraphNode, KnowledgeGraphQuery
 
 
 class TestKnowledgeGraphInit:

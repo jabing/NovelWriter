@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.llm.base import BaseLLM
-from src.novel.outline_generator import DetailedChapterSpec, OutlineGenerator, PlotEvent
+from src.novel_agent.llm.base import BaseLLM
+from src.novel_agent.novel.outline_generator import DetailedChapterSpec, OutlineGenerator, PlotEvent
 
 
 @pytest.mark.asyncio

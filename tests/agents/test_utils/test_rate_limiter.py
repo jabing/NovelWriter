@@ -5,7 +5,7 @@ import asyncio
 import time
 import pytest
 
-from src.utils.rate_limiter import (
+from src.novel_agent.utils.rate_limiter import (
     APILimiter,
     RateLimitResult,
     get_api_limiter,

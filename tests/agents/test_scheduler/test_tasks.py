@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from src.scheduler.tasks import (
+from src.novel_agent.scheduler.tasks import (
     ScheduledTask,
     TaskScheduler,
     TaskStatus,
@@ -302,7 +302,7 @@ class TestSetupDefaultSchedule:
 
     def test_setup_default_schedule_uses_default(self) -> None:
         """Test that setup uses default scheduler if none provided."""
-        from src.scheduler.tasks import default_scheduler
+        from src.novel_agent.scheduler.tasks import default_scheduler
 
         # Clear any existing tasks
         default_scheduler._tasks.clear()

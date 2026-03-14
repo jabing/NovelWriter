@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.novel.suggestion_engine import (
+from src.novel_agent.novel.suggestion_engine import (
     FORESHADOWING_RESOLUTION_WINDOW,
     PRIORITY_BACKLOG,
     PRIORITY_CRITICAL,
@@ -175,7 +175,7 @@ class TestSuggestionEngineInit:
 
     def test_init_with_cognitive_graph(self) -> None:
         """Test initialization with cognitive graph."""
-        from src.novel.cognitive_graph import CognitiveGraph
+        from src.novel_agent.novel.cognitive_graph import CognitiveGraph
         
         data = create_mock_outline_data()
         graph = CognitiveGraph("test")
@@ -328,7 +328,7 @@ class TestSuggestCharacterInteractions:
 
     def test_with_cognitive_graph(self) -> None:
         """Test with cognitive graph integration."""
-        from src.novel.cognitive_graph import CognitiveGraph
+        from src.novel_agent.novel.cognitive_graph import CognitiveGraph
         
         data = create_mock_outline_data()
         graph = CognitiveGraph("test")

@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from src.agents.base import AgentResult
-from src.agents.writers.base_writer import BaseWriter, get_language_instruction
-from src.novel.continuity import CharacterState, StoryState
-from src.novel.outline_manager import ChapterSpec
+from src.novel_agent.agents.base import AgentResult
+from src.novel_agent.agents.writers.base_writer import BaseWriter, get_language_instruction
+from src.novel_agent.novel.continuity import CharacterState, StoryState
+from src.novel_agent.novel.outline_manager import ChapterSpec
 
 
 class TestBaseWriter:
@@ -329,7 +329,7 @@ class TestTokenBudgetIntegration:
     @pytest.fixture
     def concrete_writer_with_budget(self):
         """Create a concrete writer with custom token budget."""
-        from src.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
+        from src.novel_agent.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
 
         class ConcreteWriter(BaseWriter):
             GENRE = "test"

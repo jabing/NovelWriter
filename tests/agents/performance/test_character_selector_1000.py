@@ -21,8 +21,8 @@ from pathlib import Path
 
 import pytest
 
-from src.novel.character_profile import CharacterProfile, TIER_TOKEN_BUDGET
-from src.novel.character_selector import CharacterSelector
+from src.novel_agent.novel.character_profile import CharacterProfile, TIER_TOKEN_BUDGET
+from src.novel_agent.novel.character_selector import CharacterSelector
 
 logger = logging.getLogger(__name__)
 

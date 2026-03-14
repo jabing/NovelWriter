@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from src.novel.summaries import ArcSummary, ChapterSummary
+from src.novel_agent.novel.summaries import ArcSummary, ChapterSummary
 
 
 class TestChapterSummary:

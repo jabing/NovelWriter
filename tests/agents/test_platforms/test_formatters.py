@@ -2,7 +2,7 @@
 """Tests for Platform Formatter."""
 
 
-from src.platforms.formatters import PlatformFormatter
+from src.novel_agent.platforms.formatters import PlatformFormatter
 
 
 class TestPlatformFormatter:

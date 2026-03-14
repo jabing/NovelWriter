@@ -10,8 +10,8 @@ import pytest
 # Skip tests if pinecone not installed
 pytest.importorskip("pinecone")
 
-from src.db.embedding_generator import EmbeddingGenerator
-from src.db.pinecone_client import VectorSearchResult, VectorStore, VectorUpsertResult
+from src.novel_agent.db.embedding_generator import EmbeddingGenerator
+from src.novel_agent.db.pinecone_client import VectorSearchResult, VectorStore, VectorUpsertResult
 
 
 class TestEmbeddingGenerator:
@@ -165,7 +165,7 @@ class TestVectorStore:
     @pytest.fixture
     def mock_pinecone(self) -> MagicMock:
         """Create mock Pinecone client."""
-        with patch("src.db.pinecone_client.Pinecone") as mock:
+        with patch("src.novel_agent.db.pinecone_client.Pinecone") as mock:
             mock_instance = MagicMock()
             mock.return_value = mock_instance
 
@@ -183,7 +183,7 @@ class TestVectorStore:
 
     def test_init_valid_index_name(self, mock_embedding_generator: MagicMock) -> None:
         """Test initialization with valid index name."""
-        with patch("src.db.pinecone_client.Pinecone"):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone"):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="valid-index-name",
@@ -195,7 +195,7 @@ class TestVectorStore:
 
     def test_init_invalid_index_name_raises(self, mock_embedding_generator: MagicMock) -> None:
         """Test initialization with invalid index name raises ValueError."""
-        with patch("src.db.pinecone_client.Pinecone"):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone"):
             with pytest.raises(ValueError, match="Invalid index name"):
                 VectorStore(
                     api_key="test-api-key",
@@ -205,7 +205,7 @@ class TestVectorStore:
 
     def test_init_index_name_with_spaces_raises(self, mock_embedding_generator: MagicMock) -> None:
         """Test initialization with spaces in index name raises ValueError."""
-        with patch("src.db.pinecone_client.Pinecone"):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone"):
             with pytest.raises(ValueError, match="Invalid index name"):
                 VectorStore(
                     api_key="test-api-key",
@@ -218,7 +218,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test async text embedding."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -235,7 +235,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test async batch embedding."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -253,7 +253,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test successful vector upsert."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -279,7 +279,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test upsert with mismatched lengths raises ValueError."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -297,7 +297,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test single vector upsert."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -328,7 +328,7 @@ class TestVectorStore:
         mock_response = MagicMock()
         mock_response.matches = [mock_match]
 
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -354,7 +354,7 @@ class TestVectorStore:
         mock_response = MagicMock()
         mock_response.matches = []
 
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -380,7 +380,7 @@ class TestVectorStore:
         mock_response = MagicMock()
         mock_response.matches = [mock_match]
 
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -400,7 +400,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test vector deletion."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -419,7 +419,7 @@ class TestVectorStore:
         self, mock_embedding_generator: MagicMock, mock_pinecone: MagicMock
     ) -> None:
         """Test deleting all vectors in namespace."""
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -445,7 +445,7 @@ class TestVectorStore:
         mock_response = MagicMock()
         mock_response.vectors = {"fetch-id": mock_vector}
 
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -470,7 +470,7 @@ class TestVectorStore:
         mock_stats.total_vector_count = 100
         mock_stats.namespaces = {"default": MagicMock(vector_count=100)}
 
-        with patch("src.db.pinecone_client.Pinecone", mock_pinecone):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone", mock_pinecone):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -486,7 +486,7 @@ class TestVectorStore:
 
     def test_set_namespace(self, mock_embedding_generator: MagicMock) -> None:
         """Test changing namespace."""
-        with patch("src.db.pinecone_client.Pinecone"):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone"):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
@@ -499,7 +499,7 @@ class TestVectorStore:
 
     def test_close(self, mock_embedding_generator: MagicMock) -> None:
         """Test closing client connection."""
-        with patch("src.db.pinecone_client.Pinecone"):
+        with patch("src.novel_agent.db.pinecone_client.Pinecone"):
             vs = VectorStore(
                 api_key="test-api-key",
                 index_name="test-index",
