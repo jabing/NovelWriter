@@ -34,22 +34,30 @@ NovelWriter is a comprehensive AI-assisted novel writing platform that helps aut
 
 ```
 NovelWriter/
-├── Writer/                 # Python backend
+├── src/                      # Python source code
+│   ├── novel_agent/         # Novel Agent System (AI writing backend)
+│   │   ├── api/             # FastAPI REST API + WebSocket
+│   │   ├── agents/          # AI writing agents
+│   │   ├── studio/          # Core studio functionality
+│   │   └── novel/           # Novel management logic
+│   └── novelwriter_lsp/     # Language Server Protocol implementation
+├── web/                      # Vue3 frontend
 │   ├── src/
-│   │   ├── api/           # FastAPI REST API + WebSocket
-│   │   ├── agents/        # AI writing agents
-│   │   ├── studio/        # Core studio functionality
-│   │   └── novel/         # Novel management logic
-│   └── tests/             # Backend tests
-├── web/                    # Vue3 frontend
-│   ├── src/
-│   │   ├── components/    # Vue components
-│   │   ├── views/         # Page views
-│   │   ├── stores/        # Pinia state management
-│   │   ├── api/           # API client
-│   │   └── locales/       # i18n translations
-│   └── e2e/               # Playwright E2E tests
-└── LSP/                    # Language Server Protocol
+│   │   ├── components/      # Vue components
+│   │   ├── views/           # Page views
+│   │   ├── stores/          # Pinia state management
+│   │   ├── api/             # API client
+│   │   └── locales/         # i18n translations
+│   └── e2e/                 # Playwright E2E tests
+├── tests/                    # Test suites
+│   ├── agents/              # Novel agent system tests
+│   └── lsp/                 # LSP tests
+├── docs/                     # Documentation
+│   ├── writer/              # Writer documentation
+│   └── lsp/                 # LSP documentation
+├── novelwriter-shared/       # Shared data models (independent package)
+├── data/                     # Data directory
+└── scripts/                  # Utility scripts
 ```
 
 ## Quick Start
