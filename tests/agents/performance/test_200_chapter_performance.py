@@ -6,7 +6,7 @@ import tracemalloc
 import pytest
 
 from src.novel_agent.novel.summary_manager import SummaryManager
-from tests.integration.test_100_chapter_hierarchical import MockLLM
+from tests.agents.integration.test_100_chapter_hierarchical import MockLLM
 
 
 class TestPerformanceBenchmarks:

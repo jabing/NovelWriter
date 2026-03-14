@@ -2,12 +2,12 @@
 
 import pytest
 
-from tests.fixtures.qa_fixtures import (
+from tests.agents.fixtures.qa_fixtures import (
     ALL_QA_FIXTURES,
     INVALID_NOVEL_DEAD_CHARACTER,
     VALID_NOVEL_DATA,
 )
-from tests.utils.test_data_generator import (
+from tests.agents.utils.test_data_generator import (
     generate_test_character,
     generate_test_novel,
 )

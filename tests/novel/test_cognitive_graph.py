@@ -8,7 +8,7 @@ src_path = PROJECT_ROOT / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
-from novel.cognitive_graph import CognitiveGraph
+from src.novel_agent.novel.cognitive_graph import CognitiveGraph
 
 
 class TestCognitiveGraphInit:

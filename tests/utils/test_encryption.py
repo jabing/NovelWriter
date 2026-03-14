@@ -5,11 +5,7 @@
 
 import pytest
 import os
-import sys
 from pathlib import Path
-
-# 添加 LSP 目录到路径
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'LSP'))
 
 from novelwriter_lsp.utils.encryption import DataEncryption
 
