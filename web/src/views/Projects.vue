@@ -620,7 +620,7 @@ onMounted(() => {
                     id="project-premise"
                     v-model="newProjectForm.premise"
                     class="form-textarea"
-                    rows="4"
+                    rows="3"
                     placeholder="简要描述你的故事..."
                     :disabled="isSubmitting"
                   ></textarea>
@@ -727,7 +727,7 @@ onMounted(() => {
                     id="edit-project-premise"
                     v-model="editProjectForm.premise"
                     class="form-textarea"
-                    rows="4"
+                    rows="3"
                     placeholder="简要描述你的故事..."
                     :disabled="isEditSubmitting"
                   ></textarea>
@@ -860,7 +860,7 @@ onMounted(() => {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-3) var(--space-6);
   background: var(--color-primary);
   color: white;
@@ -1215,7 +1215,7 @@ onMounted(() => {
 
 /* Content */
 .project-content {
-  padding: var(--space-5);
+  padding: var(--space-4);
 }
 
 .project-title {
@@ -1443,7 +1443,7 @@ onMounted(() => {
 .empty-state-action {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-3) var(--space-6);
   background: var(--color-primary);
   color: white;
@@ -1684,7 +1684,6 @@ onMounted(() => {
   );
   background-size: 200% 100%;
 }
-</style>
 
 /* Create Project Modal */
 .modal-overlay {
@@ -1724,7 +1723,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-5);
+  padding: var(--space-4);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1751,9 +1750,9 @@ onMounted(() => {
 }
 
 .modal-body {
-  padding: var(--space-5);
+  padding: var(--space-4);
   overflow-y: auto;
-  max-height: calc(90vh - 140px);
+  max-height: calc(90vh - 180px);
 }
 
 .modal-footer {
@@ -1773,9 +1772,10 @@ onMounted(() => {
 }
 
 .form-group {
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
 .form-label {
@@ -1821,8 +1821,9 @@ onMounted(() => {
 .form-error {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-3);
+  border: 1px solid var(--color-border);
   background: rgba(155, 44, 44, 0.1);
   border-radius: var(--radius-md);
   color: var(--color-error);
@@ -1834,7 +1835,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
@@ -1922,7 +1923,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-4);
   background: rgba(255, 59, 48, 0.08);
   border-radius: var(--radius-md);
@@ -1959,3 +1960,4 @@ onMounted(() => {
 .modal-leave-to {
   opacity: 0;
 }
+</style>
