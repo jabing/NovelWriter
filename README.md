@@ -71,17 +71,15 @@ NovelWriter/
 ### Backend Setup
 
 ```bash
-cd Writer
-
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e ".[dev]"
 
 # Start the API server
-python -m uvicorn src.api.main:app --reload --port 8000
+python -m uvicorn src.novel_agent.api.main:app --reload --port 8000
 ```
 
 ### Frontend Setup
@@ -183,8 +181,7 @@ npm run dev
 ### Backend Tests
 
 ```bash
-cd Writer
-pytest tests/api/ -v
+pytest tests/agents/ -v
 ```
 
 **Coverage**: 43 tests, 100% pass rate
@@ -228,9 +225,9 @@ npx playwright test
 ## Documentation
 
 - [API Documentation](http://localhost:8000/docs) - Interactive API docs
-- [Architecture](./Writer/docs/ARCHITECTURE.md) - System architecture
-- [Development Guide](./Writer/docs/DEVELOPMENT.md) - Development setup
-- [User Manual](./Writer/docs/USER_MANUAL.md) - End-user guide
+- [Architecture](./docs/writer/ARCHITECTURE.md) - System architecture
+- [Development Guide](./docs/writer/DEVELOPMENT.md) - Development setup
+- [User Manual](./docs/writer/USER_MANUAL.md) - End-user guide
 
 ## Contributing
 

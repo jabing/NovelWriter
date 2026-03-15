@@ -29,7 +29,15 @@ export default {
     activeAgents: '活跃智能体',
     lastBackup: '上次备份',
     storageUsed: '已用存储',
-    activityDescription: '{completed}/{total} 章节 • {words} 字'
+    activityDescription: '{completed}/{total} 章节 • {words} 字',
+    cpuUsage: 'CPU 使用率',
+    memoryUsage: '内存使用率',
+    activeProjects: '活跃项目',
+    totalChapters: '总章节数',
+    uptime: '运行时间',
+    version: '版本',
+    lastChecked: '最后检查',
+    activeAlerts: '活跃告警'
   },
   project: {
     title: '项目',

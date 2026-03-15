@@ -60,18 +60,8 @@ const characterForm = reactive<CreateCharacterPayload>({
   tier: 1,
   bio: '',
   mbti: '',
-  profession: ''
+   profession: ''
 });
-
-// Character tier options
-const characterTierOptions = [
-  { value: 1, label: '主角', description: 'tier 1' },
-  { value: 1, label: '反派', description: 'tier 1' },
-  { value: 2, label: '配角', description: 'tier 2' },
-  { value: 3, label: '次要角色', description: 'tier 3' }
-];
-
-// MBTI options
 const mbtiOptions = [
   'INTJ', 'INTP', 'ENTJ', 'ENTP',
   'INFJ', 'INFP', 'ENFJ', 'ENFP',
@@ -99,17 +89,6 @@ const progressOffset = computed(() => {
 function formatNumber(num: number): string {
   return num.toLocaleString();
 }
-
-// Computed for character grouping
-const mainCharacters = computed(() => {
-  return characters.value.filter(c => c.tier === 1);
-});
-
-const supportingCharacters = computed(() => {
-  return characters.value.filter(c => c.tier >= 2);
-});
-
-const hasCharacters = computed(() => characters.value.length > 0);
 
 // View character details
 function viewCharacter(character: import('@/api/characters').Character) {

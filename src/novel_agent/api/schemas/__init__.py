@@ -3,7 +3,6 @@
 from src.novel_agent.api.schemas.agents import (
     AgentStatusResponse,
     TaskCreate,
-    TaskListResponse,
     TaskResponse,
 )
 from src.novel_agent.api.schemas.chapters import (
@@ -15,6 +14,11 @@ from src.novel_agent.api.schemas.characters import (
     CharacterListResponse,
     CharacterResponse,
 )
+from src.novel_agent.api.schemas.graph import (
+    GraphEdge,
+    GraphNode,
+    GraphResponse,
+)
 from src.novel_agent.api.schemas.outlines import (
     OutlineGenerateRequest,
     OutlineListResponse,
@@ -24,6 +28,15 @@ from src.novel_agent.api.schemas.projects import (
     ProjectCreate,
     ProjectResponse,
     ProjectUpdate,
+)
+from src.novel_agent.api.schemas.workflow import (
+    InitializeRequest,
+    InitializeResponse,
+    TaskStatusResponse,
+    TaskUpdateRequest,
+    WorkflowResult,
+    WorkflowStatus,
+    WorkflowTaskResponse,
 )
 from src.novel_agent.api.schemas.publishing import (
     CommentListResponse,
@@ -38,6 +51,18 @@ __all__ = [
     "ProjectCreate",
     "ProjectUpdate",
     "ProjectResponse",
+    # Graph
+    "GraphNode",
+    "GraphEdge",
+    "GraphResponse",
+    # Workflow
+    "InitializeRequest",
+    "InitializeResponse",
+    "TaskStatusResponse",
+    "TaskUpdateRequest",
+    "WorkflowResult",
+    "WorkflowStatus",
+    "WorkflowTaskResponse",
     # Chapters
     "ChapterResponse",
     "ChapterListResponse",
@@ -58,6 +83,5 @@ __all__ = [
     # Agents/Tasks
     "TaskCreate",
     "TaskResponse",
-    "TaskListResponse",
     "AgentStatusResponse",
 ]

@@ -2,13 +2,25 @@
 
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from src.novel_agent.api.dependencies import get_current_user_id, get_state
 from src.novel_agent.api.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
+from src.novel_agent.api.routers.tasks import get_task_store
+from src.novel_agent.api.schemas.workflow import (
+    InitializeResponse,
+    WorkflowStatus,
+    WorkflowTaskResponse,
+)
+from src.novel_agent.api.websocket import broadcast_workflow_step_complete
+from src.novel_agent.llm.deepseek import DeepSeekLLM
 from src.novel_agent.studio.core.state import NovelProject, ProjectStatus, StudioState
+from src.novel_agent.utils.config import get_settings
+from src.novel_agent.workflow.generate_workflow import create_generate_workflow
+from src.novel_agent.workflow.plan_workflow import create_plan_workflow
 
 router = APIRouter(prefix="/api/projects", tags=["projects"], redirect_slashes=False)
 
@@ -161,6 +173,81 @@ def delete_project(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project {project_id} not found",
         )
+
+
+
+@router.post(
+    "/{project_id}/generate-chapters",
+    response_model=WorkflowTaskResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def generate_chapters(
+    project_id: str,
+    user_id: Annotated[str, Depends(get_current_user_id)],
+    state: Annotated[StudioState, Depends(get_state)],
+    start_chapter: int = 1,
+    count: int = 1,
+    resume: bool = False,
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+) -> WorkflowTaskResponse:
+    project = state.get_project(project_id)
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project {project_id} not found",
+        )
+    if project.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: this project does not belong to you",
+        )
+
+    task_id = str(uuid.uuid4())
+
+    background_tasks.add_task(
+        _run_chapter_generation,
+        project_id=project_id,
+        start_chapter=start_chapter,
+        count=count,
+        resume=resume,
+        state=state,
+    )
+
+    return WorkflowTaskResponse(task_id=task_id, status="queued")
+
+
+async def _run_chapter_generation(
+    project_id: str,
+    start_chapter: int,
+    count: int,
+    resume: bool,
+    state: StudioState,
+) -> None:
+    settings = get_settings()
+    llm = DeepSeekLLM(api_key=settings.deepseek_api_key.get_secret_value())
+
+    workflow = create_generate_workflow(
+        name="chapter_generator",
+        llm=llm,
+        genre="fantasy",
+    )
+
+    project = state.get_project(project_id)
+    if project is None:
+        return
+
+    result = await workflow.execute(
+        project_id=project_id,
+        start_chapter=start_chapter,
+        count=count,
+        storage_path=Path("data/openviking/memory"),
+        resume=resume,
+    )
+
+    if result.success and result.chapters_generated > 0:
+        project.completed_chapters += result.chapters_generated
+        state.update_project(project)
+
 
 
 def _project_to_response(project: NovelProject) -> ProjectResponse:

@@ -9,19 +9,19 @@ const i18n = createI18n<[MessageSchema], 'en' | 'zh'>({
   locale: localStorage.getItem('language') || 'zh',
   fallbackLocale: 'en',
   messages: {
-    zh,
-    en
+    zh: zh as any,
+    en: en as any
   }
 });
 
 export default i18n;
 
 export function setI18nLanguage(locale: 'en' | 'zh'): void {
-  (i18n.global.locale as unknown as { value: string }).value = locale;
+  (i18n.global as any).locale.value = locale;
   localStorage.setItem('language', locale);
   document.documentElement.setAttribute('lang', locale);
 }
 
 export function getI18nLanguage(): 'en' | 'zh' {
-  return (i18n.global.locale as unknown as { value: string }).value as 'en' | 'zh';
+  return (i18n.global as any).locale.value as 'en' | 'zh';
 }

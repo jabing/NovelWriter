@@ -12,10 +12,10 @@ from src.novel_agent.llm.base import BaseLLM
 from src.novel_agent.novel.auto_fixer import AutoFixer, AutoFixResult
 from src.novel_agent.novel.chapter_summarizer import ArcSummarizer, ChapterSummarizer
 from src.novel_agent.novel.consistency_verifier import VerificationResult
+from src.novel_agent.novel.continuity import ContinuityManager, StoryState
 from src.novel_agent.novel.entity_extractor import EntityExtractor
 from src.novel_agent.novel.hierarchical_state import CHAPTERS_PER_ARC, HierarchicalStoryState
 from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
-from src.novel_agent.novel.continuity import ContinuityManager, StoryState
 from src.novel_agent.novel.relation_inference import RelationInference
 from src.novel_agent.novel.summaries import ArcSummary, ChapterSummary
 

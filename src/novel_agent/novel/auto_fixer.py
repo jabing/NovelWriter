@@ -17,7 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from src.novel_agent.novel.consistency_verifier import ConsistencyVerifier, Inconsistency, VerificationResult
+from src.novel_agent.novel.consistency_verifier import (
+    ConsistencyVerifier,
+    Inconsistency,
+    VerificationResult,
+)
 from src.novel_agent.novel.continuity import StoryState
 
 logger = logging.getLogger(__name__)

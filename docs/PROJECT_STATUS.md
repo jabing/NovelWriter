@@ -1,6 +1,6 @@
 # NovelWriter Project Status
 
-> Last updated: 2026-03-10
+> Last updated: 2026-03-15
 
 ## Overall Progress
 
@@ -188,6 +188,8 @@ E2E Tests:
 
 | Issue | Priority | Status |
 |-------|----------|--------|
+| TypeScript build errors fixed (2026-03-15) | High | ✅ Resolved |
+| Production build verified working (all core views render without JS errors) | High | ✅ Verified |
 | E2E tests require Windows | Medium | Pending |
 | No CI/CD pipeline | Low | Future |
 
@@ -199,7 +201,7 @@ E2E Tests:
 |--------|-------|
 | Backend test duration | ~1.2s |
 | Frontend test duration | ~5s |
-| Build time | ~15s |
+| Build time | ~10s |
 | Bundle size | ~500KB |
 
 ---

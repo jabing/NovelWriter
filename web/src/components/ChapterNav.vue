@@ -19,7 +19,6 @@ const emit = defineEmits<{
 
 // Auto-hide state
 const isVisible = ref(true);
-const lastScrollY = ref(0);
 const hideTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
 // Current chapter index
@@ -54,14 +53,20 @@ const chapterOptions = computed(() => {
 const handlePrevious = (): void => {
   if (hasPrevious.value) {
     emit('previous');
-    emit('navigate', props.chapters[currentIndex.value - 1].id);
+    const prevChapter = props.chapters[currentIndex.value - 1];
+    if (prevChapter) {
+      emit('navigate', prevChapter.id);
+    }
   }
 };
 
 const handleNext = (): void => {
   if (hasNext.value) {
     emit('next');
-    emit('navigate', props.chapters[currentIndex.value + 1].id);
+    const nextChapter = props.chapters[currentIndex.value + 1];
+    if (nextChapter) {
+      emit('navigate', nextChapter.id);
+    }
   }
 };
 

@@ -176,16 +176,28 @@ export const useAgentStore = defineStore('agent', {
       
       if (index !== -1) {
         // Update existing agent
-        this.agents[index] = {
-          ...this.agents[index],
-          status: event.status,
-          last_seen: new Date().toISOString()
-        };
+        const existingAgent = this.agents[index];
+        if (existingAgent) {
+          this.agents[index] = {
+            id: existingAgent.id,
+            name: existingAgent.name,
+            status: event.status,
+            last_seen: new Date().toISOString()
+          };
+        } else {
+          // Handle edge case - agent should exist if index found, but TypeScript needs it
+          this.agents[index] = {
+            id: event.agent_id,
+            name: (event as any).agent_name ?? `Agent ${event.agent_id}`,
+            status: event.status,
+            last_seen: new Date().toISOString()
+          };
+        }
       } else {
         // Add new agent if not found
         this.agents.push({
-          id: event.agent_id,
-          name: `Agent ${event.agent_id}`,
+          id: event.agent_id ?? '',
+          name: (event as any).agent_name ?? '',
           status: event.status,
           last_seen: new Date().toISOString()
         });

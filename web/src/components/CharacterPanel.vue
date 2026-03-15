@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Character } from '@/types';
 
@@ -41,26 +40,9 @@ const statusStyles: Record<string, { bg: string; color: string }> = {
   archived: { bg: 'rgba(174, 174, 178, 0.12)', color: 'var(--color-text-tertiary)' }
 };
 
-// Group characters by role for relationship visualization
-const charactersByRole = computed(() => {
-  const grouped: Record<string, Character[]> = {
-    protagonist: [],
-    antagonist: [],
-    supporting: [],
-    minor: []
-  };
-  props.characters.forEach((char) => {
-    if (grouped[char.role]) {
-      grouped[char.role].push(char);
-    }
-  });
-  return grouped;
-});
-
 // Get role label from i18n
 const getRoleLabel = (role: string): string => {
-  const roleKey = role as keyof typeof t;
-  return t(`character.${roleKey}`);
+  return t(`character.${role}`);
 };
 
 // Handle card actions
@@ -105,7 +87,7 @@ const handleView = (character: Character): void => {
           <div
             v-else
             class="avatar-placeholder"
-            :style="{ backgroundColor: roleColors[character.role] || roleColors.minor }"
+            :style="{ backgroundColor: roleColors[character.role as string] || roleColors.minor }"
           >
             {{ getInitials(character.name) }}
           </div>
@@ -117,7 +99,7 @@ const handleView = (character: Character): void => {
           <div class="character-meta">
             <span
               class="role-badge"
-              :style="{ backgroundColor: `${roleColors[character.role]}20`, color: roleColors[character.role] }"
+              :style="{ backgroundColor: `${roleColors[character.role as string]}20`, color: roleColors[character.role as string] }"
             >
               {{ getRoleLabel(character.role) }}
             </span>
@@ -135,7 +117,7 @@ const handleView = (character: Character): void => {
 
         <!-- Relationships Section -->
         <div
-          v-if="character.relationships && character.relationships.length > 0"
+          v-if="character?.relationships && character.relationships.length > 0"
           class="relationships-section"
         >
           <div class="relationship-line" />

@@ -37,7 +37,7 @@
           </div>
           <div class="alert-title">
             <h3 class="alert-title-text">{{ alert.title }}</h3>
-            <p class="alert-subtitle">{{ alert.timestamp | formatDate }}</p>
+            <p class="alert-subtitle">{{ formatDate(alert.timestamp) }}</p>
           </div>
         </div>
         
@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 interface Alert {
@@ -93,10 +93,20 @@ export default defineComponent({
     }
   },
   
-  setup(props) {
+  setup(props, { emit }) {
     const { t } = useI18n()
     
     const selectedSeverity = ref('all')
+    
+    const formatDate = (timestamp: string) => {
+      const date = new Date(timestamp)
+      return new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date)
+    }
     
     const filteredAlerts = computed(() => {
       if (selectedSeverity.value === 'all') {
@@ -106,7 +116,7 @@ export default defineComponent({
     })
     
     const getSeverityIcon = (severity: string) => {
-      const icons = {
+      const icons: Record<string, string> = {
         info: 'ℹ️',
         warning: '⚠️',
         error: '❌',
@@ -128,6 +138,7 @@ export default defineComponent({
       t,
       selectedSeverity,
       filteredAlerts,
+      formatDate,
       getSeverityIcon,
       onSeverityFilterChange,
       acknowledgeAlert

@@ -2,16 +2,15 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAgentStore } from '../stores/agentStore';
 import { 
-  Cpu, 
-  Activity, 
-  Wifi, 
-  WifiOff, 
-  AlertCircle,
   Clock,
-  Play,
-  Pause,
-  RefreshCw,
-  Plus
+  Connection,
+  SwitchButton,
+  Warning,
+  TrendCharts,
+  VideoPlay,
+  Refresh,
+  Plus,
+  CircleCheck
 } from '@element-plus/icons-vue';
 
 const agentStore = useAgentStore();
@@ -45,11 +44,11 @@ function getAgentStatusClass(status: string) {
 // Get agent status icon
 function getAgentStatusIcon(status: string) {
   switch (status) {
-    case 'online': return Wifi;
-    case 'busy': return Activity;
-    case 'offline': return WifiOff;
-    case 'error': return AlertCircle;
-    default: return Wifi;
+    case 'online': return Connection;
+    case 'busy': return TrendCharts;
+    case 'offline': return SwitchButton;
+    case 'error': return Warning;
+    default: return Connection;
   }
 }
 
@@ -135,7 +134,7 @@ onMounted(() => {
         </div>
         <div class="connection-indicator" data-testid="connection-indicator">
           <el-icon :size="20" :class="getConnectionColor(connectionState)" data-testid="connection-icon">
-            <component :is="isConnecting ? Clock : (isConnected ? Wifi : WifiOff)" />
+            <component :is="isConnecting ? Clock : (isConnected ? Connection : SwitchButton)" />
           </el-icon>
           <span class="connection-text" data-testid="connection-text">{{ formatConnectionState(connectionState) }}</span>
         </div>
@@ -176,7 +175,7 @@ onMounted(() => {
             <div class="agent-details">
               <div class="agent-stat">
                 <span class="stat-label">Last Seen</span>
-                <span class="stat-value" data-testid="agent-last-seen">{{ formatLastSeen(agent.last_seen) }}</span>
+                <span class="stat-value" data-testid="agent-last-seen">{{ formatLastSeen(agent.last_seen || '') }}</span>
               </div>
               <div class="agent-stat">
                 <span class="stat-label">Tasks Completed</span>
@@ -190,7 +189,7 @@ onMounted(() => {
 
             <div class="agent-actions">
               <button class="btn btn-secondary" @click="triggerAgentAction">
-                <el-icon><RefreshCw /></el-icon>
+                <el-icon><Refresh /></el-icon>
                 Refresh
               </button>
             </div>
@@ -221,9 +220,9 @@ onMounted(() => {
             <div class="timeline-content">
               <div class="timeline-header">
                 <el-icon class="timeline-icon" data-testid="timeline-icon">
-                  <component :is="task.status === 'running' ? Play :
-                              task.status === 'completed' ? CircleCheck :
-                              task.status === 'error' ? AlertCircle : Clock" />
+                  <component :is="task.status === 'running' ? VideoPlay :
+                               task.status === 'completed' ? CircleCheck :
+                               task.status === 'error' ? Warning : Clock" />
                 </el-icon>
                 <span class="timeline-title" data-testid="timeline-title">{{ task.task }}</span>
               </div>

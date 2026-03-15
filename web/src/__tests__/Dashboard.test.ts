@@ -61,16 +61,6 @@ describe('Dashboard.vue', () => {
     // 设置暗色模式
     document.documentElement.setAttribute('data-theme', 'dark')
     
-    const wrapper = mount(Dashboard, {
-      global: {
-        plugins: [router, createPinia()],
-        stubs: {
-          'el-icon': true,
-          'router-link': true
-        }
-      }
-    })
-    
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     
     // 清理

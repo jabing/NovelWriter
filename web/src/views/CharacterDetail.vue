@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
   User,
   Edit,
-  Save as SaveIcon,
+  CircleCheck as SaveIcon,
   Close,
   ArrowLeft,
   Loading,
@@ -17,7 +16,6 @@ import { getCharacter, updateCharacter, type Character } from '@/api/characters'
 
 const route = useRoute()
 const router = useRouter()
-const { t } = useI18n()
 
 // Route params
 const projectId = computed(() => route.params.projectId as string)

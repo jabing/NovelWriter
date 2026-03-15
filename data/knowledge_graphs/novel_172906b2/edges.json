@@ -1,0 +1,76 @@
+[
+  {
+    "edge_id": "rel_linxuan_suwuan",
+    "source_id": "char_linxuan",
+    "target_id": "char_suwuan",
+    "relationship_type": "同事",
+    "weight": 0.8,
+    "properties": {
+      "since": "故事开始前"
+    }
+  },
+  {
+    "edge_id": "rel_linxuan_chenfeng",
+    "source_id": "char_linxuan",
+    "target_id": "char_chenfeng",
+    "relationship_type": "战友",
+    "weight": 0.9,
+    "properties": {
+      "since": "故事开始前"
+    }
+  },
+  {
+    "edge_id": "rel_suwuan_chenfeng",
+    "source_id": "char_suwuan",
+    "target_id": "char_chenfeng",
+    "relationship_type": "保护",
+    "weight": 0.6,
+    "properties": {
+      "since": "第1章"
+    }
+  },
+  {
+    "edge_id": "rel_airis_linxuan",
+    "source_id": "char_airis",
+    "target_id": "char_linxuan",
+    "relationship_type": "引导",
+    "weight": 0.7,
+    "properties": {
+      "since": "第4章"
+    }
+  },
+  {
+    "edge_id": "loc_fleet_galaxy",
+    "source_id": "loc_fleet",
+    "target_id": "loc_unknown_galaxy",
+    "relationship_type": "位于",
+    "weight": 1,
+    "properties": {
+      "since": "第1章"
+    }
+  },
+  {
+    "edge_id": "plot_char1",
+    "source_id": "plot_wormhole",
+    "target_id": "char_linxuan",
+    "relationship_type": "涉及",
+    "weight": 1,
+    "properties": {}
+  },
+  {
+    "edge_id": "plot_char2",
+    "source_id": "plot_signal",
+    "target_id": "char_suwuan",
+    "relationship_type": "发现者",
+    "weight": 0.9,
+    "properties": {}
+  },
+  {
+    "edge_id": "concept_airis",
+    "source_id": "concept_ancient_civ",
+    "target_id": "char_airis",
+    "relationship_type": "创造",
+    "weight": 1,
+    "properties": {}
+  }
+]

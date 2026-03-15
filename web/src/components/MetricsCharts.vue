@@ -24,7 +24,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useAgentStore } from '@/stores/agentStore';
 import * as echarts from 'echarts';
-import { VChart } from 'vue-echarts';
+import VChart from 'vue-echarts';
 
 const agentStore = useAgentStore();
 
@@ -219,12 +219,13 @@ const updateCharts = () => {
   const wordCountData = generateWordCountData();
   const executionTimeData = generateExecutionTimeData();
   
-  wordCountChartOptions.value.series[0].data = wordCountData;
-  executionTimeChartOptions.value.series[0].data = executionTimeData;
-  
-  // Update charts
-  if (wordCountChartOptions.value && executionTimeChartOptions.value) {
+  // Update charts with data
+  if (wordCountChartOptions.value?.series?.[0]) {
+    wordCountChartOptions.value.series[0].data = wordCountData;
     wordCountChartOptions.value = { ...wordCountChartOptions.value };
+  }
+  if (executionTimeChartOptions.value?.series?.[0]) {
+    executionTimeChartOptions.value.series[0].data = executionTimeData;
     executionTimeChartOptions.value = { ...executionTimeChartOptions.value };
   }
 };

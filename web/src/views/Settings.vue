@@ -29,11 +29,6 @@ const language = computed({
   set: (val) => settingsStore.setLanguage(val)
 });
 
-const theme = computed({
-  get: () => settingsStore.theme,
-  set: (val) => settingsStore.setTheme(val)
-});
-
 const saveApiKey = () => {
   // In a real app, this would save to a secure backend
   console.log('API Key saved:', apiKey.value);
@@ -261,7 +256,6 @@ const clearApiKey = () => {
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   opacity: 0.9;
-}
 }
 
 .quality-mode-item.active .quality-mode-content h3 {

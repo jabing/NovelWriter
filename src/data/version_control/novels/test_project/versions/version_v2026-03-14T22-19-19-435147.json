@@ -1,0 +1,28 @@
+{
+  "version_id": "v2026-03-14T22-19-19-435147",
+  "parent_version": null,
+  "timestamp": "2026-03-14T22:19:19.435184",
+  "author": "test_workflow",
+  "message": "Generated chapter 1: The Beginning",
+  "changes": [
+    {
+      "change_type": "chapter_created",
+      "target_id": "chapter/1",
+      "old_value": null,
+      "new_value": "Fixed chapter content",
+      "description": "Created chapter 1",
+      "metadata": {}
+    }
+  ],
+  "chapter_contents": {
+    "chapter_1": "Fixed chapter content"
+  },
+  "state_snapshot": {},
+  "tags": [
+    "fantasy",
+    "generated"
+  ],
+  "metadata": {
+    "validation_passed": true
+  }
+}

@@ -53,7 +53,6 @@ describe('Projects.vue', () => {
     })
     
     // 查找搜索输入框
-    const searchInput = wrapper.find('input[type="text"]')
     // 如果有搜索框，验证其存在
     expect(wrapper.html()).toBeTruthy()
   })
@@ -76,16 +75,6 @@ describe('Projects.vue', () => {
 
   it('should support dark mode', async () => {
     document.documentElement.setAttribute('data-theme', 'dark')
-    
-    const wrapper = mount(Projects, {
-      global: {
-        plugins: [router, createPinia()],
-        stubs: {
-          'el-icon': true,
-          'router-link': true
-        }
-      }
-    })
     
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     document.documentElement.removeAttribute('data-theme')

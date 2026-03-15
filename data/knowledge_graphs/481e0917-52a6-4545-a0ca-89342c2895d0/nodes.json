@@ -1,0 +1,15 @@
+[
+  {"node_id": "char_林轩", "node_type": "character", "properties": {"name": "林轩", "role": "舰长", "first_appearance": 1}},
+  {"node_id": "char_苏雅", "node_type": "character", "properties": {"name": "苏雅", "role": "科学官", "first_appearance": 1}},
+  {"node_id": "char_张伟", "node_type": "character", "properties": {"name": "张伟", "role": "特种部队队长", "first_appearance": 1}},
+  {"node_id": "char_陈明", "node_type": "character", "properties": {"name": "陈明", "role": "副舰长", "first_appearance": 1}},
+  {"node_id": "char_李昊", "node_type": "character", "properties": {"name": "李昊", "role": "导航员", "first_appearance": 2}},
+  {"node_id": "char_凯瑟琳", "node_type": "character", "properties": {"name": "凯瑟琳", "role": "盟军舰长", "first_appearance": 15}},
+  {"node_id": "loc_新纪元号", "node_type": "location", "properties": {"name": "新纪元号", "type": "飞船", "first_appearance": 1}},
+  {"node_id": "loc_舰桥", "node_type": "location", "properties": {"name": "舰桥", "type": "飞船区域", "first_appearance": 1}},
+  {"node_id": "loc_引擎舱", "node_type": "location", "properties": {"name": "引擎舱", "type": "飞船区域", "first_appearance": 1}},
+  {"node_id": "loc_科学实验室", "node_type": "location", "properties": {"name": "科学实验室", "type": "飞船区域", "first_appearance": 2}},
+  {"node_id": "loc_虫洞", "node_type": "location", "properties": {"name": "虫洞", "type": "空间现象", "first_appearance": 2}},
+  {"node_id": "plot_星灵文明", "node_type": "plot", "properties": {"name": "星灵文明", "type": "古老文明", "first_appearance": 5}},
+  {"node_id": "plot_堕落者", "node_type": "plot", "properties": {"name": "堕落者", "type": "威胁", "first_appearance": 10}}
+]

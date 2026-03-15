@@ -135,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import type { Platform } from '../types';
 
 const props = defineProps<{
@@ -174,7 +174,7 @@ const platformIcons = {
 };
 
 const getPlatformIcon = (type: string) => {
-  return platformIcons[type.toLowerCase()] || platformIcons.default;
+  return (platformIcons as any)[type.toLowerCase()] || platformIcons.default;
 };
 
 const toggleConnection = (platform: Platform) => {

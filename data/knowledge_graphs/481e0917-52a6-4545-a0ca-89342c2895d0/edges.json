@@ -1,0 +1,10 @@
+[
+  {"edge_id": "edge_1", "source_id": "char_林轩", "target_id": "char_苏雅", "relationship_type": "同事", "properties": {"since_chapter": 1}},
+  {"edge_id": "edge_2", "source_id": "char_林轩", "target_id": "char_张伟", "relationship_type": "战友", "properties": {"since_chapter": 1}},
+  {"edge_id": "edge_3", "source_id": "char_林轩", "target_id": "char_陈明", "relationship_type": "上下级", "properties": {"since_chapter": 1}},
+  {"edge_id": "edge_4", "source_id": "char_林轩", "target_id": "loc_新纪元号", "relationship_type": "指挥", "properties": {"since_chapter": 1}},
+  {"edge_id": "edge_5", "source_id": "char_苏雅", "target_id": "loc_科学实验室", "relationship_type": "工作地点", "properties": {"since_chapter": 2}},
+  {"edge_id": "edge_6", "source_id": "char_张伟", "target_id": "loc_引擎舱", "relationship_type": "工作地点", "properties": {"since_chapter": 1}},
+  {"edge_id": "edge_7", "source_id": "char_林轩", "target_id": "plot_星灵文明", "relationship_type": "发现者", "properties": {"since_chapter": 5}},
+  {"edge_id": "edge_8", "source_id": "plot_星灵文明", "target_id": "plot_堕落者", "relationship_type": "敌对", "properties": {"since_chapter": 10}}
+]

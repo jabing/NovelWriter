@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, afterEach } from 'vitest'
 import { config } from '@vue/test-utils'
 
 // Global test configuration
@@ -42,14 +42,14 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn()
 }))
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn()
@@ -62,13 +62,16 @@ class MockWebSocket {
   static CLOSING = 2
   static CLOSED = 3
 
+  url: string
   readyState = MockWebSocket.OPEN
   onopen: ((this: WebSocket, ev: Event) => any) | null = null
   onclose: ((this: WebSocket, ev: CloseEvent) => any) | null = null
   onerror: ((this: WebSocket, ev: Event) => any) | null = null
   onmessage: ((this: WebSocket, ev: MessageEvent) => any) | null = null
 
-  constructor(public url: string) {}
+  constructor(url: string) {
+    this.url = url;
+  }
 
   send = vi.fn()
   close = vi.fn()
@@ -76,7 +79,7 @@ class MockWebSocket {
   removeEventListener = vi.fn()
 }
 
-global.WebSocket = MockWebSocket as any
+globalThis.WebSocket = MockWebSocket as any
 
 // Clean up after each test
 afterEach(() => {

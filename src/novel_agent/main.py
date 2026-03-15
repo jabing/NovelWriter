@@ -10,9 +10,11 @@ Usage:
 """
 
 import asyncio
+from typing import Any
 
 import click
 from rich.console import Console
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 console = Console()
 
@@ -25,19 +27,135 @@ def cli() -> None:
 
 
 @cli.command()
-@click.option("--novel-id", required=True, help="Unique identifier for the novel")
-@click.option("--chapter", type=int, required=True, help="Chapter number to generate")
-@click.option(
-    "--genre",
-    type=click.Choice(["scifi", "fantasy", "romance", "history", "military"]),
-    help="Genre for the chapter",
-)
-def generate(novel_id: str, chapter: int, genre: str | None) -> None:
-    """Generate a single chapter for a novel."""
-    console.print(f"[bold blue]Generating Chapter {chapter}[/bold blue]")
-    console.print(f"  Novel ID: {novel_id}")
-    console.print(f"  Genre: {genre or 'auto-detect'}")
-    console.print("[yellow]Note: Generation not yet implemented[/yellow]")
+@click.option("--project-id", required=True, help="Project ID for the novel")
+@click.option("--start-chapter", type=int, default=None, help="Starting chapter number (default: next ungenerated)")
+@click.option("--count", type=int, default=1, help="Number of chapters to generate")
+@click.option("--validate/--no-validate", default=True, help="Enable/disable chapter validation")
+@click.option("--continue-on-error", is_flag=True, default=False, help="Continue generating even if errors occur")
+@click.option("--resume", is_flag=True, help="Resume from last checkpoint if available")
+def generate(
+    project_id: str,
+    start_chapter: int | None,
+    count: int,
+    validate: bool,
+    continue_on_error: bool,
+    resume: bool,
+) -> None:
+    """Generate chapters for a novel project.
+
+    This command uses the GenerateWorkflow to produce chapters for your novel.
+    It supports checkpoint-based resumption, validation, and error handling.
+
+    Examples:
+        novel-agent generate --project-id my-novel --count 5
+        novel-agent generate --project-id my-novel --start-chapter 10 --count 3
+        novel-agent generate --project-id my-novel --resume
+    """
+    from pathlib import Path
+
+    from src.novel_agent.llm import DeepSeekLLM
+    from src.novel_agent.workflow.generate_workflow import (
+        ChapterGenerateWorkflow,
+        GenerateResult,
+    )
+
+    try:
+        llm = DeepSeekLLM()
+    except ValueError as e:
+        console.print(f"[bold red]LLM Error: {e}[/bold red]")
+        raise click.Abort()
+
+    storage_path = Path("data/openviking/memory")
+
+    workflow = ChapterGenerateWorkflow(
+        name="cli-generate",
+        llm=llm,
+        genre="fantasy",
+        checkpoint_dir=storage_path / "checkpoints",
+    )
+
+    progress_bar: Progress | None = None
+    main_task_id: Any = None
+
+    def on_progress(chapter: int, total: int, success: bool) -> None:
+        nonlocal progress_bar, main_task_id
+        if progress_bar and main_task_id:
+            checkpoint = workflow._load_last_checkpoint(project_id)
+            last_checkpoint_chapter = checkpoint.chapter_number if checkpoint else 0
+            pct = (chapter - last_checkpoint_chapter) / total * 100 if total > 0 else 0
+            desc = f"Chapter {chapter}/{total}"
+            progress_bar.update(main_task_id, completed=pct, description=desc)
+
+    async def run_generation() -> GenerateResult:
+        effective_start = start_chapter
+        if effective_start is None:
+            checkpoint = workflow._load_last_checkpoint(project_id)
+            effective_start = checkpoint.chapter_number + 1 if checkpoint else 1
+
+        result = await workflow.execute(
+            project_id=project_id,
+            start_chapter=effective_start,
+            count=count,
+            storage_path=storage_path,
+            resume=resume,
+            progress_callback=on_progress,
+        )
+        return result
+
+    console.print("[bold blue]Starting Chapter Generation[/bold blue]")
+    console.print(f"  Project ID: {project_id}")
+    console.print(f"  Start Chapter: {start_chapter or 'next ungenerated'}")
+    console.print(f"  Count: {count}")
+    console.print(f"  Validate: {'enabled' if validate else 'disabled'}")
+    console.print(f"  Resume: {'enabled' if resume else 'disabled'}")
+    console.print()
+
+    try:
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+        ) as progress_bar:
+            main_task_id = progress_bar.add_task("Generating...", total=100)
+            result = asyncio.run(run_generation())
+
+        console.print("\n[bold]Generation Complete![/bold]")
+        console.print(f"  Success: {'[green]Yes[/green]' if result.success else '[red]No[/red]'}")
+        console.print(f"  Chapters Generated: {result.chapters_generated}/{result.total_chapters_requested}")
+
+        if result.resumed_from_checkpoint:
+            console.print(f"  Resumed from checkpoint at chapter {result.start_chapter - 1}")
+
+        if validate and result.chapters:
+            console.print("\n[bold]Validation Results:[/bold]")
+            for chapter in result.chapters:
+                status_icon = "[green]✓[/green]" if chapter.validation_passed else "[red]✗[/red]"
+                console.print(
+                    f"  {status_icon} Chapter {chapter.chapter_number}: "
+                    f"{chapter.title} ({chapter.word_count} words)"
+                )
+                if not chapter.validation_passed:
+                    console.print(
+                        f"      [yellow]Validation failed after {chapter.auto_fix_iterations} fix attempts[/yellow]"
+                    )
+
+        if result.errors:
+            console.print("\n[red]Errors:[/red]")
+            for error in result.errors:
+                console.print(f"  [yellow]- {error}[/yellow]")
+
+        if not result.success:
+            raise click.ClickException("Generation failed")
+
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Generation interrupted[/yellow]")
+        raise click.Abort()
+    except Exception as e:
+        if not continue_on_error:
+            console.print(f"\n[bold red]Error: {e}[/bold red]")
+            raise click.Abort()
+        else:
+            console.print(f"\n[yellow]Error (continuing): {e}[/yellow]")
 
 
 @cli.command()
@@ -525,17 +643,200 @@ def character(project_id: str, name: str | None, role: str) -> None:
 
 
 @cli.command()
-@click.argument("description")
-@click.option("--title", help="Project title (optional)")
-def plan(description: str, title: str | None) -> None:
-    """Quick plan a new project from description."""
-    console.print("[bold blue]Quick Planning Project...[/bold blue]")
-    console.print(f"  Description: {description[:100]}...")
-    if title:
-        console.print(f"  Title: {title}")
-    console.print(
-        "[yellow]Note: Quick planning requires LLM. Use Studio for full functionality.[/yellow]"
+@click.option(
+    "--project-id",
+    required=True,
+    help="Project ID to plan (required)",
+)
+@click.option(
+    "--chapters",
+    type=int,
+    default=None,
+    help="Override target chapter count",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Regenerate planning even if already complete",
+)
+def plan(project_id: str, chapters: int | None, force: bool) -> None:
+    """Plan a novel project with outline, characters, and world settings."""
+    from pathlib import Path
+
+    from rich.progress import Progress
+
+    from src.novel_agent.studio.core.state import ProjectStatus, get_studio_state
+    from src.novel_agent.workflow.plan_workflow import create_plan_workflow
+
+    # Get project state
+    state = get_studio_state()
+    project = state.get_project(project_id)
+
+    if project is None:
+        console.print(f"[bold red]Error: Project '{project_id}' not found[/bold red]")
+        console.print(
+            "[yellow]Create one first: novel-agent project create --title 'My Novel'[/yellow]"
+        )
+        return
+
+    # Check if already planned (unless force flag)
+    if project.status == ProjectStatus.WRITING and not force:
+        console.print(
+            f"[bold yellow]Warning: Project '{project_id}' already has planning complete![/bold yellow]"
+        )
+        console.print(f"  Status: {project.status.value}")
+        console.print("  Use --force to regenerate planning")
+        return
+
+    # Resolve chapter count (use override if provided, otherwise project setting)
+    target_chapters = chapters if chapters is not None else project.target_chapters
+
+    console.print("[bold blue]Planning Project[/bold blue]")
+    console.print(f"  ID: {project_id}")
+    console.print(f"  Title: {project.title}")
+    console.print(f"  Genre: {project.genre}")
+    console.print(f"  Target Chapters: {target_chapters}")
+    if force:
+        console.print("[yellow]Force regeneration enabled[/yellow]")
+    console.print()
+
+    # Get LLM instance
+    try:
+        from src.novel_agent.memory.file_memory import FileMemory
+
+        from src.novel_agent.llm.deepseek import DeepSeekLLM
+
+        llm = DeepSeekLLM()
+        memory = FileMemory()
+    except ImportError as e:
+        console.print(
+            f"[bold red]Error: Missing dependency - {e}[/bold red]"
+        )
+        console.print(
+            "[yellow]Install with: pip install NovelWriter[deepseek][/yellow]"
+        )
+        return
+
+    # Initialize workflow
+    chapters_per_volume = 10  # Default
+    workflow = create_plan_workflow(
+        llm=llm,
+        memory=memory,
+        chapters_per_volume=chapters_per_volume,
     )
+
+    # Run planning with progress
+    async def run_planning():
+        with Progress() as progress:
+            # Create tasks for each planning stage
+            task_outline = progress.add_task(
+                "[cyan]Generating story outline...", total=100
+            )
+            task_characters = progress.add_task(
+                "[cyan]Creating characters...", total=100, started=False
+            )
+            task_world = progress.add_task(
+                "[cyan]Building world settings...", total=100, started=False
+            )
+            task_volumes = progress.add_task(
+                "[cyan]Generating volumes...", total=100, started=False
+            )
+            task_timeline = progress.add_task(
+                "[cyan]Initializing timeline...", total=100, started=False
+            )
+            task_save = progress.add_task(
+                "[cyan]Saving artifacts...", total=100, started=False
+            )
+            task_update = progress.add_task(
+                "[green]Updating project status...", total=100, started=False
+            )
+
+            result = await workflow.execute(project_id)
+
+            # Update progress bars based on completion
+            progress.update(task_outline, completed=100, visible=False)
+            progress.update(task_characters, completed=100, visible=False)
+            progress.update(task_world, completed=100, visible=False)
+            progress.update(task_volumes, completed=100, visible=False)
+            progress.update(task_timeline, completed=100, visible=False)
+            progress.update(task_save, completed=100, visible=False)
+            progress.update(task_update, completed=100)
+
+            return result
+
+    try:
+        result = asyncio.run(run_planning())
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Planning cancelled[/yellow]")
+        return
+    except Exception as e:
+        console.print(f"\n[bold red]Error: {e}[/bold red]")
+        import traceback
+
+        traceback.print_exc()
+        return
+
+    # Display results
+    console.print()
+
+    if not result.success:
+        console.print("[bold red]Planning failed![/bold red]")
+        if result.errors:
+            console.print("\n[bold red]Errors:[/bold red]")
+            for error in result.errors:
+                console.print(f"  • {error}")
+        if result.warnings:
+            console.print("\n[yellow]Warnings:[/yellow]")
+            for warning in result.warnings:
+                console.print(f"  • {warning}")
+        return
+
+    # Success - display summary
+    console.print("[bold green]✓ Planning completed successfully![/bold green]\n")
+
+    # Show outline info
+    if result.outline:
+        outline = result.outline
+        console.print("[bold]Story Outline:[/bold]")
+        console.print(f"  Title: {outline.get('title', 'N/A')}")
+        console.print(f"  Total Chapters: {outline.get('total_chapters', 'N/A')}")
+        console.print(f"  Acts: {len(outline.get('acts', []))}")
+
+    # Show characters info
+    characters = result.characters
+    if characters:
+        console.print("\n[bold]Characters:[/bold]")
+        console.print(f"  Total: {len(characters)}")
+
+    # Show world info
+    if result.world:
+        world = result.world
+        console.print("\n[bold]World Settings:[/bold]")
+        console.print(f"  Setting: {world.get('setting', 'N/A')}")
+        console.print(f"  Magic System: {world.get('magic_system', 'N/A')}")
+
+    # Show volumes info
+    volumes = result.volumes
+    if volumes:
+        console.print("\n[bold]Volumes:[/bold]")
+        console.print(f"  Total: {len(volumes)}")
+        for vol in volumes:
+            vol_data = vol if isinstance(vol, dict) else vol.to_dict()
+            console.print(
+                f"    • {vol_data.get('title', 'Untitled')} "
+                f"({vol_data.get('start_chapter', '?')}-{vol_data.get('end_chapter', '?')})"
+            )
+
+    # Show timeline info
+    if result.timeline:
+        timeline = result.timeline
+        console.print("\n[bold]Timeline:[/bold]")
+        console.print(f"  Events: {len(timeline.get('events', []))}")
+
+    console.print("\n[bold]Project Directory:[/bold]")
+    project_dir = Path(state._state_dir) / "novels" / project_id
+    console.print(f"  {project_dir}")
 
 
 # === Status Command ===
@@ -757,14 +1058,17 @@ def health() -> None:
     console.print("[bold blue]Running System Health Check[/bold blue]\n")
 
     async def run_health_checks():
-        from src.novel_agent.monitoring.health import HealthMonitor, HealthStatus, get_health_monitor
+        from src.novel_agent.monitoring.health import (
+            HealthStatus,
+            get_health_monitor,
+        )
 
         health_monitor = get_health_monitor()
 
         # Register some basic checks if not already registered
         if not health_monitor._checks:
             import os
-            from pathlib import Path
+
             from src.novel_agent import DATA_DIR, NOVELS_DIR, OPENVIKING_DIR
 
             async def check_config():
@@ -847,7 +1151,7 @@ def metrics(detail: bool) -> None:
     """Show current performance metrics."""
     console.print("[bold blue]Performance Metrics[/bold blue]\n")
 
-    from src.novel_agent.monitoring.metrics import MetricsCollector, get_metrics_collector
+    from src.novel_agent.monitoring.metrics import get_metrics_collector
 
     collector = get_metrics_collector()
     all_metrics = collector.collect_all()
@@ -918,7 +1222,7 @@ def alerts(limit: int, severity: str | None) -> None:
     """Show alert history."""
     console.print("[bold blue]Alert History[/bold blue]\n")
 
-    from src.novel_agent.monitoring.alerts import AlertManager, AlertSeverity, get_alert_manager
+    from src.novel_agent.monitoring.alerts import AlertSeverity, get_alert_manager
 
     alert_manager = get_alert_manager()
     history = alert_manager._alert_history
@@ -958,11 +1262,12 @@ def status() -> None:
     console.print("[bold blue]System Status Overview[/bold blue]\n")
 
     async def show_status():
-        import time
         import sys
+        import time
+
+        from src.novel_agent.monitoring.alerts import get_alert_manager
         from src.novel_agent.monitoring.health import get_health_monitor
         from src.novel_agent.monitoring.metrics import get_metrics_collector
-        from src.novel_agent.monitoring.alerts import get_alert_manager
 
         health_monitor = get_health_monitor()
         metrics_collector = get_metrics_collector()
@@ -1022,7 +1327,7 @@ def status() -> None:
 @click.option("--host", "-h", default="0.0.0.0", help="Host to bind to")
 def export(port: int, host: str) -> None:
     """Start Prometheus metrics export endpoint."""
-    console.print(f"[bold blue]Starting Prometheus Exporter[/bold blue]")
+    console.print("[bold blue]Starting Prometheus Exporter[/bold blue]")
     console.print(f"  Host: {host}")
     console.print(f"  Port: {port}")
     console.print("\n[yellow]Note: Prometheus export server not yet fully implemented[/yellow]")

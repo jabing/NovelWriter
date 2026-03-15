@@ -1,0 +1,14 @@
+{
+  "name": "张伟",
+  "aliases": ["特种部队队长"],
+  "tier": 1,
+  "bio": "特种部队队长，35岁，忠诚、勇敢",
+  "persona": "忠诚、勇敢、果断",
+  "mbti": "ESTP",
+  "profession": "特种部队队长",
+  "relationships": {
+    "林轩": "战友"
+  },
+  "interested_topics": ["战术作战", "装备维护"],
+  "current_status": "alive"
+}

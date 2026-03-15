@@ -228,7 +228,7 @@ describe('ChapterList', () => {
     ]
     
     const wrapper = mountComponent({ chapters })
-    const dateText = wrapper.findAll('.meta-item')[1].text()
+    const dateText = wrapper.findAll('.meta-item')[1]?.text()
     
     // Date formatting depends on locale, just verify it's present
     expect(dateText).toBeTruthy()

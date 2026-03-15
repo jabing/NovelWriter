@@ -1,0 +1,15 @@
+{
+    "title": "星际迷途：新纪元",
+    "genre": "scifi",
+    "language": "zh",
+    "premise": "humanity discovers a wormhole to new galaxy",
+    "themes": ["space exploration"],
+    "pov": "first",
+    "tone": "epic",
+    "target_audience": "adult",
+    "story_structure": "three_act",
+    "content_rating": "teen",
+    "target_chapters": 30,
+    "target_words": 300000,
+    "platforms": ["wattpad"]
+}

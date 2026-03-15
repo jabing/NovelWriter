@@ -1,0 +1,90 @@
+[
+  {
+    "node_id": "char_linxuan",
+    "node_type": "character",
+    "properties": {
+      "name": "林轩",
+      "role": "主角",
+      "profession": "舰队舰长",
+      "status": "alive",
+      "tier": 1
+    }
+  },
+  {
+    "node_id": "char_suwuan",
+    "node_type": "character",
+    "properties": {
+      "name": "苏婉",
+      "role": "主角",
+      "profession": "首席科学官",
+      "status": "alive",
+      "tier": 1
+    }
+  },
+  {
+    "node_id": "char_chenfeng",
+    "node_type": "character",
+    "properties": {
+      "name": "陈风",
+      "role": "主角",
+      "profession": "特种部队队长",
+      "status": "alive",
+      "tier": 1
+    }
+  },
+  {
+    "node_id": "char_airis",
+    "node_type": "character",
+    "properties": {
+      "name": "艾瑞斯",
+      "role": "AI",
+      "profession": "古老文明AI",
+      "status": "active",
+      "tier": 2
+    }
+  },
+  {
+    "node_id": "loc_fleet",
+    "node_type": "location",
+    "properties": {
+      "name": "新地平线号舰队",
+      "type": "starship",
+      "is_main": true
+    }
+  },
+  {
+    "node_id": "loc_unknown_galaxy",
+    "node_type": "location",
+    "properties": {
+      "name": "未知星系",
+      "type": "galaxy",
+      "is_main": true
+    }
+  },
+  {
+    "node_id": "plot_wormhole",
+    "node_type": "plot",
+    "properties": {
+      "name": "虫洞异常事件",
+      "status": "resolved",
+      "chapter": 1
+    }
+  },
+  {
+    "node_id": "plot_signal",
+    "node_type": "plot",
+    "properties": {
+      "name": "古老信号之谜",
+      "status": "active",
+      "chapter": 3
+    }
+  },
+  {
+    "node_id": "concept_ancient_civ",
+    "node_type": "concept",
+    "properties": {
+      "name": "守护者文明",
+      "description": "远古高科技文明"
+    }
+  }
+]

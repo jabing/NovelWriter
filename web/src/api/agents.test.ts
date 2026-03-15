@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 import { getAgents, createAgentStatusWebSocket } from "./agents"
-import type { Agent, AgentStatusEvent } from "../types"
+import type { Agent } from "../types"
 
 // Mock the apiClient
 vi.mock("./client", () => ({
@@ -13,8 +13,8 @@ describe("agents API", () => {
   describe("getAgents", () => {
     it("should fetch agents from the API", async () => {
       const mockAgents: Agent[] = [
-        { id: "1", name: "Plot Agent", type: "plot", status: "idle" },
-        { id: "2", name: "Character Agent", type: "character", status: "running" }
+        { id: "1", name: "Plot Agent", status: "idle" },
+        { id: "2", name: "Character Agent", status: "running" }
       ]
 
       const apiClient = await import("./client")

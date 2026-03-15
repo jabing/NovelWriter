@@ -95,35 +95,35 @@ describe('CharacterPanel', () => {
       expect(style).toContain('https://example.com/avatar.jpg')
     })
 
-    it('should render avatar placeholder when no avatar_url', () => {
-      const characters = [
-        createCharacter({ 
-          id: '1',
-          name: 'Jane Smith',
-          avatar_url: null,
-          role: 'protagonist'
-        })
-      ]
+     it('should render avatar placeholder when no avatar_url', () => {
+       const characters = [
+         createCharacter({ 
+           id: '1',
+           name: 'Jane Smith',
+           avatar_url: undefined,
+           role: 'protagonist'
+         })
+       ]
       
-      const wrapper = mountComponent({ characters })
-      
-      const avatarPlaceholder = wrapper.find('.avatar-placeholder')
-      expect(avatarPlaceholder.exists()).toBe(true)
-      expect(avatarPlaceholder.text()).toBe('JS')
-    })
+       const wrapper = mountComponent({ characters })
+       
+       const avatarPlaceholder = wrapper.find('.avatar-placeholder')
+       expect(avatarPlaceholder.exists()).toBe(true)
+       expect(avatarPlaceholder.text()).toBe('JS')
+     })
 
-    it('should render role badges', () => {
-      const characters = [
-        createCharacter({ id: '1', name: 'Test Character', role: 'protagonist', status: 'active' }),
-        createCharacter({ id: '2', name: 'Another Character', role: 'antagonist', status: 'archived' })
-      ]
-      
-      const wrapper = mountComponent({ characters })
-      
-      const roleBadges = wrapper.findAll('.role-badge')
-      expect(roleBadges.length).toBeGreaterThanOrEqual(2)
-      expect(roleBadges[0].text()).toBeTruthy()
-    })
+     it('should render role badges', () => {
+       const characters = [
+         createCharacter({ id: '1', name: 'Test Character', role: 'protagonist', status: 'active' }),
+         createCharacter({ id: '2', name: 'Another Character', role: 'antagonist', status: 'archived' })
+       ]
+       
+       const wrapper = mountComponent({ characters })
+       
+       const roleBadges = wrapper.findAll('.role-badge')
+       expect(roleBadges.length).toBeGreaterThanOrEqual(2)
+       expect(roleBadges[0]?.text()).toBeTruthy()
+     })
 
     it('should render status badges', () => {
       const characters = [

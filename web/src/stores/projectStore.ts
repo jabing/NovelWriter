@@ -71,7 +71,7 @@ export const useProjectStore = defineStore('project', {
         await deleteProject(projectId);
         this.projects = this.projects.filter(p => p.id !== projectId);
         if (this.currentProject === projectId) {
-          this.currentProject = this.projects.length > 0 ? this.projects[0].id : null;
+          this.currentProject = this.projects.length > 0 ? (this.projects[0]?.id ?? null) : null;
         }
         return true;
       } catch (err) {

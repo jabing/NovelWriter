@@ -15,7 +15,7 @@
 
     <div class="timeline">
       <div 
-        v-for="(execution, index) in filteredExecutions" 
+        v-for="execution in filteredExecutions" 
         :key="execution.id" 
         class="timeline-item"
         :class="{ 'timeline-item--active': execution.status === 'completed' }"
@@ -63,7 +63,7 @@
           </div>
           <div class="detail-item">
             <label class="detail-label">Status:</label>
-            <span class="detail-value" :class="getStatusClass(selectedExecution?.status)">{{ selectedExecution?.status }}</span>
+            <span class="detail-value" :class="getStatusClass(selectedExecution?.status || '')">{{ selectedExecution?.status }}</span>
           </div>
           <div class="detail-item">
             <label class="detail-label">Task:</label>
@@ -75,7 +75,7 @@
           </div>
           <div class="detail-item">
             <label class="detail-label">Started:</label>
-            <span class="detail-value">{{ formatFullTimestamp(selectedExecution?.timestamp) }}</span>
+              <span class="detail-value">{{ formatFullTimestamp(selectedExecution?.timestamp || '') }}</span>
           </div>
           <div class="detail-item">
             <label class="detail-label">Result:</label>
@@ -178,11 +178,6 @@ const formatFullTimestamp = (timestamp: Date | string) => {
     second: '2-digit',
     hour12: true 
   })
-}
-
-const openModal = (execution: Execution) => {
-  selectedExecution.value = execution
-  showModal.value = true
 }
 
 const closeModal = () => {

@@ -80,16 +80,6 @@ describe('MainLayout.vue', () => {
   it('should support dark mode', async () => {
     document.documentElement.setAttribute('data-theme', 'dark')
     
-    const wrapper = mount(MainLayout, {
-      global: {
-        plugins: [router, createPinia()],
-        stubs: {
-          'router-view': true,
-          'router-link': true
-        }
-      }
-    })
-    
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
     document.documentElement.removeAttribute('data-theme')
   })

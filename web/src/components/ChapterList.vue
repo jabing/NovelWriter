@@ -121,7 +121,6 @@ const handlePublish = (chapter: Chapter): void => {
             <span class="action-icon">✎</span>
           </button>
           <button
-            v-if="chapter.status === 'completed' && chapter.status !== 'published'"
             class="action-btn action-publish"
             :title="t('publish.publishNow')"
             @click.stop="handlePublish(chapter)"

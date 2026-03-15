@@ -106,5 +106,13 @@ def mock_orchestrator():
     mock.execute.return_value = {"success": True, "result": "test output"}
     return mock
 
+@pytest.fixture
+def client_without_auth():
+    """Create a test client without authentication dependencies (for public task endpoints)."""
+    from src.novel_agent.api.main import app
+
+    with TestClient(app, raise_server_exceptions=False) as test_client:
+        yield test_client
+
 
 

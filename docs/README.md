@@ -15,10 +15,10 @@
 
 | Document | Location |
 |----------|----------|
-| Architecture | [../Writer/docs/ARCHITECTURE.md](../Writer/docs/ARCHITECTURE.md) |
-| Development Guide | [../Writer/docs/DEVELOPMENT.md](../Writer/docs/DEVELOPMENT.md) |
-| User Manual | [../Writer/docs/USER_MANUAL.md](../Writer/docs/USER_MANUAL.md) |
-| Quick Start | [../Writer/docs/QUICKSTART.md](../Writer/docs/QUICKSTART.md) |
+| Architecture | [../docs/writer/ARCHITECTURE.md](../docs/writer/ARCHITECTURE.md) |
+| Development Guide | [../docs/writer/DEVELOPMENT.md](../docs/writer/DEVELOPMENT.md) |
+| User Manual | [../docs/writer/USER_MANUAL.md](../docs/writer/USER_MANUAL.md) |
+| Quick Start | [../docs/writer/QUICKSTART.md](../docs/writer/QUICKSTART.md) |
 
 ### Planning Documents
 
@@ -41,8 +41,7 @@
 
 ```bash
 # Backend (Terminal 1)
-cd Writer
-python -m uvicorn src.api.main:app --reload --port 8000
+python -m uvicorn src.novel_agent.api.main:app --reload --port 8000
 
 # Frontend (Terminal 2)
 cd web
@@ -53,8 +52,7 @@ npm run dev
 
 ```bash
 # Backend tests
-cd Writer
-pytest tests/api/ -v
+pytest tests/agents/ -v
 
 # Frontend tests
 cd web
