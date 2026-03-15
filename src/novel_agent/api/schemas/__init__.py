@@ -37,6 +37,7 @@ from src.novel_agent.api.schemas.workflow import (
     WorkflowResult,
     WorkflowStatus,
     WorkflowTaskResponse,
+    GenerateChaptersRequest,
 )
 from src.novel_agent.api.schemas.publishing import (
     CommentListResponse,
@@ -63,6 +64,7 @@ __all__ = [
     "WorkflowResult",
     "WorkflowStatus",
     "WorkflowTaskResponse",
+    "GenerateChaptersRequest",
     # Chapters
     "ChapterResponse",
     "ChapterListResponse",

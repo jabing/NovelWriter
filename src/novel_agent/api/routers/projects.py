@@ -3,13 +3,13 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 
 from src.novel_agent.api.dependencies import get_current_user_id, get_state
-from src.novel_agent.api.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
 from src.novel_agent.api.routers.tasks import get_task_store
+from src.novel_agent.api.schemas.projects import ProjectCreate, ProjectResponse, ProjectUpdate
 from src.novel_agent.api.schemas.workflow import (
     InitializeResponse,
     WorkflowStatus,
@@ -79,7 +79,6 @@ def get_project(
     user_id: Annotated[str, Depends(get_current_user_id)],
     state: Annotated[StudioState, Depends(get_state)],
 ) -> ProjectResponse:
-    """Get a specific project by ID."""
     project = state.get_project(project_id)
     if project is None:
         raise HTTPException(
@@ -101,7 +100,6 @@ def update_project(
     user_id: Annotated[str, Depends(get_current_user_id)],
     state: Annotated[StudioState, Depends(get_state)],
 ) -> ProjectResponse:
-    """Update an existing project."""
     project = state.get_project(project_id)
     if project is None:
         raise HTTPException(
@@ -155,7 +153,6 @@ def delete_project(
     user_id: Annotated[str, Depends(get_current_user_id)],
     state: Annotated[StudioState, Depends(get_state)],
 ) -> None:
-    """Delete a project."""
     project = state.get_project(project_id)
     if project is None:
         raise HTTPException(
@@ -175,6 +172,50 @@ def delete_project(
         )
 
 
+@router.post(
+    "/{project_id}/initialize",
+    response_model=InitializeResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def initialize_project(
+    project_id: str,
+    user_id: Annotated[str, Depends(get_current_user_id)],
+    state: Annotated[StudioState, Depends(get_state)],
+    background_tasks: BackgroundTasks,
+) -> InitializeResponse:
+    project = state.get_project(project_id)
+    if project is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project {project_id} not found",
+        )
+    if project.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied: this project does not belong to you",
+        )
+
+    task_store = get_task_store()
+    task_id = task_store.create_task(
+        status=WorkflowStatus.QUEUED,
+        current_step="Task queued",
+        metadata={"project_id": project_id, "workflow_type": "initialization"},
+    )
+
+    background_tasks.add_task(
+        _run_plan_workflow,
+        project_id=project_id,
+        state=state,
+        task_store=task_store,
+        task_id=task_id,
+    )
+
+    return InitializeResponse(
+        task_id=task_id,
+        status="queued",
+        message="Initialization queued successfully",
+    )
+
 
 @router.post(
     "/{project_id}/generate-chapters",
@@ -185,10 +226,10 @@ def generate_chapters(
     project_id: str,
     user_id: Annotated[str, Depends(get_current_user_id)],
     state: Annotated[StudioState, Depends(get_state)],
+    background_tasks: BackgroundTasks,
     start_chapter: int = 1,
     count: int = 1,
     resume: bool = False,
-    background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> WorkflowTaskResponse:
     project = state.get_project(project_id)
     if project is None:
@@ -202,7 +243,12 @@ def generate_chapters(
             detail="Access denied: this project does not belong to you",
         )
 
-    task_id = str(uuid.uuid4())
+    task_store = get_task_store()
+    task_id = task_store.create_task(
+        status=WorkflowStatus.QUEUED,
+        current_step="Task queued",
+        metadata={"project_id": project_id, "workflow_type": "generation"},
+    )
 
     background_tasks.add_task(
         _run_chapter_generation,
@@ -211,9 +257,62 @@ def generate_chapters(
         count=count,
         resume=resume,
         state=state,
+        task_store=task_store,
+        task_id=task_id,
     )
 
     return WorkflowTaskResponse(task_id=task_id, status="queued")
+
+
+async def _run_plan_workflow(
+    project_id: str,
+    state: StudioState,
+    task_store: Any,
+    task_id: str,
+) -> None:
+    try:
+        task_store.update_task(
+            task_id,
+            status=WorkflowStatus.RUNNING,
+            progress=10,
+            current_step="Starting initialization workflow",
+        )
+
+        settings = get_settings()
+        llm = DeepSeekLLM(api_key=settings.deepseek_api_key)
+
+        workflow = create_plan_workflow(
+            llm=llm,
+        )
+
+        result = await workflow.execute(project_id=project_id)
+
+        if result.success:
+            task_store.update_task(
+                task_id,
+                status=WorkflowStatus.COMPLETED,
+                progress=100,
+                current_step="Initial outline generated",
+            )
+            await broadcast_workflow_step_complete(
+                task_id=task_id,
+                project_id=project_id,
+                step_name="outline_generation",
+                progress=100,
+            )
+        else:
+            task_store.update_task(
+                task_id,
+                status=WorkflowStatus.FAILED,
+                errors=result.errors if hasattr(result, "errors") else ["Workflow failed"],
+            )
+
+    except Exception as e:
+        task_store.update_task(
+            task_id,
+            status=WorkflowStatus.FAILED,
+            errors=[f"Initialization error: {str(e)}"],
+        )
 
 
 async def _run_chapter_generation(
@@ -222,36 +321,70 @@ async def _run_chapter_generation(
     count: int,
     resume: bool,
     state: StudioState,
+    task_store: Any,
+    task_id: str,
 ) -> None:
-    settings = get_settings()
-    llm = DeepSeekLLM(api_key=settings.deepseek_api_key.get_secret_value())
+    try:
+        task_store.update_task(
+            task_id,
+            status=WorkflowStatus.RUNNING,
+            progress=10,
+            current_step="Starting chapter generation",
+        )
 
-    workflow = create_generate_workflow(
-        name="chapter_generator",
-        llm=llm,
-        genre="fantasy",
-    )
+        settings = get_settings()
+        llm = DeepSeekLLM(api_key=settings.deepseek_api_key)
 
-    project = state.get_project(project_id)
-    if project is None:
-        return
+        workflow = create_generate_workflow(
+            name="chapter_generator",
+            llm=llm,
+            genre="fantasy",
+        )
 
-    result = await workflow.execute(
-        project_id=project_id,
-        start_chapter=start_chapter,
-        count=count,
-        storage_path=Path("data/openviking/memory"),
-        resume=resume,
-    )
+        result = await workflow.execute(
+            project_id=project_id,
+            start_chapter=start_chapter,
+            count=count,
+            storage_path=Path("data/openviking/memory"),
+            resume=resume,
+        )
 
-    if result.success and result.chapters_generated > 0:
-        project.completed_chapters += result.chapters_generated
-        state.update_project(project)
+        if result.success and result.chapters_generated > 0:
+            from src.novel_agent.studio.core.state import get_studio_state
+            studio_state = get_studio_state()
+            project = studio_state.get_project(project_id)
+            if project:
+                project.completed_chapters += result.chapters_generated
+                studio_state.update_project(project)
 
+            task_store.update_task(
+                task_id,
+                status=WorkflowStatus.COMPLETED,
+                progress=100,
+                current_step="Chapters generated successfully",
+            )
+            await broadcast_workflow_step_complete(
+                task_id=task_id,
+                project_id=project_id,
+                step_name="chapter_generation",
+                progress=100,
+            )
+        else:
+            task_store.update_task(
+                task_id,
+                status=WorkflowStatus.FAILED,
+                errors=["No chapters generated"],
+            )
+
+    except Exception as e:
+        task_store.update_task(
+            task_id,
+            status=WorkflowStatus.FAILED,
+            errors=[f"Chapter generation error: {str(e)}"],
+        )
 
 
 def _project_to_response(project: NovelProject) -> ProjectResponse:
-    """Convert a NovelProject to a ProjectResponse."""
     return ProjectResponse(
         id=project.id,
         title=project.title,

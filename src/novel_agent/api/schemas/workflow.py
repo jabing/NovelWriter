@@ -59,8 +59,16 @@ class WorkflowResult(BaseModel):
     warnings: list[str] = Field(default_factory=list, description="Any warnings")
 
 
-class WorkflowTaskListResponse(BaseModel):
+class WorkspaceTaskListResponse(BaseModel):
     """Alias for TaskListResponse for backward compatibility."""
+
+
+class GenerateChaptersRequest(BaseModel):
+    """Request schema for chapter generation."""
+
+    start_chapter: int = Field(default=1, ge=1, description="Starting chapter number")
+    count: int = Field(default=1, ge=1, le=100, description="Number of chapters to generate")
+    resume: bool = Field(default=False, description="Resume from last checkpoint")
 
 
 class WorkflowTaskResponse(BaseModel):
@@ -77,6 +85,7 @@ __all__ = [
     "InitializeRequest",
     "InitializeResponse",
     "WorkflowResult",
-    "WorkflowTaskListResponse",
+    "WorkspaceTaskListResponse",
+    "GenerateChaptersRequest",
     "WorkflowTaskResponse",
 ]

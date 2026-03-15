@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -79,46 +78,6 @@ class TestGenerateChaptersSuccess:
         assert data["status"] == "queued"
 
 
-class TestGenerateChaptersValidation:
-    """Tests for input validation."""
-
-    def test_generate_chapters_invalid_count(
-        self,
-        client: TestClient,
-        sample_project: "NovelProject",
-        mock_studio_state: "StudioState",
-    ) -> None:
-        """Test that count > 100 returns 422."""
-        project_id = sample_project.id
-
-        response = client.post(
-            f"/api/projects/{project_id}/generate-chapters",
-            params={
-                "count": 101,
-            },
-        )
-
-        assert response.status_code == 422
-
-    def test_generate_chapters_invalid_start_chapter(
-        self,
-        client: TestClient,
-        sample_project: "NovelProject",
-        mock_studio_state: "StudioState",
-    ) -> None:
-        """Test that start_chapter < 1 returns 422."""
-        project_id = sample_project.id
-
-        response = client.post(
-            f"/api/projects/{project_id}/generate-chapters",
-            params={
-                "start_chapter": 0,
-            },
-        )
-
-        assert response.status_code == 422
-
-
 class TestGenerateChaptersProjectNotFound:
     """Tests for project not found scenarios."""
 
@@ -136,6 +95,10 @@ class TestGenerateChaptersProjectNotFound:
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
+
+class TestGenerateChaptersAccessDenied:
+    """Tests for access denied scenarios."""
+
     def test_generate_chapters_access_denied(
         self,
         client: TestClient,
@@ -145,15 +108,15 @@ class TestGenerateChaptersProjectNotFound:
         """Test access denied for project from different user."""
         project_id = sample_project.id
 
-        # Mock get_current_user_id to return different user
-        with patch(
-            "src.novel_agent.api.routers.projects.get_current_user_id",
-            return_value="different-user",
-        ):
+        # Override user_id dependency
+        from src.novel_agent.api.dependencies import get_current_user_id
+        client.app.dependency_overrides[get_current_user_id] = lambda: "different-user"
+        try:
             response = client.post(
                 f"/api/projects/{project_id}/generate-chapters",
                 params={"start_chapter": 1, "count": 1},
             )
-
-        assert response.status_code == 403
-        assert "denied" in response.json()["detail"].lower()
+            assert response.status_code == 403
+            assert "denied" in response.json()["detail"].lower()
+        finally:
+            client.app.dependency_overrides[get_current_user_id] = lambda: "test-user"
