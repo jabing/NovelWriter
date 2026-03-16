@@ -111,6 +111,10 @@ class BaseWriter(BaseAgent):
         # NEW continuity parameters
         story_state: StoryState | None = None,
         previous_chapter_summary: str | None = None,
+        # NEW context parameters
+        relationships: list[dict[str, Any]] | None = None,
+        full_outline: dict[str, Any] | None = None,
+        world_settings: dict[str, Any] | None = None,
     ) -> str:
         """Write a chapter.
 
@@ -125,6 +129,9 @@ class BaseWriter(BaseAgent):
             language: Optional language hint for content generation (e.g., 'en', 'zh')
             story_state: Optional story state for continuity tracking
             previous_chapter_summary: Optional summary of the previous chapter
+            relationships: Optional character relationship context
+            full_outline: Optional complete novel outline for context
+            world_settings: Optional detailed world settings
 
         Returns:
             Written chapter content
@@ -138,6 +145,9 @@ class BaseWriter(BaseAgent):
         characters: list[dict[str, Any]],
         world_context: dict[str, Any],
         previous_chapter_summary: str | None = None,
+        relationships: list[dict[str, Any]] | None = None,
+        full_outline: dict[str, Any] | None = None,
+        world_settings: dict[str, Any] | None = None,
         **kwargs,
     ) -> str:
         """Write a chapter with full continuity context.
@@ -174,6 +184,9 @@ class BaseWriter(BaseAgent):
             world_context=world_context,
             story_state=story_state,
             previous_chapter_summary=previous_chapter_summary,
+            relationships=relationships,
+            full_outline=full_outline,
+            world_settings=world_settings,
             **kwargs,
         )
 
@@ -283,6 +296,9 @@ class BaseWriter(BaseAgent):
                 - language: str
                 - story_state: StoryState
                 - previous_chapter_summary: str
+                - relationships: list[dict[str, Any]]
+                - full_outline: dict[str, Any]
+                - world_settings: dict[str, Any]
 
         Returns:
             AgentResult with chapter content in data['content']
@@ -300,6 +316,10 @@ class BaseWriter(BaseAgent):
                 # NEW: pass continuity params
                 story_state=input_data.get("story_state"),
                 previous_chapter_summary=input_data.get("previous_chapter_summary"),
+                # NEW: pass context params
+                relationships=input_data.get("relationships"),
+                full_outline=input_data.get("full_outline"),
+                world_settings=input_data.get("world_settings"),
             )
 
             return AgentResult(

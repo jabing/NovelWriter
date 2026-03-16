@@ -96,6 +96,10 @@ When writing fantasy:
         # NEW continuity parameters
         story_state: StoryState | None = None,
         previous_chapter_summary: str | None = None,
+        # NEW context parameters
+        relationships: list[dict[str, Any]] | None = None,
+        full_outline: dict[str, Any] | None = None,
+        world_settings: dict[str, Any] | None = None,
     ) -> str:
         """Write a fantasy chapter with continuity awareness.
 
@@ -160,6 +164,32 @@ When writing fantasy:
             )
             prompt_parts.append(continuity_prompt)
 
+        # Step 4: Add relationships context if provided
+        if relationships:
+            rel_lines = []
+            for rel in relationships:
+                char1 = rel.get("character1_name", rel.get("source", ""))
+                char2 = rel.get("character2_name", rel.get("target", ""))
+                rel_type = rel.get("relationship_type", rel.get("type", ""))
+                if char1 and char2 and rel_type:
+                    rel_lines.append(f"- {char1} 与 {char2}: {rel_type}")
+            if rel_lines:
+                prompt_parts.append("\n【角色关系】")
+                prompt_parts.extend(rel_lines)
+
+        # Step 5: Add full outline context if provided
+        if full_outline:
+            outline_parts = []
+            if full_outline.get("main_plot"):
+                outline_parts.append(f"主线剧情: {full_outline['main_plot']}")
+            if full_outline.get("upcoming_chapters"):
+                outline_parts.append(f"后续章节安排: {full_outline['upcoming_chapters']}")
+            if full_outline.get("foreshadowing"):
+                outline_parts.append(f"已埋伏笔: {full_outline['foreshadowing']}")
+            if outline_parts:
+                prompt_parts.append("\n【全书大纲】")
+                prompt_parts.extend(outline_parts)
+
         # Step 4: Add character profiles
         prompt_parts.append("\n【角色档案】")
         for char in characters:
@@ -171,6 +201,15 @@ When writing fantasy:
             if char.get("abilities"):
                 prompt_parts.append(f"  能力：{char['abilities']}")
 
+        # Step 6: Add world settings if provided
+        if world_settings:
+            if world_settings.get("rules"):
+                prompt_parts.append(f"\n世界规则: {world_settings['rules']}")
+            if world_settings.get("culture"):
+                prompt_parts.append(f"\n文化背景: {world_settings['culture']}")
+            if world_settings.get("special_settings"):
+                prompt_parts.append(f"\n特殊设定: {world_settings['special_settings']}")
+
         # Generate full prompt
         full_prompt = "\n".join(prompt_parts)
 
@@ -181,9 +220,12 @@ When writing fantasy:
         max_retries = 2  # Maximum regeneration attempts
         retry_count = 0
         last_errors = []
+        content = None
 
         while retry_count <= max_retries:
-            response = await self.llm.generate_with_system(system_prompt=system_message, user_prompt=user_message)
+            response = await self.llm.generate_with_system(
+                system_prompt=system_message, user_prompt=user_message
+            )
             content = response.content
 
             # Validate generated content if story_state is available
@@ -220,21 +262,30 @@ When writing fantasy:
                 retry_count += 1
 
                 # Add error warnings to prompt for retry
-                error_warning = "\n\n【⚠️ 连续性警告 - 必须修正】\n上一次生成的内容违反了连续性规则:\n"
+                error_warning = (
+                    "\n\n【⚠️ 连续性警告 - 必须修正】\n上一次生成的内容违反了连续性规则:\n"
+                )
                 for error in result.errors:
                     error_warning += f"- {error.message}\n"
                 error_warning += "\n请重新生成，确保严格遵守上述连续性规则。"
 
                 user_message = full_prompt + error_warning
-                print(f"  Chapter {chapter_number}: Continuity violation detected, retrying ({retry_count}/{max_retries})...")
+                print(
+                    f"  Chapter {chapter_number}: Continuity violation detected, retrying ({retry_count}/{max_retries})..."
+                )
             else:
                 # No validation or max retries reached
                 if last_errors:
-                    print(f"  Chapter {chapter_number}: Max retries reached, returning content with known issues:")
+                    print(
+                        f"  Chapter {chapter_number}: Max retries reached, returning content with known issues:"
+                    )
                     for error in last_errors:
                         print(f"    - {error}")
                 return content
 
+        # Content should always be assigned by the loop, but provide safety net
+        if content is None:
+            return "Failed to generate chapter content"
         return content
 
     def _validate_character_appearances(
@@ -325,9 +376,13 @@ When writing fantasy:
         for char_name, char_state in story_state.character_states.items():
             if char_name not in story_state.active_characters:
                 if char_state.is_dead():
-                    prompt_parts.append(f"- {char_name}: 已死亡 ⚠️ 绝对不能以活人身份出现，只能回忆/提及")
+                    prompt_parts.append(
+                        f"- {char_name}: 已死亡 ⚠️ 绝对不能以活人身份出现，只能回忆/提及"
+                    )
                 elif char_state.is_fused():
-                    prompt_parts.append(f"- {char_name}: 已与{char_state.location}融合 ⚠️ 无独立物理形态，只能作为内在声音")
+                    prompt_parts.append(
+                        f"- {char_name}: 已与{char_state.location}融合 ⚠️ 无独立物理形态，只能作为内在声音"
+                    )
                 else:
                     prompt_parts.append(f"- {char_name}: {char_state.status} (不在场)")
 

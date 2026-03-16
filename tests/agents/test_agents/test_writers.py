@@ -104,12 +104,14 @@ class TestSciFiWriter:
     @pytest.mark.asyncio
     async def test_execute(self, writer: SciFiWriter) -> None:
         """Test execute method."""
-        result = await writer.execute({
-            "chapter_number": 1,
-            "chapter_outline": "Test",
-            "characters": [],
-            "world_context": {},
-        })
+        result = await writer.execute(
+            {
+                "chapter_number": 1,
+                "chapter_outline": "Test",
+                "characters": [],
+                "world_context": {},
+            }
+        )
 
         assert result.success is True
         assert "content" in result.data
@@ -122,9 +124,7 @@ class TestFantasyWriter:
     def writer(self) -> FantasyWriter:
         """Create Fantasy writer."""
         mock_llm = MagicMock()
-        mock_llm.generate_with_system = AsyncMock(
-            return_value=MagicMock(content="Fantasy chapter")
-        )
+        mock_llm.generate_with_system = AsyncMock(return_value=MagicMock(content="Fantasy chapter"))
         return FantasyWriter(name="Test Fantasy Writer", llm=mock_llm)
 
     def test_genre(self, writer: FantasyWriter) -> None:
@@ -155,9 +155,7 @@ class TestRomanceWriter:
     def writer(self) -> RomanceWriter:
         """Create Romance writer."""
         mock_llm = MagicMock()
-        mock_llm.generate_with_system = AsyncMock(
-            return_value=MagicMock(content="Romance chapter")
-        )
+        mock_llm.generate_with_system = AsyncMock(return_value=MagicMock(content="Romance chapter"))
         return RomanceWriter(name="Test Romance Writer", llm=mock_llm)
 
     def test_genre(self, writer: RomanceWriter) -> None:
@@ -218,9 +216,7 @@ class TestWriterWithWorldContext:
     def writer(self) -> SciFiWriter:
         """Create writer with mock LLM."""
         mock_llm = MagicMock()
-        mock_llm.generate_with_system = AsyncMock(
-            return_value=MagicMock(content="Chapter content")
-        )
+        mock_llm.generate_with_system = AsyncMock(return_value=MagicMock(content="Chapter content"))
         return SciFiWriter(name="Test Writer", llm=mock_llm)
 
     @pytest.mark.asyncio
@@ -230,7 +226,11 @@ class TestWriterWithWorldContext:
             chapter_number=5,
             chapter_outline="The crew discovers an anomaly",
             characters=[
-                {"name": "Captain Jane", "role": "protagonist", "personality": {"traits": ["brave"]}},
+                {
+                    "name": "Captain Jane",
+                    "role": "protagonist",
+                    "personality": {"traits": ["brave"]},
+                },
             ],
             world_context={
                 "rules": {
@@ -238,11 +238,147 @@ class TestWriterWithWorldContext:
                     "technology_level": "FTL capable",
                     "core_rules": [{"rule": "No FTL near gravity wells"}],
                 },
-                "locations": [
-                    {"name": "Bridge", "description": "The command center of the ship"}
-                ],
+                "locations": [{"name": "Bridge", "description": "The command center of the ship"}],
             },
             style_guide="Use technical jargon sparingly",
         )
 
         assert content == "Chapter content"
+
+
+class TestWriterContextParams:
+    """Test new context parameters in writers (relationships, full_outline, world_settings)."""
+
+    @pytest.fixture
+    def writer(self) -> SciFiWriter:
+        """Create Sci-Fi writer with mock LLM."""
+        mock_llm = MagicMock()
+        mock_llm.generate_with_system = AsyncMock(
+            return_value=MagicMock(content="Test chapter with context")
+        )
+        return SciFiWriter(name="Test Writer", llm=mock_llm)
+
+    @pytest.mark.asyncio
+    async def test_write_chapter_accepts_relationships(self, writer: SciFiWriter) -> None:
+        """Test that write_chapter accepts relationships parameter."""
+        relationships = [
+            {
+                "character1_name": "Alice",
+                "character2_name": "Bob",
+                "relationship_type": "friend",
+            }
+        ]
+        content = await writer.write_chapter(
+            chapter_number=1,
+            chapter_outline="Test outline",
+            characters=[{"name": "Alice", "role": "protagonist"}],
+            world_context={},
+            relationships=relationships,
+        )
+
+        assert content == "Test chapter with context"
+
+    @pytest.mark.asyncio
+    async def test_write_chapter_accepts_full_outline(self, writer: SciFiWriter) -> None:
+        """Test that write_chapter accepts full_outline parameter."""
+        full_outline = {
+            "main_plot": "The hero saves the world",
+            "chapters": [
+                {"number": 1, "summary": "Introduction"},
+                {"number": 2, "summary": "Rising action"},
+            ],
+        }
+        content = await writer.write_chapter(
+            chapter_number=1,
+            chapter_outline="Test outline",
+            characters=[],
+            world_context={},
+            full_outline=full_outline,
+        )
+
+        assert content == "Test chapter with context"
+
+    @pytest.mark.asyncio
+    async def test_write_chapter_accepts_world_settings(self, writer: SciFiWriter) -> None:
+        """Test that write_chapter accepts world_settings parameter."""
+        world_settings = {
+            "rules": ["Magic requires mana", "Night lasts 10 hours"],
+            "forbidden_elements": ["teleportation"],
+        }
+        content = await writer.write_chapter(
+            chapter_number=1,
+            chapter_outline="Test outline",
+            characters=[],
+            world_context={},
+            world_settings=world_settings,
+        )
+
+        assert content == "Test chapter with context"
+
+    @pytest.mark.asyncio
+    async def test_write_chapter_accepts_all_new_params(self, writer: SciFiWriter) -> None:
+        """Test that write_chapter accepts all new parameters together."""
+        relationships = [
+            {"character1_name": "Alice", "character2_name": "Bob", "relationship_type": "friend"}
+        ]
+        full_outline = {"main_plot": "Test plot", "chapters": []}
+        world_settings = {"rules": ["Rule 1"], "forbidden_elements": []}
+
+        content = await writer.write_chapter(
+            chapter_number=1,
+            chapter_outline="Test outline",
+            characters=[{"name": "Alice", "role": "protagonist"}],
+            world_context={},
+            relationships=relationships,
+            full_outline=full_outline,
+            world_settings=world_settings,
+        )
+
+        assert content == "Test chapter with context"
+
+    @pytest.mark.asyncio
+    async def test_execute_passes_relationships(self, writer: SciFiWriter) -> None:
+        """Test that execute method passes relationships parameter."""
+        result = await writer.execute(
+            {
+                "chapter_number": 1,
+                "chapter_outline": "Test",
+                "characters": [],
+                "world_context": {},
+                "relationships": [
+                    {"character1_name": "A", "character2_name": "B", "relationship_type": "enemy"}
+                ],
+            }
+        )
+
+        assert result.success is True
+
+    @pytest.mark.asyncio
+    async def test_execute_passes_full_outline(self, writer: SciFiWriter) -> None:
+        """Test that execute method passes full_outline parameter."""
+        result = await writer.execute(
+            {
+                "chapter_number": 1,
+                "chapter_outline": "Test",
+                "characters": [],
+                "world_context": {},
+                "full_outline": {"main_plot": "Plot", "chapters": []},
+            }
+        )
+
+        assert result.success is True
+
+    @pytest.mark.asyncio
+    async def test_execute_passes_world_settings(self, writer: SciFiWriter) -> None:
+        """Test that execute method passes world_settings parameter."""
+        result = await writer.execute(
+            {
+                "chapter_number": 1,
+                "chapter_outline": "Test",
+                "characters": [],
+                "world_context": {},
+                "world_settings": {"rules": ["Rule"], "forbidden_elements": []},
+            }
+        )
+
+        assert result.success is True

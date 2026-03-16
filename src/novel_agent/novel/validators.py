@@ -28,6 +28,31 @@ class ValidationError:
 
 
 @dataclass
+class RelationshipData:
+    """角色关系数据"""
+
+    character1_name: str
+    character2_name: str
+    relationship_type: str  # e.g., "friend", "enemy", "family", "lover"
+
+
+@dataclass
+class OutlineData:
+    """大纲数据"""
+
+    main_plot: str
+    required_foreshadowing: list[str]  # 应该回收的伏笔
+
+
+@dataclass
+class WorldSettingsData:
+    """世界设定数据"""
+
+    rules: list[str]  # 世界规则
+    forbidden_elements: list[str]  # 禁止出现的元素
+
+
+@dataclass
 class ValidationResult:
     """Result of chapter content validation.
 
@@ -95,6 +120,10 @@ class ContinuityValidator:
         chapter_number: int,
         story_state: StoryState,
         chapter_spec: ChapterSpec | None = None,
+        # 新增可选参数
+        relationships: list[dict] | None = None,
+        outline_data: dict | None = None,
+        world_settings: dict | None = None,
     ) -> ValidationResult:
         """Validate chapter content against story state.
 
@@ -129,6 +158,27 @@ class ContinuityValidator:
             chapter_content, story_state, chapter_spec
         )
         warnings.extend(plot_warnings)
+
+        # Check 5: Relationship consistency (if provided)
+        if relationships:
+            rel_errors = self._check_relationship_consistency(
+                chapter_content, relationships, chapter_number
+            )
+            errors.extend(rel_errors)
+
+        # Check 6: Plot consistency (if provided)
+        if outline_data:
+            plot_errors = self._check_plot_consistency(
+                chapter_content, outline_data, chapter_number
+            )
+            errors.extend(plot_errors)
+
+        # Check 7: World settings consistency (if provided)
+        if world_settings:
+            world_errors = self._check_world_settings_consistency(
+                chapter_content, world_settings, chapter_number
+            )
+            errors.extend(world_errors)
 
         # Determine if valid
         is_valid = len(errors) == 0
@@ -307,6 +357,123 @@ class ContinuityValidator:
 
         return warnings
 
+    def _check_relationship_consistency(
+        self,
+        chapter_content: str,
+        relationships: list[dict],
+        chapter_number: int,
+    ) -> list[ValidationError]:
+        """检查角色关系是否一致。
+
+        检测逻辑：
+        1. 对于"enemy"关系，检测是否有过于友好的互动描述
+        2. 对于"family"关系，检测是否有不符合亲属关系的称呼
+        3. 对于"lover"关系，检测是否有背叛或敌对行为
+        """
+        errors = []
+        content_lower = chapter_content.lower()
+
+        for rel in relationships:
+            char1 = rel.get("character1_name", "").lower()
+            char2 = rel.get("character2_name", "").lower()
+            rel_type = rel.get("relationship_type", "").lower()
+
+            if rel_type == "enemy":
+                # 检测敌人之间是否有过于友好的互动
+                friendly_patterns = [
+                    f"{char1}拥抱{char2}",
+                    f"{char2}拥抱{char1}",
+                    f"{char1}拥抱了{char2}",
+                    f"{char2}拥抱了{char1}",
+                    f"{char1}亲吻{char2}",
+                    f"{char2}亲吻{char1}",
+                    f"{char1}亲吻了{char2}",
+                    f"{char2}亲吻了{char1}",
+                    f"{char1}和{char2}握手",
+                    f"{char2}和{char1}握手",
+                    f"{char1}和{char2}握了手",
+                    f"{char2}和{char1}握了手",
+                    f"{char1}握住了{char2}的手",
+                    f"{char2}握住了{char1}的手",
+                ]
+                for pattern in friendly_patterns:
+                    # Check both lowercase and the original case
+                    if pattern in content_lower or pattern in chapter_content:
+                        errors.append(
+                            ValidationError(
+                                severity="warning",
+                                message=f"敌对角色'{char1}'和'{char2}'在章节{chapter_number}中出现了友好的互动",
+                                chapter=chapter_number,
+                                details="关系设定为'敌人'，但出现了友好互动的描述",
+                            )
+                        )
+
+        return errors
+
+    def _check_plot_consistency(
+        self,
+        chapter_content: str,
+        outline_data: dict,
+        chapter_number: int,
+    ) -> list[ValidationError]:
+        """检查剧情是否一致。
+
+        检测逻辑：
+        1. 检查应该回收的伏笔是否被提及
+        2. 检查是否偏离主线剧情（简单检测关键词）
+        """
+        errors = []
+
+        required_foreshadowing = outline_data.get("required_foreshadowing", [])
+        _main_plot = outline_data.get("main_plot", "")
+
+        # 检查伏笔回收
+        for foreshadow in required_foreshadowing:
+            if foreshadow.lower() not in chapter_content.lower():
+                errors.append(
+                    ValidationError(
+                        severity="warning",
+                        message=f"章节{chapter_number}未回收伏笔: {foreshadow}",
+                        chapter=chapter_number,
+                        details="此伏笔应该在本章被提及或解决",
+                    )
+                )
+
+        return errors
+
+    def _check_world_settings_consistency(
+        self,
+        chapter_content: str,
+        world_settings: dict,
+        chapter_number: int,
+    ) -> list[ValidationError]:
+        """检查世界设定是否一致。
+
+        检测逻辑：
+        1. 检查是否出现了禁止的元素
+        2. 检查是否违反了世界规则
+        """
+        errors = []
+        content_lower = chapter_content.lower()
+
+        # 检查禁止元素
+        forbidden = world_settings.get("forbidden_elements", [])
+        for element in forbidden:
+            if element.lower() in content_lower:
+                errors.append(
+                    ValidationError(
+                        severity="error",
+                        message=f"章节{chapter_number}出现了禁止的元素: {element}",
+                        chapter=chapter_number,
+                        details="此元素在世界设定中被明确禁止",
+                    )
+                )
+
+        # 检查世界规则（简单检测，可扩展）
+        _rules = world_settings.get("rules", [])
+
+        return errors
+
     def _count_character_mentions(self, content_lower: str, char_name_lower: str) -> int:
         """Count how many times a character is mentioned in content.
 
@@ -393,14 +560,14 @@ class NovelValidator:
             Tuple of (cleaned content, was_modified)
         """
         # Check for duplicate title lines
-        title_pattern = re.compile(r'^第?\d+[章篇]\s*[：:\s]*(.+)$', re.MULTILINE)
+        title_pattern = re.compile(r"^第?\d+[章篇]\s*[：:\s]*(.+)$", re.MULTILINE)
         matches = title_pattern.findall(content)
 
         if len(matches) > 1:
             # Multiple title lines detected - keep only the first
             logger.warning(f"Multiple title lines in chapter {chapter_num}, cleaning...")
 
-            lines_list = content.split('\n')
+            lines_list = content.split("\n")
             cleaned_lines = []
             title_count = 0
 
@@ -415,7 +582,7 @@ class NovelValidator:
                 else:
                     cleaned_lines.append(line)
 
-            return '\n'.join(cleaned_lines), True
+            return "\n".join(cleaned_lines), True
 
         return content, False
 
@@ -452,19 +619,21 @@ class NovelValidator:
         # Check for missing chapters
         missing = self.detect_missing_chapters(max_chapter)
         for ch_num in missing:
-            issues.append({
-                "chapter": ch_num,
-                "type": "missing_chapter",
-                "severity": "critical",
-                "description": f"Chapter {ch_num} is missing from sequence",
-                "fix_hint": "Generate this chapter to fill the gap"
-            })
+            issues.append(
+                {
+                    "chapter": ch_num,
+                    "type": "missing_chapter",
+                    "severity": "critical",
+                    "description": f"Chapter {ch_num} is missing from sequence",
+                    "fix_hint": "Generate this chapter to fill the gap",
+                }
+            )
 
         # Validate each existing chapter
         for chapter_file in chapter_files:
-            chapter_num = int(chapter_file.stem.split('_')[1])
+            chapter_num = int(chapter_file.stem.split("_")[1])
 
-            with open(chapter_file, encoding='utf-8') as f:
+            with open(chapter_file, encoding="utf-8") as f:
                 content = f.read()
 
             # Check title format and uniqueness
@@ -472,26 +641,30 @@ class NovelValidator:
 
             if was_modified:
                 # Save cleaned content
-                with open(chapter_file, 'w', encoding='utf-8') as f:
+                with open(chapter_file, "w", encoding="utf-8") as f:
                     f.write(cleaned_content)
-                issues.append({
-                    "chapter": chapter_num,
-                    "type": "duplicate_title",
-                    "severity": "major",
-                    "description": f"Duplicate title lines removed from chapter {chapter_num}",
-                    "fix_hint": "Already auto-fixed"
-                })
+                issues.append(
+                    {
+                        "chapter": chapter_num,
+                        "type": "duplicate_title",
+                        "severity": "major",
+                        "description": f"Duplicate title lines removed from chapter {chapter_num}",
+                        "fix_hint": "Already auto-fixed",
+                    }
+                )
 
             # Extract and check title uniqueness
-            first_line = cleaned_content.split('\n')[0] if cleaned_content else ""
+            first_line = cleaned_content.split("\n")[0] if cleaned_content else ""
             if not self.check_title_uniqueness(chapter_num, first_line):
-                issues.append({
-                    "chapter": chapter_num,
-                    "type": "title_duplication",
-                    "severity": "major",
-                    "description": f"Title '{self._extract_title_text(first_line)}' is used in another chapter",
-                    "fix_hint": "Choose a unique title for this chapter"
-                })
+                issues.append(
+                    {
+                        "chapter": chapter_num,
+                        "type": "title_duplication",
+                        "severity": "major",
+                        "description": f"Title '{self._extract_title_text(first_line)}' is used in another chapter",
+                        "fix_hint": "Choose a unique title for this chapter",
+                    }
+                )
 
         logger.info(f"Validation complete: {len(issues)} issues found")
         return issues

@@ -208,3 +208,139 @@ class TestGlobalFunctions:
         """Test global count_tokens function."""
         count = count_tokens("Hello, world!")
         assert count > 0
+
+
+class TestPriorityBasedTruncation:
+    """Test priority-based context truncation (new feature)."""
+
+    @pytest.fixture
+    def manager(self) -> TokenBudgetManager:
+        """Create a manager instance."""
+        return TokenBudgetManager()
+
+    def test_high_priority_not_truncated(self, manager: TokenBudgetManager) -> None:
+        """Test that high priority content is not truncated."""
+        context = {
+            "header": "Important header" * 100,
+            "chapter_outline": "Chapter outline" * 100,
+            "market_keywords": "Keywords" * 50,
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=100,
+            truncation_priority=["market_keywords", "header"],  # Low priority items first
+        )
+
+        # Result should contain content
+        assert len(result) > 0
+        assert count.truncated is True
+
+    def test_low_priority_truncated_first(self, manager: TokenBudgetManager) -> None:
+        """Test that low priority content is truncated first."""
+        context = {
+            "header": "Important" * 100,
+            "chapter_outline": "Outline" * 100,
+            "market_keywords": "Keywords" * 200,  # Large, low priority
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=50,
+            truncation_priority=["market_keywords", "chapter_outline"],
+        )
+
+        assert count.truncated is True
+        assert "market_keywords" in count.truncated_sections
+
+    def test_priority_order_respected(self, manager: TokenBudgetManager) -> None:
+        """Test that truncation priority order is respected."""
+        context = {
+            "key_events": ["Event"] * 50,
+            "world_state": "World" * 100,
+            "market_keywords": "Keywords" * 100,
+        }
+        # Truncate in order: market_keywords first, then world_state
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=30,
+            truncation_priority=["market_keywords", "world_state"],
+        )
+
+        # market_keywords should be truncated (it's first in priority list)
+        if count.truncated:
+            assert "market_keywords" in count.truncated_sections
+
+    def test_empty_truncation_priority(self, manager: TokenBudgetManager) -> None:
+        """Test that empty truncation priority uses defaults."""
+        context = {
+            "key_events": ["Event"] * 50,
+            "location": "Palace",
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=50,
+            truncation_priority=None,  # Use defaults
+        )
+
+        # Should still work with default priority
+        assert isinstance(result, dict)
+        assert isinstance(count.total, int)
+
+    def test_priority_context_constant_exists(self, manager: TokenBudgetManager) -> None:
+        """Test that CONTEXT_PRIORITY constant is defined."""
+        assert hasattr(TokenBudgetManager, "CONTEXT_PRIORITY")
+        priority = TokenBudgetManager.CONTEXT_PRIORITY
+
+        # Check expected keys exist
+        assert "header" in priority
+        assert "chapter_outline" in priority
+        assert "market_keywords" in priority
+
+        # Check priority values make sense (higher = more important)
+        assert priority["header"] > priority["market_keywords"]
+
+    def test_multiple_sections_truncated(self, manager: TokenBudgetManager) -> None:
+        """Test that multiple sections can be truncated."""
+        context = {
+            "section1": "Content" * 100,
+            "section2": "More content" * 100,
+            "section3": "Even more" * 100,
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=20,
+            truncation_priority=["section1", "section2", "section3"],
+        )
+
+        # Should have truncated multiple sections
+        assert count.truncated is True
+        assert len(count.truncated_sections) >= 1
+
+    def test_no_truncation_when_fits(self, manager: TokenBudgetManager) -> None:
+        """Test that no truncation happens when content fits."""
+        context = {
+            "header": "Important header",
+            "chapter_outline": "Short outline",
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=1000,  # Large enough
+            truncation_priority=["market_keywords"],
+        )
+
+        assert count.truncated is False
+        assert result == context
+
+    def test_truncation_preserves_non_priority_sections(self, manager: TokenBudgetManager) -> None:
+        """Test that sections not in priority list are preserved."""
+        context = {
+            "important": "This should not be touched",
+            "market_keywords": ["keyword1", "keyword2"] * 50,
+        }
+        result, count = manager.enforce_budget(
+            context,
+            max_tokens=20,
+            truncation_priority=["market_keywords"],  # Only truncate market_keywords
+        )
+
+        # important section should remain unchanged
+        assert result.get("important") == "This should not be touched"

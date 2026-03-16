@@ -67,6 +67,9 @@ class ChapterGenerator:
         world_context: dict[str, Any],
         run_validation: bool = True,
         novel_id: str | None = None,
+        relationships: list[dict[str, Any]] | None = None,
+        full_outline: dict[str, Any] | None = None,
+        world_settings: dict[str, Any] | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Generate a single chapter with continuity and validation.
@@ -100,6 +103,9 @@ class ChapterGenerator:
             characters=characters,
             world_context=world_context,
             previous_chapter_summary=previous_summary,
+            relationships=relationships,
+            full_outline=full_outline,
+            world_settings=world_settings,
             **kwargs,
         )
 

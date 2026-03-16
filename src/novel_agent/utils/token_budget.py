@@ -61,6 +61,7 @@ class TokenBudgetManager:
     - Counting tokens in text using tiktoken (or approximation)
     - Enforcing token budgets by truncating content
     - Ensuring truncation happens at sentence boundaries
+    - Priority-based truncation to preserve important content
 
     Example:
         >>> manager = TokenBudgetManager()
@@ -76,6 +77,20 @@ class TokenBudgetManager:
 
     # Pattern for sentence boundaries
     SENTENCE_END_PATTERN = re.compile(r"[.!?。！？]\s*")
+
+    # Context priority levels (higher number = higher priority, less likely to truncate)
+    CONTEXT_PRIORITY = {
+        "header": 10,  # 核心规则、标题
+        "chapter_outline": 9,  # 当前章节大纲
+        "continuity": 8,  # 连续性上下文
+        "character_info": 7,  # 角色信息
+        "relationships": 6,  # 角色关系
+        "world_settings": 5,  # 世界设定
+        "full_outline": 4,  # 完整大纲
+        "learning_hints": 3,  # 学习提示
+        "style_guide": 2,  # 风格指南
+        "market_keywords": 1,  # 市场关键词
+    }
 
     def __init__(self, config: TokenBudgetConfig | None = None) -> None:
         """Initialize the token budget manager.
@@ -310,6 +325,71 @@ class TokenBudgetManager:
         token_count.truncated_sections = truncated_sections
 
         return result, token_count
+
+    def enforce_budget_with_priority(
+        self,
+        context: dict[str, Any],
+        max_tokens: int | None = None,
+        priority_map: dict[str, int] | None = None,
+    ) -> tuple[dict[str, Any], TokenCount]:
+        """Enforce token budget with priority-based truncation.
+
+        Args:
+            context: Context dictionary to enforce budget on.
+            max_tokens: Maximum tokens. Uses config if not provided.
+            priority_map: Optional custom priority map. Uses default if not provided.
+
+        Returns:
+            Tuple of (potentially modified context, token count result).
+        """
+        max_tokens = max_tokens or self.config.available_context_tokens
+        priority_map = priority_map or self.CONTEXT_PRIORITY
+
+        result = dict(context)
+        token_count = self.count_tokens_in_dict(result)
+
+        if token_count.total <= max_tokens:
+            return result, token_count
+
+        # Sort sections by priority (ascending - lowest priority first)
+        sections = sorted(
+            result.keys(),
+            key=lambda k: priority_map.get(k, 0),
+        )
+
+        # Truncate from lowest priority until within budget
+        truncated_sections = []
+        for section in sections:
+            if token_count.total <= max_tokens:
+                break
+
+            # Never truncate high-priority sections (priority >= 8)
+            if priority_map.get(section, 0) >= 8:
+                continue
+
+            value = result[section]
+            if isinstance(value, list):
+                truncated_list, was_truncated = self.truncate_list_to_budget(
+                    value,
+                    max_tokens // 4,  # Give each section at most 1/4 of budget
+                )
+                if was_truncated:
+                    result[section] = truncated_list
+                    token_count.truncated = True
+                    truncated_sections.append(section)
+            elif isinstance(value, str) and len(value) > 100:
+                truncated_str, was_truncated = self.truncate_to_budget(value, max_tokens // 4)
+                if was_truncated:
+                    result[section] = truncated_str
+                    token_count.truncated = True
+                    truncated_sections.append(section)
+
+        # Recount after truncation
+        final_count = self.count_tokens_in_dict(result)
+        final_count.truncated = len(truncated_sections) > 0
+        final_count.truncated_sections = truncated_sections
+
+        return result, final_count
 
 
 # Global instance for convenience
