@@ -4,6 +4,8 @@ Provides endpoints to retrieve character relationships in Cytoscape.js format
 for visualization of character relationship networks.
 """
 
+import json
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,7 +16,6 @@ from src.novel_agent.api.schemas.graph import (
     GraphNode,
     GraphResponse,
 )
-from src.novel_agent.memory.character_memory import CharacterMemory
 from src.novel_agent.studio.core.state import StudioState
 
 router = APIRouter(
@@ -82,30 +83,48 @@ async def _get_project_characters_and_relationships(
     Returns:
         Tuple of (characters dict, relationships list)
     """
-    # Initialize character memory with project-specific namespace
-    character_memory = CharacterMemory(
-        base_path=state.data_dir,
-        namespace=project_id,
-        collection=f"character_memory_{project_id}",
-    )
+    # Construct character directory path
+    character_dir = Path(state.data_dir) / "memory" / "novels" / project_id / "characters"
 
-    # Get all characters from character memory
+    # Get all characters from JSON files
     characters: dict[str, dict] = {}
 
-    # Get all character keys first
-    char_keys = await character_memory.list_keys()
+    # If directory doesn't exist, return empty
+    if not character_dir.exists():
+        return characters, []
 
-    # Then retrieve each character
-    for char_id in char_keys:
-        profile = await character_memory.retrieve_character(char_id)
-        if profile:
+    # Iterate over all JSON files
+    for json_file in character_dir.glob("*.json"):
+        # Use filename stem as character ID
+        char_id = json_file.stem
+
+        # Read and parse JSON
+        with open(json_file, encoding="utf-8") as f:
+            profile = json.load(f)
             characters[char_id] = profile
 
-    # Get relationships
+    # Create name-to-ID map for relationship resolution
+    name_to_id = {}
+    for char_id, profile in characters.items():
+        char_name = profile.get("name", char_id)
+        name_to_id[char_name] = char_id
+
+    # Extract relationships
     relationships: list[dict] = []
-    for char_id in characters:
-        rels = await character_memory.get_relationships(char_id)
-        relationships.extend(rels)
+    for char_id, profile in characters.items():
+        # Get relationships from character profile
+        char_relationships = profile.get("relationships", {})
+
+        for target_name, rel_type in char_relationships.items():
+            # Find target ID by name
+            if target_name in name_to_id:
+                target_id = name_to_id[target_name]
+                relationships.append({
+                    "character1_id": char_id,
+                    "character2_id": target_id,
+                    "relationship_type": rel_type,
+                    "strength": 0.5,
+                })
 
     return characters, relationships
 
