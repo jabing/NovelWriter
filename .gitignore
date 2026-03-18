@@ -63,3 +63,8 @@ py10env/
 .ruff_cache/
 .mypy_cache/
 .benchmarks/
+
+# Runtime data directories
+data/memory/
+data/openviking/memory/
+src/data/
