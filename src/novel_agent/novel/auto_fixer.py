@@ -260,7 +260,7 @@ class AutoFixer:
             transition_checker: ChapterTransitionChecker instance (Wave 2)
             max_retries: Maximum number of repair attempts (default: 3)
         """
-        self.verifier = verifier or ConsistencyVerifier()
+        self.verifier = verifier  # ConsistencyVerifier requires CognitiveGraph, pass explicitly
         self.regenerator = regenerator
         self.llm = llm
         self.timeline_validator = timeline_validator
@@ -285,17 +285,14 @@ class AutoFixer:
         chapter_number: int,
         story_state: StoryState | None = None,
     ) -> VerificationResult:
-        """Verify content for inconsistencies.
-
-        Args:
-            content: The chapter content to verify
-            chapter_number: Chapter number for context
-            story_state: Current story state for consistency checking
-
-        Returns:
-            VerificationResult with detected inconsistencies
-        """
         logger.info(f"Verifying chapter {chapter_number} for inconsistencies")
+
+        if self.verifier is None:
+            return VerificationResult(
+                is_consistent=True,
+                inconsistencies=[],
+                chapter=chapter_number,
+            )
 
         result = self.verifier.verify(
             chapter_content=content,
@@ -333,13 +330,14 @@ class AutoFixer:
         validators_used: list[str] = []
 
         # 1. Run ConsistencyVerifier
-        try:
-            result = self.verifier.verify(content, chapter_number)
-            all_issues.extend(result.inconsistencies)
-            validator_results["consistency"] = result
-            validators_used.append("ConsistencyVerifier")
-        except Exception as e:
-            logger.error(f"ConsistencyVerifier failed: {e}")
+        if self.verifier:
+            try:
+                result = self.verifier.verify(content, chapter_number)
+                all_issues.extend(result.inconsistencies)
+                validator_results["consistency"] = result
+                validators_used.append("ConsistencyVerifier")
+            except Exception as e:
+                logger.error(f"ConsistencyVerifier failed: {e}")
 
         # 2. Run TimelineValidator if available
         if self.timeline_validator:

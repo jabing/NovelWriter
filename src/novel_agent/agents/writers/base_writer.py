@@ -148,6 +148,7 @@ class BaseWriter(BaseAgent):
         relationships: list[dict[str, Any]] | None = None,
         full_outline: dict[str, Any] | None = None,
         world_settings: dict[str, Any] | None = None,
+        fact_context: str | None = None,
         **kwargs,
     ) -> str:
         """Write a chapter with full continuity context.
@@ -161,6 +162,10 @@ class BaseWriter(BaseAgent):
             characters: List of character profiles
             world_context: World-building context
             previous_chapter_summary: Summary of previous chapter
+            relationships: Optional character relationship context
+            full_outline: Optional complete novel outline for context
+            world_settings: Optional detailed world settings
+            fact_context: Optional fact context from knowledge graph
             **kwargs: Additional arguments passed to write_chapter
 
         Returns:
@@ -171,6 +176,7 @@ class BaseWriter(BaseAgent):
             story_state=story_state,
             previous_summary=previous_chapter_summary or "",
             chapter_number=chapter_spec.number,
+            fact_context=fact_context,
         )
 
         # Combine chapter summary with continuity prompt
@@ -196,6 +202,7 @@ class BaseWriter(BaseAgent):
         previous_summary: str,
         chapter_number: int,
         max_tokens: int | None = None,
+        fact_context: str | None = None,
     ) -> str:
         """Build a continuity prompt from story state with token budget enforcement.
 
@@ -204,6 +211,7 @@ class BaseWriter(BaseAgent):
             previous_summary: Summary of previous chapter
             chapter_number: Current chapter number
             max_tokens: Maximum tokens for the prompt (uses default if None)
+            fact_context: Optional fact context from knowledge graph
 
         Returns:
             Continuity prompt string, enforced to token budget
@@ -268,6 +276,9 @@ class BaseWriter(BaseAgent):
                 parts.append(enforced_context["active_characters"])
             if "character_states" in enforced_context:
                 parts.append(enforced_context["character_states"])
+
+        if fact_context:
+            parts.append(f"\n【相关事实】\n{fact_context}")
 
         # Add consistency reminder
         parts.append("""

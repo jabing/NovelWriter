@@ -8,6 +8,8 @@
 - [模块关系](#模块关系)
 - [数据流](#数据流)
 - [目录结构](#目录结构)
+- [连续性系统](#连续性系统)
+- [设计原则](#设计原则)
 
 ## 系统概述
 
@@ -151,6 +153,9 @@ graph TB
   - `chapter_generator.py` - 章节生成器
   - `outline_generator.py` - 大纲生成器
   - `continuity.py` - 一致性检查
+  - `continuity_config.py` - 连续性配置
+  - `character_registry.py` - 角色唯一ID注册
+  - `chapter_validator.py` - 章节内容验证
   - `character_profile.py` - 角色档案管理
   - `knowledge_graph.py` - 知识图谱
   - `timeline_manager.py` - 时间线管理
@@ -464,3 +469,229 @@ src/
 
 ### 5. 配置集中
 使用 Pydantic Settings 进行统一配置管理。
+
+## 连续性系统
+
+### 概述
+
+连续性系统确保故事跨章节的一致性，通过以下机制实现：
+
+1. **章节完整性验证**：检查章节是否包含标题、内容和结束标记
+2. **角色唯一ID管理**：为同名角色分配不同ID，解决"三个林晓"问题
+3. **可配置严格级别**：支持 OFF / WARNING / STRICT 三种模式
+4. **自动重试机制**：章节不完整时自动重新生成
+
+### 组件
+
+#### ContinuityConfig
+
+连续性检查配置类（`src/novel/continuity_config.py`）：
+
+```python
+class ContinuityConfig(BaseModel):
+    strictness: ContinuityStrictness = STRICT  # OFF | WARNING | STRICT
+    max_retries: int = 3                       # 最大重试次数
+    min_chapter_words: int = 500              # 最小章节字数
+    enable_character_id: bool = False         # 启用角色唯一ID
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `strictness` | Enum | STRICT | 严格级别：OFF（跳过检查）、WARNING（仅警告）、STRICT（强制阻塞） |
+| `max_retries` | int | 3 | 章节生成失败时的最大重试次数 |
+| `min_chapter_words` | int | 500 | 章节最小字数/词数要求 |
+| `enable_character_id` | bool | False | 是否启用角色唯一ID系统 |
+
+#### ChapterValidator
+
+章节内容验证器（`src/novel/chapter_validator.py`）：
+
+```python
+validator = ChapterValidator()
+result = validator.check_completeness(content, min_words=500)
+
+# 返回结果
+result.is_valid       # 是否通过所有检查
+result.word_count     # 字数统计
+result.has_title      # 是否有章节标题
+result.has_ending     # 是否有结束标记
+result.issues         # 发现的问题列表
+result.suggestions    # 改进建议列表
+```
+
+验证规则：
+- **标题检测**：检查"第X章"或"Chapter X"格式
+- **字数统计**：中文计字、英文计词
+- **结束标记**：检测"完"、"待续"、"---"等标记
+
+#### CharacterRegistry
+
+角色唯一ID注册表（`src/novel/character_registry.py`）：
+
+```python
+registry = CharacterRegistry()
+
+# 注册角色
+role_id = registry.register("林晓", role="protagonist", chapter=1)
+# 返回: "char_林晓_001"
+
+# 同名角色自动分配不同ID
+role_id2 = registry.register("林晓", role="antagonist")
+# 返回: "char_林晓_002"
+
+# 查询角色
+entry = registry.get_by_id("char_林晓_001")
+entries = registry.get_by_name("林晓")  # 返回所有同名角色
+```
+
+特性：
+- 自动处理Unicode字符（支持中文）
+- 持久化到JSON文件
+- 统计同名角色数量
+- 按角色类型筛选
+
+### 数据流
+
+```
+章节生成流程：
+
+Writer Agent 生成内容
+       ↓
+ChapterValidator 检查完整性
+       ↓
+   ├─ 有效 ──→ 保存到Memory系统
+   │
+   └─ 无效 ──→ ContinuityConfig 决策
+              ├─ STRICT: 停止生成，返回错误
+              ├─ WARNING: 记录警告，继续保存
+              └─ OFF: 忽略问题，继续保存
+       ↓
+（如STRICT模式）触发重试机制
+   max_retries 次尝试
+       ↓
+成功 或 达到最大重试次数
+```
+
+### 目录结构更新
+
+```
+src/novel/
+├── continuity_config.py      # 连续性配置
+├── character_registry.py     # 角色唯一ID注册
+├── chapter_validator.py      # 章节内容验证
+├── continuity.py             # 原有连续性检查
+└── ...
+```
+
+## 连续性系统
+
+### 概述
+
+连续性系统确保故事跨章节的一致性，通过以下机制实现：
+
+1. **章节完整性验证**：检查章节是否包含标题、内容和结束标记
+2. **角色唯一ID管理**：为同名角色分配不同ID，解决"三个林晓"问题
+3. **可配置严格级别**：支持 OFF / WARNING / STRICT 三种模式
+4. **自动重试机制**：章节不完整时自动重新生成
+
+### 组件
+
+#### ContinuityConfig
+
+连续性检查配置类（`src/novel/continuity_config.py`）：
+
+```python
+class ContinuityConfig(BaseModel):
+    strictness: ContinuityStrictness = STRICT  # OFF | WARNING | STRICT
+    max_retries: int = 3                       # 最大重试次数
+    min_chapter_words: int = 500              # 最小章节字数
+    enable_character_id: bool = False         # 启用角色唯一ID
+```
+
+| 配置项 | 类型 | 默认值 | 说明 |
+|--------|------|--------|------|
+| `strictness` | Enum | STRICT | 严格级别：OFF（跳过检查）、WARNING（仅警告）、STRICT（强制阻塞） |
+| `max_retries` | int | 3 | 章节生成失败时的最大重试次数 |
+| `min_chapter_words` | int | 500 | 章节最小字数/词数要求 |
+| `enable_character_id` | bool | False | 是否启用角色唯一ID系统 |
+
+#### ChapterValidator
+
+章节内容验证器（`src/novel/chapter_validator.py`）：
+
+```python
+validator = ChapterValidator()
+result = validator.check_completeness(content, min_words=500)
+
+# 返回结果
+result.is_valid       # 是否通过所有检查
+result.word_count     # 字数统计
+result.has_title      # 是否有章节标题
+result.has_ending     # 是否有结束标记
+result.issues         # 发现的问题列表
+result.suggestions    # 改进建议列表
+```
+
+验证规则：
+- **标题检测**：检查"第X章"或"Chapter X"格式
+- **字数统计**：中文计字、英文计词
+- **结束标记**：检测"完"、"待续"、"---"等标记
+
+#### CharacterRegistry
+
+角色唯一ID注册表（`src/novel/character_registry.py`）：
+
+```python
+registry = CharacterRegistry()
+
+# 注册角色
+role_id = registry.register("林晓", role="protagonist", chapter=1)
+# 返回: "char_林晓_001"
+
+# 同名角色自动分配不同ID
+role_id2 = registry.register("林晓", role="antagonist")
+# 返回: "char_林晓_002"
+
+# 查询角色
+entry = registry.get_by_id("char_林晓_001")
+entries = registry.get_by_name("林晓")  # 返回所有同名角色
+```
+
+特性：
+- 自动处理Unicode字符（支持中文）
+- 持久化到JSON文件
+- 统计同名角色数量
+- 按角色类型筛选
+
+### 数据流
+
+```
+章节生成流程：
+
+Writer Agent 生成内容
+       ↓
+ChapterValidator 检查完整性
+       ↓
+   ├─ 有效 ──→ 保存到Memory系统
+   │
+   └─ 无效 ──→ ContinuityConfig 决策
+              ├─ STRICT: 停止生成，返回错误
+              ├─ WARNING: 记录警告，继续保存
+              └─ OFF: 忽略问题，继续保存
+       ↓
+（如STRICT模式）触发重试机制
+   max_retries 次尝试
+       ↓
+成功 或 达到最大重试次数
+```
+
+### 目录结构更新
+
+```
+src/novel/
+├── continuity_config.py      # 连续性配置
+├── character_registry.py     # 角色唯一ID注册
+├── chapter_validator.py      # 章节内容验证
+├── continuity.py             # 原有连续性检查
+└── ...
+```

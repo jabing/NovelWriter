@@ -40,7 +40,6 @@ def is_critical_event(event: str) -> bool:
     return any(re.search(pattern, event) for pattern in CRITICAL_EVENT_PATTERNS)
 
 
-
 @dataclass
 class CharacterState:
     """State of a character in the story.
@@ -51,6 +50,7 @@ class CharacterState:
         location: Character's current location
         physical_form: Character's physical form (human, spirit, dragon, etc.)
         relationships: Dictionary mapping other character names to relationship types
+        role_id: Optional unique identifier linking to CharacterRegistry entry
     """
 
     name: str
@@ -58,6 +58,7 @@ class CharacterState:
     location: str
     physical_form: str
     relationships: dict[str, str] = field(default_factory=dict)
+    role_id: str | None = None
 
     def is_alive(self) -> bool:
         """Check if character is alive."""
@@ -149,7 +150,9 @@ class StoryState:
         recent_window = min(15, len(self.key_events))
         recent_events = self.key_events[-recent_window:]
         critical_count = sum(1 for e in recent_events if is_critical_event(e))
-        is_climax = (critical_count / recent_window) > CLIMAX_THRESHOLD if recent_window > 0 else False
+        is_climax = (
+            (critical_count / recent_window) > CLIMAX_THRESHOLD if recent_window > 0 else False
+        )
 
         # Increase limit during climax
         effective_max = int(max_events * 1.5) if is_climax else max_events
@@ -269,6 +272,8 @@ class ContinuityManager:
         # Convert character states
         character_states = {}
         for name, char_dict in state_dict.get("character_states", {}).items():
+            # Handle missing role_id for backward compatibility
+            char_dict.setdefault("role_id", None)
             character_states[name] = CharacterState(**char_dict)
 
         # Convert plot threads
@@ -343,6 +348,7 @@ class ContinuityManager:
                     location=char.location,
                     physical_form=char.physical_form,
                     relationships=char.relationships.copy(),
+                    role_id=char.role_id,
                 )
                 for name, char in state.character_states.items()
             },

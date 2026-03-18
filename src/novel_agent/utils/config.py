@@ -1,4 +1,4 @@
-# src/utils/config.py
+# src/novel_agent/utils/config.py
 """Configuration management using Pydantic Settings."""
 
 from functools import lru_cache
@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from src.novel_agent.novel.continuity_config import ContinuityConfig
 
 
 class Settings(BaseSettings):
@@ -38,21 +40,14 @@ class Settings(BaseSettings):
     chroma_persist_path: str = Field(
         default="data/chroma", description="Chroma persistence directory"
     )
-    chroma_collection_name: str = Field(
-        default="novel-facts", description="Chroma collection name"
-    )
+    chroma_collection_name: str = Field(default="novel-facts", description="Chroma collection name")
     chroma_embedding_model: str = Field(
-        default="shibing624/text2vec-base-multilingual",
-        description="Chroma embedding model"
+        default="shibing624/text2vec-base-multilingual", description="Chroma embedding model"
     )
 
     # Milvus Settings (备用向量存储)
-    milvus_enabled: bool = Field(
-        default=False, description="Enable Milvus vector store"
-    )
-    milvus_uri: str = Field(
-        default="~/.memsearch/milvus.db", description="Milvus connection URI"
-    )
+    milvus_enabled: bool = Field(default=False, description="Enable Milvus vector store")
+    milvus_uri: str = Field(default="~/.memsearch/milvus.db", description="Milvus connection URI")
 
     # Redis Settings (for Celery)
     redis_url: str = Field(default="redis://localhost:6379/0", description="Redis URL for Celery")
@@ -76,6 +71,11 @@ class Settings(BaseSettings):
     # Logging
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(default="INFO")
     log_file: str = Field(default="logs/novel-agent.log")
+
+    # Continuity Settings
+    continuity_config: ContinuityConfig = Field(
+        default_factory=ContinuityConfig, description="Continuity checking configuration"
+    )
 
 
 @lru_cache

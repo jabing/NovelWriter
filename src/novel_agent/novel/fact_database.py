@@ -29,6 +29,16 @@ class FactType(str, Enum):
     PLOT_THREAD = "plot_thread"
 
 
+class ProtectedFactCategory(str, Enum):
+    """Categories of facts that should be protected from filtering."""
+
+    IMMUTABLE = "immutable"  # Permanent facts (deaths, permanent changes)
+    SECRET = "secret"  # Secrets until revealed/used
+    PROMISE = "promise"  # Promises until fulfilled
+    WORLD_RULE = "world_rule"  # World rules always
+    FORESHADOW = "foreshadow"  # Foreshadowing until payoff
+
+
 @dataclass
 class Fact:
     """A fact extracted from chapter content.
@@ -47,6 +57,7 @@ class Fact:
         entities: List of entity names mentioned in this fact
         created_at: When this fact was created
         metadata: Additional metadata
+        protected_category: Category of protected fact (optional)
     """
 
     id: str
@@ -59,6 +70,7 @@ class Fact:
     entities: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     metadata: dict[str, Any] = field(default_factory=dict)
+    protected_category: ProtectedFactCategory | None = None
 
     def __post_init__(self) -> None:
         """Validate fact data."""
@@ -77,7 +89,7 @@ class Fact:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to dictionary."""
-        return {
+        result = {
             "id": self.id,
             "fact_type": self.fact_type.value,
             "content": self.content,
@@ -89,6 +101,9 @@ class Fact:
             "created_at": self.created_at.isoformat(),
             "metadata": self.metadata,
         }
+        if self.protected_category is not None:
+            result["protected_category"] = self.protected_category.value
+        return result
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Fact":
@@ -98,6 +113,8 @@ class Fact:
             data["created_at"] = datetime.fromisoformat(data["created_at"])
         if "fact_type" in data:
             data["fact_type"] = FactType(data["fact_type"])
+        if "protected_category" in data:
+            data["protected_category"] = ProtectedFactCategory(data["protected_category"])
         return cls(**data)
 
     def get_context_string(self) -> str:

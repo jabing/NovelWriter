@@ -51,9 +51,7 @@ class FileMemory(BaseMemory):
         safe_key = key.replace("/", "_").replace("\\", "_")
         return self.namespace_path / f"{safe_key}.json"
 
-    async def store(
-        self, key: str, value: Any, metadata: dict[str, Any] | None = None
-    ) -> None:
+    async def store(self, key: str, value: Any, metadata: dict[str, Any] | None = None) -> None:
         """Store a value in memory.
 
         Args:
@@ -107,6 +105,41 @@ class FileMemory(BaseMemory):
         except (json.JSONDecodeError, KeyError) as e:
             logger.warning(f"Failed to load memory entry {key}: {e}")
             return None
+
+    async def search(self, query: str, limit: int = 10) -> list[MemoryEntry]:
+        """Search for relevant entries by matching query in key or value.
+
+        Args:
+            query: Search query string.
+            limit: Maximum number of results.
+
+        Returns:
+            List of matching entries.
+        """
+        results = []
+        query_lower = query.lower()
+        for entry_file in self.namespace_path.glob("*.json"):
+            if len(results) >= limit:
+                break
+            try:
+                with open(entry_file, encoding="utf-8") as f:
+                    data = json.load(f)
+                key = data.get("key", "")
+                value = data.get("value", "")
+                value_str = (
+                    json.dumps(value, ensure_ascii=False) if isinstance(value, dict) else str(value)
+                )
+                if query_lower in key.lower() or query_lower in value_str.lower():
+                    results.append(
+                        MemoryEntry(
+                            key=key,
+                            value=value,
+                            metadata=data.get("metadata", {}),
+                        )
+                    )
+            except (json.JSONDecodeError, KeyError):
+                continue
+        return results
 
     async def delete(self, key: str) -> bool:
         """Delete a value from memory.

@@ -1346,6 +1346,116 @@ result = await rr.publish({
 
 ---
 
+## 14. 故事连续性保证
+
+### 14.1 概述
+
+故事连续性是小说创作的核心要求。Novel Agent System 默认启用 **STRICT 模式**，确保：
+
+- 前序章节缺失时停止生成
+- 章节不完整时自动重试
+- KG 更新失败时停止后续生成
+- 同名角色可正确区分
+
+### 14.2 配置选项
+
+通过环境变量或配置文件调整连续性检查行为：
+
+```bash
+# 环境变量
+CONTINUITY_STRICTNESS=STRICT  # 默认值
+CONTINUITY_MAX_RETRIES=3
+CONTINUITY_MIN_CHAPTER_WORDS=500
+ENABLE_CHARACTER_ID=false
+```
+
+或通过代码配置：
+
+```python
+from src.novel_agent.novel.continuity_config import ContinuityConfig, ContinuityStrictness
+
+config = ContinuityConfig(
+    strictness=ContinuityStrictness.STRICT,  # OFF | WARNING | STRICT
+    max_retries=3,
+    min_chapter_words=500,
+    enable_character_id=False,
+)
+```
+
+### 14.3 严格级别说明
+
+| 级别 | 行为 | 适用场景 |
+|------|------|----------|
+| **STRICT** (默认) | 不合格时停止生成，强制重试 | 生产环境，确保质量 |
+| WARNING | 不合格时记录警告，继续生成 | 测试环境 |
+| OFF | 跳过所有检查 | 调试模式（不推荐） |
+
+> ⚠️ **重要**: 连续性是强制要求，不建议在生产环境使用 OFF 模式。
+
+### 14.4 角色唯一ID系统
+
+启用角色唯一ID可以区分同名角色，解决"三个林晓"问题：
+
+```python
+from src.novel_agent.novel.character_registry import CharacterRegistry
+
+# 创建注册表
+registry = CharacterRegistry()
+
+# 注册角色
+role_id = registry.register("林晓", role="protagonist", chapter=1)
+# 返回: "char_林晓_001"
+
+# 同名角色自动分配不同ID
+role_id2 = registry.register("林晓", role="antagonist")
+# 返回: "char_林晓_002"
+
+# 查询角色
+entry = registry.get_by_id("char_林晓_001")
+entries = registry.get_by_name("林晓")  # 返回所有同名角色
+```
+
+### 14.5 章节验证
+
+章节生成后自动验证完整性：
+
+```python
+from src.novel_agent.novel.chapter_validator import ChapterValidator
+
+validator = ChapterValidator()
+result = validator.check_completeness(content, min_words=500)
+
+# 检查结果
+result.is_valid       # 是否通过所有检查
+result.word_count     # 字数统计（中文计字、英文计词）
+result.has_title      # 是否有章节标题
+result.has_ending     # 是否有结束标记
+result.issues         # 发现的问题列表
+result.suggestions    # 改进建议列表
+```
+
+验证规则：
+- **标题检测**：检查"第X章"或"Chapter X"格式
+- **字数统计**：中文计字、英文计词
+- **结束标记**：检测"完"、"待续"、"---"等标记
+
+### 14.6 迁移现有项目
+
+为现有项目添加角色唯一ID：
+
+```bash
+# 预览变更
+python scripts/migrate_character_ids.py --project <path> --dry-run
+
+# 执行迁移（自动创建备份）
+python scripts/migrate_character_ids.py --project <path>
+
+# 回滚到迁移前状态
+python scripts/migrate_character_ids.py --project <path> --rollback
+```
+
+---
+
 ## 附录
 
 ### A. 命令速查表

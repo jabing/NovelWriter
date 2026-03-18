@@ -13,15 +13,19 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from src.novel_agent.agents.writers.base_writer import BaseWriter
 from src.novel_agent.agents.writers.writer_factory import get_writer
 from src.novel_agent.llm.base import BaseLLM
+from src.novel_agent.novel.chapter_validator import ChapterValidator
 from src.novel_agent.novel.character_profile import CharacterProfile
 from src.novel_agent.novel.character_selector import CharacterSelector
 from src.novel_agent.novel.checkpointing import CheckpointManager, create_checkpoint_manager
 from src.novel_agent.novel.continuity import ContinuityManager, StoryState
+from src.novel_agent.novel.continuity_config import ContinuityConfig, ContinuityStrictness
+from src.novel_agent.novel.fact_injector import RelevantFactInjector
+from src.novel_agent.novel.kg_transaction import KGTransactionManager
 from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
 from src.novel_agent.novel.outline_validator import OutlineValidator
+from src.novel_agent.novel.retry_policy import RetryManager, RetryPolicy
 from src.novel_agent.novel.summary_manager import SummaryManager
 from src.novel_agent.novel.timeline_manager import TimelineManager
 from src.novel_agent.novel.version_control import VersionControlSystem, create_version_control
@@ -44,7 +48,6 @@ class ChapterVersion:
     metadata: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass
 class GenerateWorkflow(ABC):
     """Base class for workflow generation with version control and checkpoint support.
 
@@ -63,7 +66,8 @@ class GenerateWorkflow(ABC):
     checkpoint_dir: Path | None = None
     _version_control: VersionControlSystem | None = None
     _project_id: str | None = None
-    _checkpoint_manager: CheckpointManager | None = field(default=None, init=False, repr=False)
+    _checkpoint_manager: CheckpointManager | None = None
+    _storage_path: Path | None = None
 
     def _get_checkpoint_manager(self) -> CheckpointManager:
         if self._checkpoint_manager is None:
@@ -105,9 +109,7 @@ class GenerateWorkflow(ABC):
             project_id=project_id,
         )
 
-        logger.info(
-            f"Created workflow checkpoint: project={project_id}, chapter={chapter_number}"
-        )
+        logger.info(f"Created workflow checkpoint: project={project_id}, chapter={chapter_number}")
         return workflow_checkpoint
 
     def _load_last_checkpoint(self, project_id: str) -> WorkflowCheckpoint | None:
@@ -156,9 +158,7 @@ class GenerateWorkflow(ABC):
                     removed_count += 1
 
         if removed_count > 0:
-            logger.info(
-                f"Cleaned up {removed_count} checkpoints for project={project_id}"
-            )
+            logger.info(f"Cleaned up {removed_count} checkpoints for project={project_id}")
         else:
             logger.debug(f"No checkpoints to clean up for project={project_id}")
 
@@ -217,6 +217,15 @@ class GenerateWorkflow(ABC):
             tags=tags,
             metadata=metadata,
         )
+
+        if self._storage_path:
+            content_dir = self._storage_path / project_id / "content"
+            content_dir.mkdir(parents=True, exist_ok=True)
+            content_file = content_dir / f"chapter_{chapter_number:04d}.txt"
+            with open(content_file, "w", encoding="utf-8") as f:
+                f.write(content)
+            logger.info(f"Saved chapter {chapter_number} content to {content_file}")
+
         return version_id
 
     async def _list_versions(
@@ -293,9 +302,7 @@ class GenerateWorkflow(ABC):
         content = version.chapter_contents.get(chapter_key)
 
         if content is None:
-            raise ValueError(
-                f"Chapter {chapter_number} not found in version {version_id}"
-            )
+            raise ValueError(f"Chapter {chapter_number} not found in version {version_id}")
 
         return content
 
@@ -321,6 +328,7 @@ class GeneratedChapter:
     version_id: str | None = None
     validation_passed: bool = True
     auto_fix_iterations: int = 0
+    validation_issues: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -332,6 +340,7 @@ class GeneratedChapter:
             "version_id": self.version_id,
             "validation_passed": self.validation_passed,
             "auto_fix_iterations": self.auto_fix_iterations,
+            "validation_issues": self.validation_issues,
             "metadata": self.metadata,
         }
 
@@ -378,24 +387,6 @@ class ProjectData:
 
 
 class ChapterGenerateWorkflow(GenerateWorkflow):
-    name: str
-    description: str = ""
-    checkpoint_dir: Path | None = None
-    llm: BaseLLM | None = None
-    writer: BaseWriter | None = None
-    genre: str = "fantasy"
-    max_fix_iterations: int = 3
-
-    _version_control: VersionControlSystem | None = None
-    _project_id: str | None = None
-    _checkpoint_manager: CheckpointManager | None = field(default=None, init=False, repr=False)
-    _summary_manager: SummaryManager | None = field(default=None, init=False, repr=False)
-    _character_selector: CharacterSelector | None = field(default=None, init=False, repr=False)
-    _outline_validator: OutlineValidator | None = field(default=None, init=False, repr=False)
-    _timeline_manager: TimelineManager | None = field(default=None, init=False, repr=False)
-    _continuity_manager: ContinuityManager | None = field(default=None, init=False, repr=False)
-    _story_state: StoryState | None = field(default=None, init=False, repr=False)
-
     def __init__(
         self,
         name: str,
@@ -404,6 +395,7 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         description: str = "",
         checkpoint_dir: Path | None = None,
         max_fix_iterations: int = 3,
+        continuity_config: ContinuityConfig | None = None,
     ) -> None:
         self.name = name
         self.llm = llm
@@ -412,6 +404,21 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         self.checkpoint_dir = checkpoint_dir
         self.max_fix_iterations = max_fix_iterations
         self.writer = get_writer(genre, llm)
+
+        self._version_control: VersionControlSystem | None = None
+        self._project_id: str | None = None
+        self._checkpoint_manager: CheckpointManager | None = None
+        self._summary_manager: SummaryManager | None = None
+        self._character_selector: CharacterSelector | None = None
+        self._outline_validator: OutlineValidator | None = None
+        self._timeline_manager: TimelineManager | None = None
+        self._continuity_manager: ContinuityManager | None = None
+        self._story_state: StoryState | None = None
+        self._fact_injector: RelevantFactInjector | None = None
+        self._continuity_config: ContinuityConfig = continuity_config or ContinuityConfig()
+        self._chapter_validator: ChapterValidator = ChapterValidator()
+        self._retry_manager: RetryManager = RetryManager(RetryPolicy())
+        self._kg_transaction: KGTransactionManager | None = None
 
     def _initialize_components(
         self,
@@ -439,6 +446,13 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
             plot_threads=[],
             key_events=[],
         )
+        # Initialize fact injector with default chapter count
+        # Will be updated when outline is loaded if available
+        self._fact_injector = RelevantFactInjector(
+            storage_path=storage_path,
+            novel_id=project_id,
+            chapter_count=30,  # default, will be updated when outline is loaded
+        )
 
     def _load_project_data(
         self,
@@ -448,24 +462,36 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         project_data = ProjectData()
         project_dir = storage_path / "novels" / project_id
 
+        # Check multiple possible outline locations
         outline_file = project_dir / "outline.json"
+        outline_alt_file = project_dir / "outline" / "main_outline.json"
+
+        outline_path = None
         if outline_file.exists():
+            outline_path = outline_file
+        elif outline_alt_file.exists():
+            outline_path = outline_alt_file
+
+        if outline_path:
             try:
-                with open(outline_file, encoding="utf-8") as f:
+                with open(outline_path, encoding="utf-8") as f:
                     outline_data = json.load(f)
                 chapters = []
                 for ch_data in outline_data.get("chapters", []):
-                    chapters.append(ChapterSpec(
-                        number=ch_data["number"],
-                        title=ch_data.get("title", f"Chapter {ch_data['number']}"),
-                        summary=ch_data.get("summary", ""),
-                        characters=ch_data.get("characters", []),
-                        location=ch_data.get("location", ""),
-                        key_events=ch_data.get("key_events", []),
-                        plot_threads_resolved=ch_data.get("plot_threads_resolved", []),
-                        plot_threads_started=ch_data.get("plot_threads_started", []),
-                        character_states=ch_data.get("character_states", {}),
-                    ))
+                    ch_num = ch_data.get("chapter") or ch_data.get("number", 0)
+                    chapters.append(
+                        ChapterSpec(
+                            number=ch_num,
+                            title=ch_data.get("title", f"Chapter {ch_num}"),
+                            summary=ch_data.get("summary", ""),
+                            characters=ch_data.get("characters", []),
+                            location=ch_data.get("location", ""),
+                            key_events=ch_data.get("key_events", []),
+                            plot_threads_resolved=ch_data.get("plot_threads_resolved", []),
+                            plot_threads_started=ch_data.get("plot_threads_started", []),
+                            character_states=ch_data.get("character_states", {}),
+                        )
+                    )
                 project_data.outline = DetailedOutline(chapters=chapters)
                 project_data.genre = outline_data.get("genre", self.genre)
 
@@ -481,11 +507,19 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 logger.error(f"Failed to load outline: {e}")
 
         characters_file = project_dir / "characters.json"
-        if characters_file.exists():
+        characters_alt_file = project_dir / "characters" / "characters.json"
+        characters_path = characters_file if characters_file.exists() else characters_alt_file
+
+        if characters_path.exists():
             try:
-                with open(characters_file, encoding="utf-8") as f:
+                with open(characters_path, encoding="utf-8") as f:
                     characters_data = json.load(f)
-                for char_data in characters_data.get("characters", []):
+                char_list = (
+                    characters_data
+                    if isinstance(characters_data, list)
+                    else characters_data.get("characters", [])
+                )
+                for char_data in char_list:
                     profile = CharacterProfile.from_dict(char_data)
                     project_data.characters.append(profile)
                 logger.info(f"Loaded {len(project_data.characters)} characters")
@@ -493,9 +527,12 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 logger.error(f"Failed to load characters: {e}")
 
         world_file = project_dir / "world_settings.json"
-        if world_file.exists():
+        world_alt_file = project_dir / "world" / "world_settings.json"
+        world_path = world_file if world_file.exists() else world_alt_file
+
+        if world_path.exists():
             try:
-                with open(world_file, encoding="utf-8") as f:
+                with open(world_path, encoding="utf-8") as f:
                     project_data.world_settings = json.load(f)
                 logger.info("Loaded world settings")
             except Exception as e:
@@ -518,6 +555,7 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         if storage_path is None:
             storage_path = Path("data/openviking/memory")
 
+        self._storage_path = storage_path
         self._initialize_components(project_id, storage_path)
         project_data = self._load_project_data(project_id, storage_path)
 
@@ -557,7 +595,10 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 chapter_spec = project_data.outline.get_chapter_spec(chapter_num)
                 if chapter_spec is None:
                     result.errors.append(f"Chapter {chapter_num} not found in outline")
-                    continue
+                    if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                        result.success = False
+                        break  # STRICT mode: stop generation
+                    continue  # Non-STRICT mode: skip and continue
 
                 chapter_result = await self._generate_single_chapter(
                     chapter_spec=chapter_spec,
@@ -603,15 +644,21 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 else:
                     result.errors.append(f"Failed to generate chapter {chapter_num}")
                     result.success = False
+                    if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                        break  # STRICT mode: stop generation
 
             except Exception as e:
                 logger.error(f"Error generating chapter {chapter_num}: {e}")
                 result.errors.append(f"Chapter {chapter_num}: {str(e)}")
                 result.success = False
+                if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                    break  # STRICT mode: stop generation
 
         result.workflow_state = WorkflowState(
             planning_complete=True,
-            last_generated_chapter=end_chapter if result.chapters_generated > 0 else start_chapter - 1,
+            last_generated_chapter=end_chapter
+            if result.chapters_generated > 0
+            else start_chapter - 1,
             validation_enabled=True,
         )
 
@@ -628,9 +675,38 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         project_id: str,
         storage_path: Path,
     ) -> GeneratedChapter | None:
+        """Generate a single chapter with retry support."""
         if self.writer is None:
             logger.error("Writer not initialized")
             return None
+
+        async def generate_operation() -> GeneratedChapter:
+            return await self._generate_single_chapter_internal(
+                chapter_spec=chapter_spec,
+                characters=characters,
+                world_settings=world_settings,
+                project_id=project_id,
+                storage_path=storage_path,
+            )
+
+        result = await self._retry_manager.execute_with_retry(generate_operation)
+
+        if result.success:
+            return result.result
+        else:
+            logger.error(
+                f"Chapter {chapter_spec.number} generation failed after {result.attempts} attempts"
+            )
+            return None
+
+    async def _generate_single_chapter_internal(
+        self,
+        chapter_spec: ChapterSpec,
+        characters: list[CharacterProfile],
+        world_settings: dict[str, Any],
+        project_id: str,
+        storage_path: Path,
+    ) -> GeneratedChapter:
 
         chapter_spec_dict = {
             "characters": chapter_spec.characters,
@@ -647,7 +723,9 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 "name": char.name,
                 "bio": char.bio,
                 "persona": char.persona,
-                "status": char.current_status.value if hasattr(char.current_status, "value") else str(char.current_status),
+                "status": char.current_status.value
+                if hasattr(char.current_status, "value")
+                else str(char.current_status),
                 "relationships": char.relationships,
             }
             for char in selected_characters
@@ -657,9 +735,31 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         if self._story_state and self._story_state.key_events:
             previous_summary = "; ".join(self._story_state.key_events[-3:])
 
+        fact_context = ""
+        if self._fact_injector:
+            try:
+                active_entities = [char.name for char in selected_characters]
+                relevant_facts = self._fact_injector.get_relevant_facts(
+                    current_chapter=chapter_spec.number,
+                    active_entities=active_entities,
+                )
+                if relevant_facts:
+                    fact_context = "\n".join(
+                        [f"- {fact.content}" for fact, _ in relevant_facts[:10]]
+                    )
+                    logger.info(
+                        f"Injected {len(relevant_facts)} relevant facts for chapter {chapter_spec.number}"
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to get relevant facts: {e}")
+
+        if fact_context:
+            logger.debug(f"Facts prepared for chapter {chapter_spec.number}")
+
         content = await self.writer.write_chapter_with_context(
             chapter_spec=chapter_spec,
-            story_state=self._story_state or StoryState(
+            story_state=self._story_state
+            or StoryState(
                 chapter=0,
                 location=chapter_spec.location,
                 active_characters=[],
@@ -670,6 +770,7 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
             characters=characters_for_chapter,
             world_context=world_settings,
             previous_chapter_summary=previous_summary,
+            fact_context=fact_context if fact_context else None,
         )
 
         validation_passed = True
@@ -677,7 +778,11 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
 
         if self._summary_manager:
             try:
-                summary, verification, auto_fix_result = await self._summary_manager.process_chapter_with_autofix(
+                (
+                    summary,
+                    verification,
+                    auto_fix_result,
+                ) = await self._summary_manager.process_chapter_with_autofix(
                     chapter_number=chapter_spec.number,
                     title=chapter_spec.title,
                     content=content,
@@ -699,6 +804,20 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
             except Exception as e:
                 logger.error(f"Validation failed for chapter {chapter_spec.number}: {e}")
                 validation_passed = False
+
+        # ChapterValidator integration - check completeness
+        validation_issues: list[str] = []
+        if self._continuity_config.strictness != ContinuityStrictness.OFF:
+            chapter_validation = self._chapter_validator.check_completeness(
+                content=content, min_words=self._continuity_config.min_chapter_words
+            )
+            if not chapter_validation.is_valid:
+                validation_issues = chapter_validation.issues
+                logger.warning(
+                    f"Chapter {chapter_spec.number} validation issues: {validation_issues}"
+                )
+                if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                    validation_passed = False
 
         if self._outline_validator:
             try:
@@ -724,15 +843,35 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
 
         if self._continuity_manager and self._story_state:
             try:
+                if self._kg_transaction is None:
+                    self._kg_transaction = KGTransactionManager()
+
                 known_characters = [c.name for c in characters]
-                self._story_state = self._continuity_manager.update_from_chapter(
-                    state=self._story_state,
-                    chapter_content=content,
-                    chapter_number=chapter_spec.number,
-                    known_characters=known_characters,
-                )
+
+                def update_kg_state(state: dict[str, Any]) -> dict[str, Any]:
+                    new_story_state = self._continuity_manager.update_from_chapter(
+                        state=state.get("story_state", self._story_state),
+                        chapter_content=content,
+                        chapter_number=chapter_spec.number,
+                        known_characters=known_characters,
+                    )
+                    return {"story_state": new_story_state}
+
+                success = self._kg_transaction.update_with_transaction(update_kg_state)
+
+                if not success:
+                    logger.error("KG transaction failed, rolled back")
+                    if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                        validation_passed = False
+                else:
+                    new_state = self._kg_transaction.get_state().get("story_state")
+                    if new_state:
+                        self._story_state = new_state
+                        logger.debug(f"KG updated to version {self._kg_transaction.get_version()}")
             except Exception as e:
                 logger.error(f"Continuity update error: {e}")
+                if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                    validation_passed = False
 
         word_count = len(content.split()) if content else 0
 
@@ -743,6 +882,7 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
             word_count=word_count,
             validation_passed=validation_passed,
             auto_fix_iterations=auto_fix_iterations,
+            validation_issues=validation_issues,
             metadata={
                 "location": chapter_spec.location,
                 "characters": chapter_spec.characters,

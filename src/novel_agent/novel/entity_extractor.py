@@ -18,6 +18,7 @@ from src.novel_agent.novel.schemas import KnowledgeGraphEdge, KnowledgeGraphNode
 
 if TYPE_CHECKING:
     from src.novel_agent.llm.base import BaseLLM
+    from src.novel_agent.novel.character_registry import CharacterRegistry
     from src.novel_agent.novel.knowledge_graph import KnowledgeGraph
 
 logger = logging.getLogger(__name__)
@@ -118,6 +119,7 @@ class CharacterEntity(Entity):
     gender: str = ""
     age: int | None = None
     role: str = ""  # protagonist, antagonist, supporting, etc.
+    role_id: str | None = None  # Unique character ID from CharacterRegistry
     personality: list[str] = field(default_factory=list)
     goals: list[str] = field(default_factory=list)
 
@@ -255,15 +257,18 @@ class RuleBasedExtractor:
         self,
         known_characters: dict[str, str] | None = None,
         known_locations: dict[str, str] | None = None,
+        registry: CharacterRegistry | None = None,
     ) -> None:
         """Initialize rule-based extractor.
 
         Args:
             known_characters: Dict of character names to their IDs
             known_locations: Dict of location names to their IDs
+            registry: Optional CharacterRegistry for role_id assignment
         """
         self.known_characters = known_characters or {}
         self.known_locations = known_locations or {}
+        self.registry = registry
         self._character_pattern: re.Pattern | None = None
         self._location_pattern: re.Pattern | None = None
         self._build_patterns()
@@ -303,11 +308,18 @@ class RuleBasedExtractor:
             found.add(name)
 
             char_id = self.known_characters.get(name, f"char_{name}")
+
+            role_id: str | None = None
+            if self.registry is not None:
+                role_id = self.registry.get_or_create(name, chapter=chapter_num)
+
             entity = CharacterEntity(
                 id=char_id,
                 name=name,
                 first_appearance=chapter_num,
                 appearances=[chapter_num],
+                role_id=role_id,
+                properties={"role_id": role_id} if role_id else {},
             )
             entities.append(entity)
 
@@ -633,6 +645,7 @@ class EntityExtractor:
         knowledge_graph: KnowledgeGraph,
         llm: BaseLLM | None = None,
         strategy: ExtractionStrategy = ExtractionStrategy.HYBRID,
+        registry: CharacterRegistry | None = None,
     ) -> None:
         """Initialize entity extractor.
 
@@ -640,10 +653,12 @@ class EntityExtractor:
             knowledge_graph: Knowledge graph to populate
             llm: Optional LLM for LLM-based extraction
             strategy: Extraction strategy to use
+            registry: Optional CharacterRegistry for role_id assignment
         """
         self.kg = knowledge_graph
         self.llm = llm
         self.strategy = strategy
+        self.registry = registry
 
         # Initialize extractors
         self._rule_extractor: RuleBasedExtractor | None = None
@@ -671,7 +686,7 @@ class EntityExtractor:
             name = node.properties.get("name", node.node_id)
             known_locs[name] = node.node_id
 
-        self._rule_extractor = RuleBasedExtractor(known_chars, known_locs)
+        self._rule_extractor = RuleBasedExtractor(known_chars, known_locs, self.registry)
 
     async def extract_from_chapter(
         self,
@@ -957,9 +972,13 @@ class EntityExtractor:
                     # Update appearances
                     appearances = set(existing.properties.get("appearances", []))
                     appearances.update(entity.appearances)
+                    # Merge new properties (like role_id) while preserving existing
+                    merged_props = dict(existing.properties)
+                    merged_props.update(entity.properties)
+                    merged_props["appearances"] = sorted(appearances)
                     self.kg.update_node(
                         entity.id,
-                        properties={"appearances": sorted(appearances)},
+                        properties=merged_props,
                     )
                 else:
                     # Add new node
