@@ -28,10 +28,20 @@ def cli() -> None:
 
 @cli.command()
 @click.option("--project-id", required=True, help="Project ID for the novel")
-@click.option("--start-chapter", type=int, default=None, help="Starting chapter number (default: next ungenerated)")
+@click.option(
+    "--start-chapter",
+    type=int,
+    default=None,
+    help="Starting chapter number (default: next ungenerated)",
+)
 @click.option("--count", type=int, default=1, help="Number of chapters to generate")
 @click.option("--validate/--no-validate", default=True, help="Enable/disable chapter validation")
-@click.option("--continue-on-error", is_flag=True, default=False, help="Continue generating even if errors occur")
+@click.option(
+    "--continue-on-error",
+    is_flag=True,
+    default=False,
+    help="Continue generating even if errors occur",
+)
 @click.option("--resume", is_flag=True, help="Resume from last checkpoint if available")
 def generate(
     project_id: str,
@@ -53,14 +63,14 @@ def generate(
     """
     from pathlib import Path
 
-    from src.novel_agent.llm import DeepSeekLLM
+    from src.novel_agent.utils.config import get_default_llm
     from src.novel_agent.workflow.generate_workflow import (
         ChapterGenerateWorkflow,
         GenerateResult,
     )
 
     try:
-        llm = DeepSeekLLM()
+        llm = get_default_llm()
     except ValueError as e:
         console.print(f"[bold red]LLM Error: {e}[/bold red]")
         raise click.Abort()
@@ -121,7 +131,9 @@ def generate(
 
         console.print("\n[bold]Generation Complete![/bold]")
         console.print(f"  Success: {'[green]Yes[/green]' if result.success else '[red]No[/red]'}")
-        console.print(f"  Chapters Generated: {result.chapters_generated}/{result.total_chapters_requested}")
+        console.print(
+            f"  Chapters Generated: {result.chapters_generated}/{result.total_chapters_requested}"
+        )
 
         if result.resumed_from_checkpoint:
             console.print(f"  Resumed from checkpoint at chapter {result.start_chapter - 1}")
@@ -705,17 +717,13 @@ def plan(project_id: str, chapters: int | None, force: bool) -> None:
     try:
         from src.novel_agent.memory.file_memory import FileMemory
 
-        from src.novel_agent.llm.deepseek import DeepSeekLLM
+        from src.novel_agent.utils.config import get_default_llm
 
-        llm = DeepSeekLLM()
+        llm = get_default_llm()
         memory = FileMemory()
     except ImportError as e:
-        console.print(
-            f"[bold red]Error: Missing dependency - {e}[/bold red]"
-        )
-        console.print(
-            "[yellow]Install with: pip install NovelWriter[deepseek][/yellow]"
-        )
+        console.print(f"[bold red]Error: Missing dependency - {e}[/bold red]")
+        console.print("[yellow]Install with: pip install NovelWriter[llm][/yellow]")
         return
 
     # Initialize workflow
@@ -730,9 +738,7 @@ def plan(project_id: str, chapters: int | None, force: bool) -> None:
     async def run_planning():
         with Progress() as progress:
             # Create tasks for each planning stage
-            task_outline = progress.add_task(
-                "[cyan]Generating story outline...", total=100
-            )
+            task_outline = progress.add_task("[cyan]Generating story outline...", total=100)
             task_characters = progress.add_task(
                 "[cyan]Creating characters...", total=100, started=False
             )
@@ -745,9 +751,7 @@ def plan(project_id: str, chapters: int | None, force: bool) -> None:
             task_timeline = progress.add_task(
                 "[cyan]Initializing timeline...", total=100, started=False
             )
-            task_save = progress.add_task(
-                "[cyan]Saving artifacts...", total=100, started=False
-            )
+            task_save = progress.add_task("[cyan]Saving artifacts...", total=100, started=False)
             task_update = progress.add_task(
                 "[green]Updating project status...", total=100, started=False
             )
