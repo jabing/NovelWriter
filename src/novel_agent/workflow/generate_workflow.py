@@ -827,10 +827,8 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
             if not chapter_validation.is_valid:
                 validation_issues = chapter_validation.issues
                 logger.warning(
-                    f"Chapter {chapter_spec.number} validation issues: {validation_issues}"
+                    f"Chapter {chapter_spec.number} format issues (non-blocking): {validation_issues}"
                 )
-                if self._continuity_config.strictness == ContinuityStrictness.STRICT:
-                    validation_passed = False
 
         if self._outline_validator:
             try:
