@@ -21,7 +21,10 @@ from src.novel_agent.novel.character_selector import CharacterSelector
 from src.novel_agent.novel.checkpointing import CheckpointManager, create_checkpoint_manager
 from src.novel_agent.novel.continuity import ContinuityManager, StoryState
 from src.novel_agent.novel.continuity_config import ContinuityConfig, ContinuityStrictness
+from src.novel_agent.novel.continuity_validator import ContinuityContext, ContinuityValidator
 from src.novel_agent.novel.fact_injector import RelevantFactInjector
+from src.novel_agent.novel.language_checker import LanguageConsistencyChecker
+from src.novel_agent.novel.perspective_checker import NarrativePerspectiveChecker
 from src.novel_agent.novel.kg_transaction import KGTransactionManager
 from src.novel_agent.novel.outline_manager import ChapterSpec, DetailedOutline
 from src.novel_agent.novel.outline_validator import OutlineValidator
@@ -219,7 +222,7 @@ class GenerateWorkflow(ABC):
         )
 
         if self._storage_path:
-            content_dir = self._storage_path / project_id / "content"
+            content_dir = self._storage_path / "novels" / project_id / "content"
             content_dir.mkdir(parents=True, exist_ok=True)
             content_file = content_dir / f"chapter_{chapter_number:04d}.txt"
             with open(content_file, "w", encoding="utf-8") as f:
@@ -419,6 +422,13 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
         self._chapter_validator: ChapterValidator = ChapterValidator()
         self._retry_manager: RetryManager = RetryManager(RetryPolicy())
         self._kg_transaction: KGTransactionManager | None = None
+        # Continuity validation
+        self._continuity_validator: ContinuityValidator = ContinuityValidator()
+        self._language_checker: LanguageConsistencyChecker = LanguageConsistencyChecker()
+        self._perspective_checker: NarrativePerspectiveChecker = NarrativePerspectiveChecker()
+        self._previous_chapter_content: str | None = None
+        self._expected_language: str | None = None  # Detected from chapter 1
+        self._expected_perspective: str | None = None  # Detected from chapter 1
 
     def _initialize_components(
         self,
@@ -617,6 +627,9 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                             f"Chapter {chapter_num} validation failed after "
                             f"{chapter_result.auto_fix_iterations} fix attempts"
                         )
+                        if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                            result.success = False
+                            break  # STRICT mode: stop generation on validation failure
 
                     version_id = await self._save_version(
                         chapter_number=chapter_num,
@@ -872,6 +885,42 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                 logger.error(f"Continuity update error: {e}")
                 if self._continuity_config.strictness == ContinuityStrictness.STRICT:
                     validation_passed = False
+
+        if self._continuity_config.strictness != ContinuityStrictness.OFF:
+            if self._previous_chapter_content is None:
+                detected_lang = self._language_checker.detect_language(content)
+                self._expected_language = detected_lang.value
+                detected_persp = self._perspective_checker.detect_perspective(content)
+                self._expected_perspective = detected_persp.value
+                logger.info(
+                    f"Chapter {chapter_spec.number}: Detected language={self._expected_language}, "
+                    f"perspective={self._expected_perspective}"
+                )
+            else:
+                known_character_names = [c.name for c in characters]
+                continuity_context = ContinuityContext(
+                    chapter_number=chapter_spec.number,
+                    character_names=known_character_names,
+                    expected_language=self._expected_language,
+                    expected_perspective=self._expected_perspective,
+                )
+                continuity_result = self._continuity_validator.validate_chapter(
+                    current=content,
+                    previous=self._previous_chapter_content,
+                    context=continuity_context,
+                )
+                if not continuity_result.is_valid:
+                    error_msg = f"连续性验证失败: {'; '.join(continuity_result.issues)}"
+                    logger.error(f"Chapter {chapter_spec.number}: {error_msg}")
+                    validation_issues.extend(continuity_result.issues)
+                    if self._continuity_config.strictness == ContinuityStrictness.STRICT:
+                        validation_passed = False
+                elif continuity_result.warnings:
+                    logger.warning(
+                        f"Chapter {chapter_spec.number} continuity warnings: "
+                        f"{continuity_result.warnings}"
+                    )
+            self._previous_chapter_content = content
 
         word_count = len(content.split()) if content else 0
 

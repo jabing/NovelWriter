@@ -6,7 +6,9 @@ from abc import abstractmethod
 from typing import Any
 
 from src.novel_agent.agents.base import AgentResult, BaseAgent
+from src.novel_agent.novel.character_name_checker import CharacterNameChecker, CharacterNameResult
 from src.novel_agent.novel.continuity import StoryState
+from src.novel_agent.novel.continuity_validator import ContinuityContext
 from src.novel_agent.novel.outline_manager import ChapterSpec
 from src.novel_agent.utils.token_budget import TokenBudgetConfig, TokenBudgetManager
 
@@ -28,6 +30,41 @@ def get_language_instruction(language: str | None) -> str:
 - 避免翻译腔
 """
     return ""
+
+
+def build_continuity_constraints(
+    context: ContinuityContext | None,
+    protagonist_name: str | None = None,
+    previous_summary: str | None = None,
+) -> str:
+    """Build a continuity constraints section for writer prompts."""
+    if context is None and protagonist_name is None and previous_summary is None:
+        return ""
+
+    parts = ["【写作约束 / Writing Constraints】"]
+
+    if context and context.expected_language:
+        lang = context.expected_language.lower()
+        if lang in ("zh", "chinese", "中文"):
+            parts.append("- 语言/Language: 中文 / Chinese (必须使用中文写作)")
+        elif lang in ("en", "english", "英文"):
+            parts.append("- 语言/Language: English / English (必须使用英文写作)")
+
+    if context and context.expected_perspective:
+        persp = context.expected_perspective.lower()
+        if persp in ("first_person", "第一人称"):
+            parts.append("- 视角/Perspective: 第一人称 / First Person (使用'我'视角)")
+        elif persp in ("third_person", "第三人称"):
+            parts.append("- 视角/Perspective: 第三人称 / Third Person")
+
+    if protagonist_name:
+        parts.append(f"- 主角/Protagonist: {protagonist_name}")
+
+    if previous_summary:
+        parts.append("\n【前章概要 / Previous Chapter Summary】")
+        parts.append(previous_summary)
+
+    return "\n".join(parts)
 
 
 class BaseWriter(BaseAgent):
@@ -196,11 +233,34 @@ class BaseWriter(BaseAgent):
             **kwargs,
         )
 
+    def _extract_protagonist_name(
+        self,
+        characters: list[dict[str, Any]] | None,
+        story_state: StoryState | None,
+    ) -> str | None:
+        if characters:
+            for char in characters:
+                role = char.get("role", "").lower()
+                if "protagonist" in role or "main" in role or "hero" in role or "heroine" in role:
+                    return char.get("name", char.get("character_name", ""))
+            if characters:
+                first = characters[0]
+                return first.get("name", first.get("character_name", ""))
+
+        if story_state:
+            for char_name in story_state.active_characters:
+                char_state = story_state.get_character_state(char_name)
+                if char_state:
+                    return char_name
+
+        return None
+
     def _build_continuity_prompt(
         self,
         story_state: StoryState | None,
         previous_summary: str,
         chapter_number: int,
+        characters: list[dict[str, Any]] | None = None,
         max_tokens: int | None = None,
         fact_context: str | None = None,
     ) -> str:
@@ -276,6 +336,23 @@ class BaseWriter(BaseAgent):
                 parts.append(enforced_context["active_characters"])
             if "character_states" in enforced_context:
                 parts.append(enforced_context["character_states"])
+
+        # Add continuity constraints (language, perspective, protagonist)
+        if story_state:
+            ctx = ContinuityContext(
+                chapter_number=chapter_number,
+                character_names=story_state.active_characters,
+                expected_language=None,
+                expected_perspective=None,
+            )
+            protagonist = self._extract_protagonist_name(None, story_state)
+            constraints_prompt = build_continuity_constraints(
+                context=ctx,
+                protagonist_name=protagonist,
+                previous_summary=previous_summary if chapter_number > 1 else None,
+            )
+            if constraints_prompt:
+                parts.append(f"\n{constraints_prompt}")
 
         if fact_context:
             parts.append(f"\n【相关事实】\n{fact_context}")
