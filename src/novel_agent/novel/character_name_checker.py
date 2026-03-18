@@ -164,7 +164,7 @@ class CharacterNameChecker:
         )
 
     def check_consistency(
-        self, chapters: dict[str, str], character_names: list[str]
+        self, chapters: dict[str, str], character_names: list[str], strict_mode: bool = False
     ) -> CharacterNameResult:
         """Check character name consistency across chapters.
 
@@ -176,6 +176,7 @@ class CharacterNameChecker:
         Args:
             chapters: Dict mapping chapter_id to chapter content
             character_names: List of valid character names
+            strict_mode: If True, protagonist name mismatch causes failure (blocking)
 
         Returns:
             CharacterNameResult with validation status
@@ -237,12 +238,14 @@ class CharacterNameChecker:
             )
 
             if not is_same:
-                # Different protagonist detected - for now treat as warning
-                # to match test expectations
-                warnings.append(
+                msg = (
                     f"章节 '{chapter_id}' 中主角名称不一致: "
                     f"预期 '{expected_protagonist}', 实际 '{latest_name}'"
                 )
+                if strict_mode:
+                    issues.append(msg)
+                else:
+                    warnings.append(msg)
 
         # If we have issues, mark as invalid
         is_valid = len(issues) == 0

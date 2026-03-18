@@ -20,12 +20,14 @@ class ContinuityContext:
         character_names: List of valid character names for this novel
         expected_language: Expected language ("chinese" or "english"), optional
         expected_perspective: Expected perspective ("first_person" or "third_person"), optional
+        block_on_character_mismatch: If True, protagonist name mismatch causes failure
     """
 
     chapter_number: int
     character_names: list[str]
     expected_language: str | None = None  # "chinese" or "english"
     expected_perspective: str | None = None  # "first_person" or "third_person"
+    block_on_character_mismatch: bool = False
 
 
 @dataclass
@@ -112,7 +114,9 @@ class ContinuityValidator:
 
         # Character name check - always validate against character_names
         char_result = self.character_checker.check_consistency(
-            {"current": current}, context.character_names
+            {"current": current},
+            context.character_names,
+            strict_mode=context.block_on_character_mismatch,
         )
         if not char_result.is_valid:
             character_valid = False

@@ -175,5 +175,49 @@ class TestCharacterProfileValidation:
         assert len(result3.warnings) > 0 or len(result3.issues) > 0
 
 
+class TestCharacterNameStrictMode:
+    """测试角色名严格模式 - 可选阻塞"""
+
+    def test_strict_mode_blocks_on_mismatch(self) -> None:
+        """严格模式下主角名不一致应该导致失败"""
+        checker = CharacterNameChecker()
+        character_names = ["艾拉拉", "李四"]
+
+        chapters = {
+            "chapter_1": CHINESE_CONTENT_WITH_ELARA,
+            "chapter_2": """
+第二章 继续
+
+李四走进房间，看着窗外的风景。李四想起了过去的事情。
+""",
+        }
+
+        result = checker.check_consistency(chapters, character_names, strict_mode=True)
+
+        assert result.is_valid is False
+        assert len(result.issues) > 0
+        assert "主角名称不一致" in result.issues[0]
+
+    def test_non_strict_mode_warns_on_mismatch(self) -> None:
+        """非严格模式下主角名不一致只是警告"""
+        checker = CharacterNameChecker()
+        character_names = ["艾拉拉", "李四"]
+
+        chapters = {
+            "chapter_1": CHINESE_CONTENT_WITH_ELARA,
+            "chapter_2": """
+第二章 继续
+
+李四走进房间，看着窗外的风景。李四想起了过去的事情。
+""",
+        }
+
+        result = checker.check_consistency(chapters, character_names, strict_mode=False)
+
+        assert result.is_valid is True
+        assert len(result.warnings) > 0
+        assert "主角名称不一致" in result.warnings[0]
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

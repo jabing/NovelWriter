@@ -28,6 +28,9 @@ class ContinuityConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts")
     min_chapter_words: int = Field(default=500, ge=0, description="Minimum chapter word count")
     enable_character_id: bool = Field(default=False, description="Enable character ID tracking")
+    block_on_character_mismatch: bool = Field(
+        default=False, description="Block generation when protagonist name changes across chapters"
+    )
 
     def __init__(self, **data) -> None:
         """Initialize config and log warning for OFF mode."""

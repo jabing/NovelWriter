@@ -903,6 +903,7 @@ class ChapterGenerateWorkflow(GenerateWorkflow):
                     character_names=known_character_names,
                     expected_language=self._expected_language,
                     expected_perspective=self._expected_perspective,
+                    block_on_character_mismatch=self._continuity_config.block_on_character_mismatch,
                 )
                 continuity_result = self._continuity_validator.validate_chapter(
                     current=content,
